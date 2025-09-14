@@ -1,0 +1,5 @@
+{
+  "name": "Pokérole Team Builder",
+  "description": "A web application to browse the Pokérole dataset and build your ultimate Pokémon team. Search, filter, and view detailed information for every Pokémon, including stats, abilities, moves, and evolutions.",
+  "requestFramePermissions": []
+}

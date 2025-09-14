@@ -1,0 +1,18 @@
+
+import React from 'react';
+import { TYPE_COLORS } from '../constants';
+
+interface TypeBadgeProps {
+    type: string;
+}
+
+const TypeBadge: React.FC<TypeBadgeProps> = ({ type }) => {
+    const colorClass = TYPE_COLORS[type] || 'bg-gray-500 text-white';
+    return (
+        <span className={`px-2.5 py-1 text-sm font-semibold rounded-full shadow-md ${colorClass}`}>
+            {type}
+        </span>
+    );
+};
+
+export default TypeBadge;
