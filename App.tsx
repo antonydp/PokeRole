@@ -1,22 +1,134 @@
 
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Pokedex, Move, Ability } from './types';
+import { Pokedex, Move, Ability, TeamMember, PokemonData } from './types';
 import { fetchAllData } from './services/pokedexService';
 import PokemonList from './components/PokemonList';
 import PokemonDetail from './components/PokemonDetail';
 import TeamBuilder from './components/TeamBuilder';
-import { LoadingSpinner, PokeballIcon } from './components/Icons';
+import { PokeballIcon, MenuIcon, SettingsIcon } from './components/Icons';
 import { GoogleGenAI, Type } from "@google/genai";
+import { createInitialSheetData } from './utils';
+
+type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
+
+const SettingsModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    settings: UnitSettings;
+    onSettingsChange: (settings: UnitSettings) => void;
+}> = ({ isOpen, onClose, settings, onSettingsChange }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-fade-in" onClick={onClose}>
+            <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-sm p-6 font-sans" onClick={e => e.stopPropagation()}>
+                <h2 className="text-2xl font-pixel text-poke-yellow mb-6 text-center">Settings</h2>
+                
+                <div className="mb-4">
+                    <label className="block text-gray-300 font-bold mb-2">Height Unit</label>
+                    <div className="flex bg-slate-700 rounded-lg p-1">
+                        <button 
+                            onClick={() => onSettingsChange({ ...settings, height: 'imperial' })}
+                            className={`w-1/2 p-2 text-sm rounded-md transition-colors ${settings.height === 'imperial' ? 'bg-poke-blue text-white' : 'text-gray-400 hover:bg-slate-600'}`}
+                        >
+                            Feet / Inches (ft'in")
+                        </button>
+                        <button
+                             onClick={() => onSettingsChange({ ...settings, height: 'metric' })}
+                             className={`w-1/2 p-2 text-sm rounded-md transition-colors ${settings.height === 'metric' ? 'bg-poke-blue text-white' : 'text-gray-400 hover:bg-slate-600'}`}
+                        >
+                            Meters (m)
+                        </button>
+                    </div>
+                </div>
+
+                <div className="mb-6">
+                    <label className="block text-gray-300 font-bold mb-2">Weight Unit</label>
+                    <div className="flex bg-slate-700 rounded-lg p-1">
+                        <button
+                            onClick={() => onSettingsChange({ ...settings, weight: 'imperial' })}
+                             className={`w-1/2 p-2 text-sm rounded-md transition-colors ${settings.weight === 'imperial' ? 'bg-poke-blue text-white' : 'text-gray-400 hover:bg-slate-600'}`}
+                        >
+                            Pounds (lbs)
+                        </button>
+                        <button
+                            onClick={() => onSettingsChange({ ...settings, weight: 'metric' })}
+                            className={`w-1/2 p-2 text-sm rounded-md transition-colors ${settings.weight === 'metric' ? 'bg-poke-blue text-white' : 'text-gray-400 hover:bg-slate-600'}`}
+                        >
+                            Kilograms (kg)
+                        </button>
+                    </div>
+                </div>
+                
+                <button 
+                    onClick={onClose} 
+                    className="w-full bg-poke-red text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors"
+                >
+                    Close
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const App: React.FC = () => {
     const [allPokemon, setAllPokemon] = useState<Pokedex[]>([]);
     const [allMoves, setAllMoves] = useState<Record<string, Move>>({});
     const [allAbilities, setAllAbilities] = useState<Record<string, Ability>>({});
-    const [team, setTeam] = useState<Pokedex[]>([]);
+    const [team, setTeam] = useState<TeamMember[]>([]);
     const [selectedPokemon, setSelectedPokemon] = useState<Pokedex | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [isSuggestingTeam, setIsSuggestingTeam] = useState<boolean>(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    
+    const [unitSettings, setUnitSettings] = useState<UnitSettings>(() => {
+        try {
+            const saved = localStorage.getItem('pokerole-unit-settings');
+            return saved ? JSON.parse(saved) : { height: 'imperial', weight: 'imperial' };
+        } catch (e) {
+            console.error("Failed to parse unit settings from localStorage", e);
+            return { height: 'imperial', weight: 'imperial' };
+        }
+    });
+
+    useEffect(() => {
+        try {
+            localStorage.setItem('pokerole-unit-settings', JSON.stringify(unitSettings));
+        } catch (e) {
+            console.error("Failed to save unit settings to localStorage", e);
+        }
+    }, [unitSettings]);
+    
+    useEffect(() => {
+        setTeam(prevTeam =>
+            prevTeam.map(member => {
+                const { pokedexData } = member;
+                const feet = Math.floor(pokedexData.Height.Feet);
+                const inches = Math.round((pokedexData.Height.Feet % 1) * 12);
+                
+                const newSize = unitSettings.height === 'imperial'
+                    ? `${feet}'${inches}"`
+                    : `${pokedexData.Height.Meters}m`;
+                
+                const newWeight = unitSettings.weight === 'imperial'
+                    ? `${pokedexData.Weight.Pounds} lbs`
+                    : `${pokedexData.Weight.Kilograms}kg`;
+                
+                return {
+                    ...member,
+                    sheetData: {
+                        ...member.sheetData,
+                        size: newSize,
+                        weight: newWeight,
+                    }
+                };
+            })
+        );
+    }, [unitSettings]);
+
 
     const loadData = useCallback(async () => {
         try {
@@ -51,20 +163,25 @@ const App: React.FC = () => {
     
     const handleSelectPokemon = useCallback((pokemon: Pokedex) => {
         setSelectedPokemon(pokemon);
+        setIsSidebarOpen(false);
     }, []);
 
     const handleClearSelection = useCallback(() => {
         setSelectedPokemon(null);
     }, []);
 
-    const handleAddToTeam = useCallback((pokemon: Pokedex) => {
-        if (team.length < 6 && !team.some(p => p.DexID === pokemon.DexID)) {
-            setTeam(prevTeam => [...prevTeam, pokemon]);
+    const handleAddToTeam = useCallback((pokemon: Pokedex, sheetData: PokemonData) => {
+        if (team.length < 6 && !team.some(member => member.pokedexData.DexID === pokemon.DexID)) {
+            const newMember: TeamMember = {
+                pokedexData: pokemon,
+                sheetData: sheetData,
+            };
+            setTeam(prevTeam => [...prevTeam, newMember]);
         }
     }, [team]);
 
     const handleRemoveFromTeam = useCallback((pokemon: Pokedex) => {
-        setTeam(prevTeam => prevTeam.filter(p => p.DexID !== pokemon.DexID));
+        setTeam(prevTeam => prevTeam.filter(member => member.pokedexData.DexID !== pokemon.DexID));
     }, []);
     
     const handleSuggestTeam = useCallback(async () => {
@@ -101,11 +218,16 @@ const App: React.FC = () => {
             const suggestedNames: string[] = jsonResponse.team;
 
             if (suggestedNames && suggestedNames.length > 0) {
-                const newTeam = suggestedNames.map(name => {
+                const newTeamPokedex = suggestedNames.map(name => {
                     return allPokemon.find(p => p.Name.toLowerCase() === name.toLowerCase());
                 }).filter((p): p is Pokedex => p !== undefined);
                 
-                setTeam(newTeam.slice(0, 6));
+                const newTeam = newTeamPokedex.slice(0, 6).map(p => ({
+                    pokedexData: p,
+                    sheetData: createInitialSheetData(p, unitSettings),
+                }));
+                setTeam(newTeam);
+
             } else {
                 throw new Error("AI did not suggest a valid team.");
             }
@@ -116,19 +238,93 @@ const App: React.FC = () => {
         } finally {
             setIsSuggestingTeam(false);
         }
-    }, [allPokemon, isSuggestingTeam]);
+    }, [allPokemon, isSuggestingTeam, unitSettings]);
 
+    const handleAddPokemonClick = useCallback(() => {
+        setIsSidebarOpen(true);
+    }, []);
+    
+    const handleSheetDataChange = useCallback((pokemonDexID: string, newSheetData: PokemonData) => {
+        setTeam(prevTeam =>
+            prevTeam.map(member =>
+                member.pokedexData.DexID === pokemonDexID
+                    ? { ...member, sheetData: newSheetData }
+                    : member
+            )
+        );
+    }, []);
+
+    const handleExportTeam = useCallback(() => {
+        if (team.length === 0) {
+            alert("Your team is empty! Add some Pokémon first.");
+            return;
+        }
+        try {
+            const dataStr = JSON.stringify({ team, unitSettings }, null, 2);
+            const dataBlob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'pokerole-team.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            setError('Failed to export team. Please try again.');
+            console.error('Export error:', err);
+        }
+    }, [team, unitSettings]);
+
+    const handleLoadTeam = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const content = e.target?.result;
+                if (typeof content !== 'string') {
+                    throw new Error("File content could not be read as text.");
+                }
+                const loadedData = JSON.parse(content);
+                const loadedTeam: TeamMember[] = loadedData.team || loadedData; // For backwards compatibility
+                const loadedSettings: UnitSettings | undefined = loadedData.unitSettings;
+
+                if (!Array.isArray(loadedTeam) || loadedTeam.some(m => !m.pokedexData || !m.sheetData)) {
+                     throw new Error("Invalid team file format.");
+                }
+                
+                if (loadedSettings) {
+                    setUnitSettings(loadedSettings);
+                }
+
+                setTeam(loadedTeam.slice(0, 6)); 
+                setError(null);
+                setSelectedPokemon(null);
+            } catch (err) {
+                console.error("Failed to load team:", err);
+                setError("Failed to load team. The file might be corrupted or in an incorrect format.");
+            }
+        };
+        reader.onerror = () => {
+             setError("Failed to read the selected file.");
+        };
+        reader.readAsText(file);
+        
+        event.target.value = '';
+    }, []);
 
     const isPokemonInTeam = useMemo(() => {
         if (!selectedPokemon) return false;
-        return team.some(p => p.DexID === selectedPokemon.DexID);
+        return team.some(member => member.pokedexData.DexID === selectedPokemon.DexID);
     }, [selectedPokemon, team]);
     
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white">
-                <LoadingSpinner />
-                <p className="mt-4 text-xl">Loading Pokédex...</p>
+                <PokeballIcon className="w-24 h-24 text-poke-yellow animate-spin" />
+                <p className="mt-4 text-xl font-pixel">Loading Pokédex...</p>
             </div>
         );
     }
@@ -137,7 +333,7 @@ const App: React.FC = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-center p-4">
                 <PokeballIcon className="w-24 h-24 mb-4 text-poke-red opacity-70 animate-pulse-slow" />
-                <h1 className="text-3xl font-bold text-poke-yellow">Oops! Something went wrong.</h1>
+                <h1 className="text-3xl font-bold text-poke-yellow font-pixel">Oops! Something went wrong.</h1>
                 <p className="mt-2 max-w-md text-gray-300">{error}</p>
                 <button 
                     onClick={loadData}
@@ -150,37 +346,84 @@ const App: React.FC = () => {
     }
     
     return (
-        <div className="min-h-screen bg-slate-900 p-4 font-sans flex flex-col">
-            <header className="w-full text-center mb-4 flex items-center justify-center">
-                <PokeballIcon className="w-10 h-10 mr-3 text-poke-red" />
-                <h1 className="text-4xl font-bold text-poke-yellow tracking-wider">Pokérole Team Builder</h1>
+        <div className="min-h-screen bg-slate-900 flex flex-col font-sans">
+             <SettingsModal 
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+                settings={unitSettings}
+                onSettingsChange={setUnitSettings}
+             />
+            <header className="w-full p-4 flex items-center justify-between bg-slate-900/80 backdrop-blur-sm sticky top-0 z-30 border-b border-slate-700/50">
+                <button
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                    className="p-2 rounded-md text-gray-300 hover:bg-slate-700 hover:text-white transition-colors z-50"
+                    aria-label="Toggle Pokémon List"
+                >
+                    <MenuIcon className="w-6 h-6" />
+                </button>
+                <div className="flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <PokeballIcon className="w-8 h-8 md:w-10 md:h-10 mr-3 text-poke-red" />
+                    <h1 className="text-2xl md:text-3xl font-bold text-poke-yellow tracking-wider font-pixel">Pokérole Team Builder</h1>
+                </div>
+                 <div className="flex items-center">
+                    <button
+                        onClick={() => setIsSettingsOpen(true)}
+                        className="p-2 rounded-md text-gray-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        aria-label="Open settings"
+                    >
+                        <SettingsIcon className="w-6 h-6" />
+                    </button>
+                </div>
             </header>
-            <main className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
-                <div className="lg:col-span-1 bg-slate-800/50 rounded-lg p-2 overflow-y-auto h-[calc(100vh-100px)]">
-                    <PokemonList allPokemon={allPokemon} onSelectPokemon={handleSelectPokemon} />
-                </div>
-                <div className="lg:col-span-2 bg-slate-800/50 rounded-lg p-4 h-[calc(100vh-100px)] overflow-y-auto">
-                    {selectedPokemon ? (
-                        <PokemonDetail 
-                            pokemon={selectedPokemon}
-                            allMoves={allMoves}
-                            onClose={handleClearSelection}
-                            onAddToTeam={handleAddToTeam}
-                            onRemoveFromTeam={handleRemoveFromTeam}
-                            isInTeam={isPokemonInTeam}
-                            teamIsFull={team.length >= 6}
-                        />
-                    ) : (
-                        <TeamBuilder 
-                            team={team} 
-                            onSelectPokemon={handleSelectPokemon} 
-                            onRemoveFromTeam={handleRemoveFromTeam}
-                            onSuggestTeam={handleSuggestTeam}
-                            isSuggesting={isSuggestingTeam}
-                        />
-                    )}
-                </div>
-            </main>
+
+            <div className="flex flex-1 relative overflow-hidden">
+                <div
+                    className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                    onClick={() => setIsSidebarOpen(false)}
+                ></div>
+                <aside className={`
+                    flex-shrink-0 bg-slate-800/80 backdrop-blur-sm 
+                    transform transition-transform duration-300 ease-in-out
+                    fixed top-16 left-0 h-[calc(100vh-64px)] w-80 z-40
+                    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
+                }>
+                    <div className="h-full p-2">
+                        <div className="bg-slate-800/50 rounded-lg h-full overflow-y-auto">
+                            <PokemonList allPokemon={allPokemon} onSelectPokemon={handleSelectPokemon} />
+                        </div>
+                    </div>
+                </aside>
+
+                <main className="flex-1 p-4 w-full">
+                    <div className="bg-slate-800/50 rounded-lg p-4 h-full overflow-y-auto">
+                        {selectedPokemon ? (
+                            <PokemonDetail 
+                                pokemon={selectedPokemon}
+                                allMoves={allMoves}
+                                onClose={handleClearSelection}
+                                onAddToTeam={handleAddToTeam}
+                                onRemoveFromTeam={handleRemoveFromTeam}
+                                isInTeam={isPokemonInTeam}
+                                teamIsFull={team.length >= 6}
+                                sheetData={team.find(member => member.pokedexData.DexID === selectedPokemon.DexID)?.sheetData}
+                                onSheetDataChange={handleSheetDataChange}
+                                unitSettings={unitSettings}
+                            />
+                        ) : (
+                            <TeamBuilder 
+                                team={team} 
+                                onSelectPokemon={handleSelectPokemon} 
+                                onRemoveFromTeam={handleRemoveFromTeam}
+                                onSuggestTeam={handleSuggestTeam}
+                                isSuggesting={isSuggestingTeam}
+                                onAddPokemonClick={handleAddPokemonClick}
+                                onExportTeam={handleExportTeam}
+                                onLoadTeam={handleLoadTeam}
+                            />
+                        )}
+                    </div>
+                </main>
+            </div>
         </div>
     );
 };

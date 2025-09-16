@@ -1,4 +1,5 @@
 
+
 export interface Pokedex {
   Number: number;
   DexID: string;
@@ -50,6 +51,24 @@ export interface Learnset {
   Name: string;
 }
 
+export interface StatChange {
+    Stats: string[];
+    Stages: number;
+    ChanceDice?: number;
+    Affects: 'User' | 'Foe';
+}
+
+export interface AddedEffects {
+    StatChanges?: StatChange[];
+    TerrainEffect?: string;
+    InflictStatus?: {
+        Status: string;
+        ChanceDice?: number;
+        Affects: 'User' | 'Foe';
+    }[];
+}
+
+
 export interface Move {
   Name: string;
   Type: string;
@@ -63,7 +82,7 @@ export interface Move {
   Description: string;
   _id: string;
   Attributes: object;
-  AddedEffects: object;
+  AddedEffects: AddedEffects;
   Category: string;
 }
 
@@ -72,13 +91,6 @@ export interface Ability {
   Name: string;
   Effect: string;
   Description: string;
-}
-
-
-export interface MoveData {
-  name: string;
-  power: string;
-  dicePool: string;
 }
 
 export interface PokemonData {
@@ -102,6 +114,8 @@ export interface PokemonData {
     etiquette: number;
     intimidate: number;
     perform: number;
+    extraSkillName: string;
+    extraSkillValue: number;
     tough: number;
     cool: number;
     beauty: number;
@@ -129,5 +143,10 @@ export interface PokemonData {
     rank: string;
     size: string;
     weight: string;
-    moves: MoveData[];
+    moves: (string | null)[];
+}
+
+export interface TeamMember {
+  pokedexData: Pokedex;
+  sheetData: PokemonData;
 }

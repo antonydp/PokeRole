@@ -15,12 +15,12 @@ const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onSelect }) => {
     return (
         <div 
             onClick={() => onSelect(pokemon)}
-            className="flex items-center p-2 bg-slate-700/60 rounded-lg cursor-pointer hover:bg-slate-600/80 transition-colors duration-200 shadow-md"
+            className="group flex items-center p-2 bg-slate-700/60 rounded-lg cursor-pointer hover:bg-slate-600/80 transition-colors duration-200 shadow-md"
         >
             <img 
                 src={imageUrl} 
                 alt={pokemon.Name}
-                className="w-16 h-16 object-contain"
+                className="w-16 h-16 object-contain group-hover:animate-wobble"
                 loading="lazy"
             />
             <div className="ml-3 flex-grow">

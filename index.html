@@ -22,13 +22,24 @@
             },
             animation: {
               'fade-in': 'fadeIn 0.5s ease-in-out',
+              'fade-in-scale': 'fadeInScale 0.3s ease-in-out',
               'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'wobble': 'wobble 0.5s ease-in-out',
             },
             keyframes: {
               fadeIn: {
                 '0%': { opacity: 0 },
                 '100%': { opacity: 1 },
               },
+              fadeInScale: {
+                '0%': { opacity: 0, transform: 'scale(0.95)' },
+                '100%': { opacity: 1, transform: 'scale(1)' },
+              },
+              wobble: {
+                '0%, 100%': { transform: 'rotate(0deg) scale(1)' },
+                '25%': { transform: 'rotate(-3deg) scale(1.05)' },
+                '75%': { transform: 'rotate(3deg) scale(1.05)' },
+              }
             }
           }
         }
@@ -45,7 +56,7 @@
 }
 </script>
 </head>
-  <body class="bg-slate-900 text-gray-200">
+  <body class="bg-slate-900 text-gray-200 bg-[radial-gradient(circle_at_1px_1px,_rgba(255,255,255,0.05)_1px,_transparent_0)] bg-[length:20px_20px]">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

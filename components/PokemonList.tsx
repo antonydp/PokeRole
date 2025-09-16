@@ -1,5 +1,4 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Pokedex } from '../types';
 import PokemonCard from './PokemonCard';
 import { TYPE_COLORS } from '../constants';
@@ -9,9 +8,40 @@ interface PokemonListProps {
     onSelectPokemon: (pokemon: Pokedex) => void;
 }
 
+const initialStatFilters = {
+    BaseHP: { min: '', max: '' },
+    Strength: { min: '', max: '' },
+    Dexterity: { min: '', max: '' },
+    Vitality: { min: '', max: '' },
+    Special: { min: '', max: '' },
+    Insight: { min: '', max: '' },
+};
+
+const STAT_FIELDS: (keyof typeof initialStatFilters)[] = ['BaseHP', 'Strength', 'Dexterity', 'Vitality', 'Special', 'Insight'];
+
+
 const PokemonList: React.FC<PokemonListProps> = ({ allPokemon, onSelectPokemon }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<string | null>(null);
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    
+    const [statFilters, setStatFilters] = useState(initialStatFilters);
+    const [abilityFilter, setAbilityFilter] = useState('');
+    const [legendaryFilter, setLegendaryFilter] = useState<'all' | 'yes' | 'no'>('all');
+
+
+    const handleStatChange = (stat: keyof typeof initialStatFilters, bound: 'min' | 'max', value: string) => {
+        setStatFilters(prev => ({
+            ...prev,
+            [stat]: { ...prev[stat], [bound]: value }
+        }));
+    };
+    
+    const resetAdvancedFilters = useCallback(() => {
+        setStatFilters(initialStatFilters);
+        setAbilityFilter('');
+        setLegendaryFilter('all');
+    }, []);
 
     const pokemonTypes = useMemo(() => {
         return Object.keys(TYPE_COLORS);
@@ -19,11 +49,47 @@ const PokemonList: React.FC<PokemonListProps> = ({ allPokemon, onSelectPokemon }
     
     const filteredPokemon = useMemo(() => {
         return allPokemon.filter(pokemon => {
+            // Name Filter
             const nameMatch = pokemon.Name.toLowerCase().includes(searchTerm.toLowerCase());
+            if (!nameMatch) return false;
+
+            // Type Filter
             const typeMatch = !typeFilter || pokemon.Type1 === typeFilter || pokemon.Type2 === typeFilter;
-            return nameMatch && typeMatch;
+            if (!typeMatch) return false;
+
+            // Legendary Filter
+            const legendaryMatch = legendaryFilter === 'all' ||
+                (legendaryFilter === 'yes' && pokemon.Legendary) ||
+                (legendaryFilter === 'no' && !pokemon.Legendary);
+            if (!legendaryMatch) return false;
+
+            // Ability Filter
+            const abilityTerm = abilityFilter.toLowerCase().trim();
+            if (abilityTerm) {
+                const abilities = [
+                    pokemon.Ability1,
+                    pokemon.Ability2,
+                    pokemon.HiddenAbility,
+                    pokemon.EventAbilities
+                ].filter(Boolean).join(', ').toLowerCase();
+                if (!abilities.includes(abilityTerm)) {
+                    return false;
+                }
+            }
+            
+            // Stat Filters
+            for (const stat of STAT_FIELDS) {
+                const pokemonStatValue = pokemon[stat as 'BaseHP']; // Type assertion needed here
+                const min = statFilters[stat].min !== '' ? parseInt(statFilters[stat].min, 10) : -Infinity;
+                const max = statFilters[stat].max !== '' ? parseInt(statFilters[stat].max, 10) : Infinity;
+
+                if (!isNaN(min) && pokemonStatValue < min) return false;
+                if (!isNaN(max) && pokemonStatValue > max) return false;
+            }
+
+            return true;
         });
-    }, [allPokemon, searchTerm, typeFilter]);
+    }, [allPokemon, searchTerm, typeFilter, statFilters, abilityFilter, legendaryFilter]);
 
     return (
         <div className="flex flex-col h-full">
@@ -52,6 +118,75 @@ const PokemonList: React.FC<PokemonListProps> = ({ allPokemon, onSelectPokemon }
                         </button>
                     ))}
                 </div>
+                 <div className="mt-2 text-center">
+                    <button onClick={() => setShowAdvanced(!showAdvanced)} className="w-full text-sm text-poke-yellow hover:text-yellow-300 transition-colors py-1">
+                        {showAdvanced ? 'Hide' : 'Show'} Advanced Filters {showAdvanced ? '▲' : '▼'}
+                    </button>
+                </div>
+                
+                {showAdvanced && (
+                    <div className="p-3 my-2 bg-slate-900/50 rounded-lg animate-fade-in space-y-4">
+                        {/* Legendary Filter */}
+                        <div>
+                           <label className="text-sm font-bold text-gray-300 mb-2 block">Legendary</label>
+                           <div className="flex justify-center gap-2">
+                                {(['all', 'yes', 'no'] as const).map(val => (
+                                    <button 
+                                        key={val}
+                                        onClick={() => setLegendaryFilter(val)}
+                                        className={`px-3 py-1 text-xs font-semibold rounded-full capitalize transition-all ${legendaryFilter === val ? 'bg-poke-blue text-white ring-2 ring-poke-yellow' : 'bg-slate-600 text-gray-300 hover:bg-slate-500'}`}
+                                    >{val}</button>
+                                ))}
+                           </div>
+                        </div>
+
+                        {/* Ability Filter */}
+                        <div>
+                             <label htmlFor="abilityFilter" className="text-sm font-bold text-gray-300 mb-2 block">Ability</label>
+                             <input
+                                id="abilityFilter"
+                                type="text"
+                                placeholder="Filter by ability..."
+                                value={abilityFilter}
+                                onChange={e => setAbilityFilter(e.target.value)}
+                                className="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-poke-blue"
+                            />
+                        </div>
+
+                        {/* Stat Filters */}
+                        <div>
+                             <label className="text-sm font-bold text-gray-300 mb-2 block">Base Stats</label>
+                             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                                {STAT_FIELDS.map(stat => (
+                                    <div key={stat}>
+                                        <label className="text-xs text-gray-400 capitalize">{stat === 'BaseHP' ? 'HP' : stat}</label>
+                                        <div className="flex gap-1">
+                                            <input 
+                                                type="number"
+                                                placeholder="Min"
+                                                min="0"
+                                                value={statFilters[stat].min}
+                                                onChange={e => handleStatChange(stat, 'min', e.target.value)}
+                                                className="w-full p-1 text-sm bg-slate-700 border border-slate-600 rounded text-white"
+                                            />
+                                            <input 
+                                                type="number"
+                                                placeholder="Max"
+                                                min="0"
+                                                value={statFilters[stat].max}
+                                                onChange={e => handleStatChange(stat, 'max', e.target.value)}
+                                                className="w-full p-1 text-sm bg-slate-700 border border-slate-600 rounded text-white"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                             </div>
+                        </div>
+                        <button onClick={resetAdvancedFilters} className="w-full mt-2 text-sm text-center bg-poke-red/80 hover:bg-poke-red text-white py-1.5 rounded-md transition-colors">
+                            Reset Advanced Filters
+                        </button>
+                    </div>
+                )}
             </div>
             <div className="flex-grow overflow-y-auto p-2 space-y-2">
                 {filteredPokemon.length > 0 ? (
