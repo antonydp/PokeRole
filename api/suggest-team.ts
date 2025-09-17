@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import OpenAI from 'openai';
 import { SimplifiedPokedex, TeamMember } from '../types.js';
 
