@@ -1,4 +1,4 @@
-import { Pokedex, TeamMember } from '../types.js';
+import { Pokedex, TeamMember, SimplifiedPokedex } from '../types.js';
 
 export async function suggestTeam(
     prompt: string,
@@ -6,12 +6,25 @@ export async function suggestTeam(
     currentTeam: TeamMember[]
 ): Promise<string[]> {
     try {
-        const response = await fetch('/api/suggest-team', {
+        const simplifiedPokemon: SimplifiedPokedex[] = allPokemon.map(p => ({
+            Name: p.Name,
+            Type1: p.Type1,
+            Type2: p.Type2,
+            BaseHP: p.BaseHP,
+            Strength: p.Strength,
+            Dexterity: p.Dexterity,
+            Vitality: p.Vitality,
+            Moves: p.Moves.map(m => m.Name),
+        }));
+
+        const apiUrl = import.meta.env.VITE_API_URL || '/api/suggest-team';
+
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ prompt, allPokemon, currentTeam }),
+            body: JSON.stringify({ prompt, allPokemon: simplifiedPokemon, currentTeam }),
         });
 
         if (!response.ok) {

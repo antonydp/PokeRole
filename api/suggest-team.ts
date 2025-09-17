@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import OpenAI from 'openai';
-import { Pokedex, TeamMember } from '../types.js';
+import { SimplifiedPokedex, TeamMember } from '../types.js';
 
 export const config = {
   runtime: 'edge',
@@ -76,13 +76,11 @@ export default async function handler(req: Request): Promise<Response> {
 async function getTeamSuggestionStream(
     openai: OpenAI,
     prompt: string,
-    allPokemon: Pokedex[],
+    allPokemon: SimplifiedPokedex[],
     currentTeam: TeamMember[]
 ) {
     const currentTeamNames = new Set(currentTeam.map(member => member.pokedexData.Name));
-    const availablePokemon = allPokemon
-        .filter(p => !currentTeamNames.has(p.Name))
-        .map(p => p.Name);
+    const availablePokemon = allPokemon.filter(p => !currentTeamNames.has(p.Name));
     
     const systemPrompt = `You are a Pokémon team building expert for the Pokérole tabletop RPG. Your task is to suggest a team of up to 6 Pokémon based on the user's request.
 - Analyze the user's prompt to understand their desired playstyle, strategy, or type preferences.
@@ -91,7 +89,7 @@ async function getTeamSuggestionStream(
 - Return your response as a valid JSON object with a single key "team" which is an array of strings, where each string is the exact name of a suggested Pokémon. Example: {"team": ["Pikachu", "Charizard", "Blastoise"]}`;
 
     const userMessage = `User request: "${prompt}".
-Available Pokémon: [${availablePokemon.join(', ')}]`;
+Available Pokémon: ${JSON.stringify(availablePokemon, null, 2)}`;
 
     try {
         return await openai.chat.completions.create({

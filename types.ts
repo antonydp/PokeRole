@@ -36,6 +36,17 @@ export interface Pokedex {
   Moves: Learnset[];
 }
 
+export interface SimplifiedPokedex {
+  Name: string;
+  Type1: string;
+  Type2?: string;
+  BaseHP: number;
+  Strength: number;
+  Dexterity: number;
+  Vitality: number;
+  Moves: string[];
+}
+
 export interface Evolution {
   To?: string;
   From?: string;
