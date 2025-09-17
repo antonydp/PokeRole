@@ -1,14 +1,16 @@
 
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Pokedex, Move, Ability, TeamMember, PokemonData } from './types';
+
+
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { Pokedex, Move, Ability, TeamMember, PokemonData, TrainerData, ItemsData, ItemInstance } from './types';
 import { fetchAllData } from './services/pokedexService';
 import PokemonList from './components/PokemonList';
 import PokemonDetail from './components/PokemonDetail';
-import TeamBuilder from './components/TeamBuilder';
+import Dashboard from './components/Dashboard';
 import { PokeballIcon, MenuIcon, SettingsIcon } from './components/Icons';
 import { GoogleGenAI, Type } from "@google/genai";
-import { createInitialSheetData, calculateWeaknesses } from './utils';
+import { createInitialSheetData, calculateWeaknesses, createInitialTrainerData } from './utils';
 
 type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
 
@@ -76,13 +78,17 @@ const App: React.FC = () => {
     const [allPokemon, setAllPokemon] = useState<Pokedex[]>([]);
     const [allMoves, setAllMoves] = useState<Record<string, Move>>({});
     const [allAbilities, setAllAbilities] = useState<Record<string, Ability>>({});
+    const [allItems, setAllItems] = useState<ItemsData | null>(null);
     const [team, setTeam] = useState<TeamMember[]>([]);
+    const [trainerData, setTrainerData] = useState<TrainerData>(createInitialTrainerData());
     const [selectedPokemon, setSelectedPokemon] = useState<Pokedex | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [isSuggestingTeam, setIsSuggestingTeam] = useState<boolean>(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     const [unitSettings, setUnitSettings] = useState<UnitSettings>(() => {
         try {
@@ -134,7 +140,7 @@ const App: React.FC = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const { pokemonData, movesData, abilitiesData } = await fetchAllData();
+            const { pokemonData, movesData, abilitiesData, itemsData } = await fetchAllData();
             
             const movesMap = movesData.reduce((acc, move) => {
                 acc[move._id] = move;
@@ -149,6 +155,7 @@ const App: React.FC = () => {
             setAllPokemon(pokemonData);
             setAllMoves(movesMap);
             setAllAbilities(abilitiesMap);
+            setAllItems(itemsData);
         } catch (err) {
             setError('Failed to fetch Pokémon data. The servers might be down or your connection is unstable. Please try again.');
             console.error(err);
@@ -254,27 +261,35 @@ const App: React.FC = () => {
         );
     }, []);
 
+    const handleTrainerDataChange = useCallback((data: TrainerData) => {
+        setTrainerData(data);
+    }, []);
+
     const handleExportTeam = useCallback(() => {
-        if (team.length === 0) {
-            alert("Your team is empty! Add some Pokémon first.");
+        if (team.length === 0 && !trainerData.name) {
+            alert("Your team and trainer sheet are empty!");
             return;
         }
         try {
-            const dataStr = JSON.stringify({ team, unitSettings }, null, 2);
+            const dataStr = JSON.stringify({ team, trainer: trainerData, unitSettings }, null, 2);
             const dataBlob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'pokerole-team.json';
+            link.download = 'pokerole-session.json';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
         } catch (err) {
-            setError('Failed to export team. Please try again.');
+            setError('Failed to export data. Please try again.');
             console.error('Export error:', err);
         }
-    }, [team, unitSettings]);
+    }, [team, trainerData, unitSettings]);
+    
+    const handleLoadClick = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
 
     const handleLoadTeam = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -288,15 +303,57 @@ const App: React.FC = () => {
                     throw new Error("File content could not be read as text.");
                 }
                 const loadedData = JSON.parse(content);
-                const loadedTeam: TeamMember[] = loadedData.team || loadedData; // For backwards compatibility
+                const loadedTeam: TeamMember[] = loadedData.team || []; 
                 const loadedSettings: UnitSettings | undefined = loadedData.unitSettings;
+                const loadedTrainer: TrainerData | undefined = loadedData.trainer;
 
-                if (!Array.isArray(loadedTeam) || loadedTeam.some(m => !m.pokedexData || !m.sheetData)) {
-                     throw new Error("Invalid team file format.");
+                if (!Array.isArray(loadedTeam)) {
+                     throw new Error("Invalid team data format.");
+                }
+
+                if (loadedTeam.some(m => !m.pokedexData || !m.sheetData)) {
+                     throw new Error("Invalid Pokémon data within the team file.");
                 }
                 
                 if (loadedSettings) {
                     setUnitSettings(loadedSettings);
+                }
+
+                if (loadedTrainer) {
+                    // Backwards compatibility migration for pockets
+                    const parsePocketString = (pocketString: string): ItemInstance[] => {
+                        if (!pocketString || typeof pocketString !== 'string') return [];
+                        const itemMap = new Map<string, number>();
+                        const itemLines = pocketString.split('\n');
+                        
+                        itemLines.forEach(line => {
+                            if (!line.trim()) return;
+                            const match = line.match(/^(.*)\s+x(\d+)$/i);
+                            let name = line.trim();
+                            let quantity = 1;
+                            if (match) {
+                                name = match[1].trim();
+                                quantity = parseInt(match[2], 10);
+                            }
+                            itemMap.set(name, (itemMap.get(name) || 0) + quantity);
+                        });
+                        
+                        return Array.from(itemMap.entries()).map(([name, quantity], index) => ({
+                            id: `${name.replace(/\s+/g, '-')}-${index}`,
+                            name,
+                            quantity,
+                        }));
+                    };
+
+                    if (typeof (loadedTrainer.smallPocket as any) === 'string') {
+                        loadedTrainer.smallPocket = parsePocketString(loadedTrainer.smallPocket as any);
+                    }
+                    if (typeof (loadedTrainer.mainPocket as any) === 'string') {
+                         loadedTrainer.mainPocket = parsePocketString(loadedTrainer.mainPocket as any);
+                    }
+                    setTrainerData(loadedTrainer);
+                } else {
+                    setTrainerData(createInitialTrainerData());
                 }
 
                 const teamWithUpdatedWeaknesses = loadedTeam.map(member => {
@@ -316,8 +373,8 @@ const App: React.FC = () => {
                 setError(null);
                 setSelectedPokemon(null);
             } catch (err) {
-                console.error("Failed to load team:", err);
-                setError("Failed to load team. The file might be corrupted or in an incorrect format.");
+                console.error("Failed to load data:", err);
+                setError("Failed to load data. The file might be corrupted or in an incorrect format.");
             }
         };
         reader.onerror = () => {
@@ -378,7 +435,37 @@ const App: React.FC = () => {
                     <PokeballIcon className="w-8 h-8 md:w-10 md:h-10 mr-3 text-poke-red" />
                     <h1 className="text-2xl md:text-3xl font-bold text-poke-yellow tracking-wider font-pixel">Pokérole Team Builder</h1>
                 </div>
-                 <div className="flex items-center">
+                 <div className="flex items-center gap-2">
+                     <button
+                        onClick={handleExportTeam}
+                        className="flex items-center justify-center px-3 py-1.5 bg-green-600 text-white font-pixel text-xs rounded-md border-b-2 border-green-800 hover:bg-green-500 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
+                        aria-label="Export Session Data"
+                        title="Export Session Data"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span className="hidden sm:inline ml-1.5">Export</span>
+                    </button>
+                    <button
+                        onClick={handleLoadClick}
+                        className="flex items-center justify-center px-3 py-1.5 bg-poke-yellow text-slate-900 font-pixel text-xs rounded-md border-b-2 border-yellow-600 hover:bg-yellow-400 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
+                        aria-label="Load Session Data"
+                        title="Load Session Data"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                        <span className="hidden sm:inline ml-1.5">Load</span>
+                    </button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleLoadTeam}
+                        accept="application/json,.json"
+                        className="hidden"
+                        aria-hidden="true"
+                    />
                     <button
                         onClick={() => setIsSettingsOpen(true)}
                         className="p-2 rounded-md text-gray-300 hover:bg-slate-700 hover:text-white transition-colors"
@@ -423,15 +510,16 @@ const App: React.FC = () => {
                                 unitSettings={unitSettings}
                             />
                         ) : (
-                            <TeamBuilder 
+                            <Dashboard 
                                 team={team} 
                                 onSelectPokemon={handleSelectPokemon} 
                                 onRemoveFromTeam={handleRemoveFromTeam}
                                 onSuggestTeam={handleSuggestTeam}
                                 isSuggesting={isSuggestingTeam}
                                 onAddPokemonClick={handleAddPokemonClick}
-                                onExportTeam={handleExportTeam}
-                                onLoadTeam={handleLoadTeam}
+                                trainerData={trainerData}
+                                onTrainerDataChange={handleTrainerDataChange}
+                                allItems={allItems}
                             />
                         )}
                     </div>

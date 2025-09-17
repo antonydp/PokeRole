@@ -157,3 +157,111 @@ export interface TeamMember {
   pokedexData: Pokedex;
   sheetData: PokemonData;
 }
+
+export interface PotionBottle {
+  id: string;
+  type: 'potion' | 'superPotion' | 'hyperPotion';
+  maxUnits: number;
+  currentUnits: number;
+}
+
+export interface ItemInstance {
+  id: string;
+  name: string;
+  quantity: number;
+  description?: string;
+}
+
+export interface TrainerData {
+  // Trainer Card
+  name: string;
+  age: string;
+  hometown: string;
+  trainerRank: string;
+  playerName: string;
+  concept: string;
+  nature: string;
+  confidence: string;
+  money: string;
+
+  // Core Attributes
+  strength: number;
+  dexterity: number;
+  vitality: number;
+  insight: number;
+
+  // Skills - Fight
+  brawl: number;
+  throw: number;
+  evasion: number;
+  weapons: number;
+  
+  // Skills - Survival
+  alert: number;
+  athletic: number;
+  // FIX: Renamed 'nature' to 'natureSkill' to avoid conflict with trainer's personality nature.
+  natureSkill: number; // Skill
+  stealth: number;
+  
+  // Skills - Social
+  allure: number;
+  etiquette: number;
+  intimidate: number;
+  perform: number;
+
+  // Skills - Knowledge
+  crafts: number;
+  lore: number;
+  medicine: number;
+  science: number;
+  
+  // Extra Skills
+  extraSkills: { name: string; value: number }[];
+  
+  // Social Attributes (Contest)
+  tough: number;
+  cool: number;
+  beauty: number;
+  clever: number;
+  cute: number;
+  
+  // Progression & Records
+  achievements: { text: string; completed: boolean }[];
+  pokedexCaught: string;
+  pokedexSeen: string;
+  
+  // Backpack
+  potions: PotionBottle[];
+  smallPocket: ItemInstance[];
+  mainPocket: ItemInstance[];
+  badges: string;
+}
+
+export interface Item {
+  name: string;
+  description: string;
+  usable_in_battle: boolean;
+  image: string | null;
+  price?: number;
+  rarity?: string;
+  effect?: string;
+}
+
+export interface HealingItemsSubCategory {
+  potions: Item[];
+  status_heals: Item[];
+}
+
+export type ItemCategoryContent = Item[] | HealingItemsSubCategory;
+
+export interface ItemsData {
+  items: {
+    [key: string]: ItemCategoryContent;
+  };
+}
+
+export interface TeamTypeCoverageData {
+  weaknesses: { [type: string]: number };
+  resistances: { [type: string]: number };
+  immunities: { [type: string]: number };
+}
