@@ -7,8 +7,6 @@ interface DashboardProps {
     team: TeamMember[];
     onSelectPokemon: (pokemon: Pokedex) => void;
     onRemoveFromTeam: (pokemon: Pokedex) => void;
-    onSuggestTeam: () => void;
-    isSuggesting: boolean;
     onAddPokemonClick: () => void;
     trainerData: TrainerData;
     onTrainerDataChange: (updaterOrData: ((prev: TrainerData) => TrainerData) | TrainerData) => void;
@@ -50,8 +48,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                         team={props.team}
                         onSelectPokemon={props.onSelectPokemon}
                         onRemoveFromTeam={props.onRemoveFromTeam}
-                        onSuggestTeam={props.onSuggestTeam}
-                        isSuggesting={props.isSuggesting}
                         onAddPokemonClick={props.onAddPokemonClick}
                     />
                 )}
