@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Pokedex, TeamMember, TeamTypeCoverageData } from '../types';
 import { IMAGE_BASE_URL, TYPE_CHART } from '../constants';
-import { PokeballIcon } from './Icons';
+import { PokeballIcon, SparklesIcon } from './Icons';
 import TypeBadge from './TypeBadge';
 import { calculateTeamTypeCoverage } from '../utils';
 
@@ -10,10 +10,102 @@ interface TeamBuilderProps {
     onSelectPokemon: (pokemon: Pokedex) => void;
     onRemoveFromTeam: (pokemon: Pokedex) => void;
     onAddPokemonClick: () => void;
+    onOpenSuggestModal: () => void;
 }
 
+// --- New Global Tooltip Component ---
 
-// --- New Type Coverage Component ---
+interface TooltipData {
+    content: TeamMember;
+    rect: DOMRect;
+}
+
+const PokemonTooltip: React.FC<{ tooltipData: TooltipData | null }> = ({ tooltipData }) => {
+    const [currentTooltipData, setCurrentTooltipData] = useState<TooltipData | null>(null);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        let animationFrameId: number;
+        let timeoutId: ReturnType<typeof setTimeout>;
+
+        if (tooltipData) {
+            setCurrentTooltipData(tooltipData);
+            animationFrameId = requestAnimationFrame(() => {
+                setIsVisible(true);
+            });
+        } else {
+            setIsVisible(false);
+            timeoutId = setTimeout(() => {
+                setCurrentTooltipData(null);
+            }, 150); // Match transition duration
+        }
+
+        return () => {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [tooltipData]);
+
+    if (!currentTooltipData) return null;
+
+    const { content: teamMember, rect } = currentTooltipData;
+    const { pokedexData: pokemon, sheetData } = teamMember;
+
+    const style: React.CSSProperties = {
+        position: 'fixed',
+        top: rect.top - 8,
+        left: rect.left + rect.width / 2,
+        transform: 'translate(-50%, -100%)',
+        pointerEvents: 'none',
+        zIndex: 1000,
+    };
+
+    return (
+        <div 
+            style={style} 
+            className={`
+                w-64 bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-lg z-20 
+                transition-opacity duration-150 ease-in-out font-sans
+                ${isVisible ? 'opacity-100' : 'opacity-0'}
+            `}
+        >
+            <div className="absolute bottom-[-9px] left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-800 border-b border-r border-slate-600 transform rotate-45"></div>
+            
+            <h4 className="font-bold text-poke-yellow mb-2 text-center text-lg">{pokemon.Name}</h4>
+
+            {pokemon.RecommendedRank && pokemon.RecommendedRank !== 'Starter' && (
+                <p className="text-center text-xs text-poke-yellow/80 font-semibold -mt-2 mb-2">
+                    Recommended Rank: {pokemon.RecommendedRank}
+                </p>
+            )}
+            
+            <div className="mb-2">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Ability</p>
+                <p className="font-semibold text-white">{sheetData.ability}</p>
+            </div>
+
+            <div className="mb-2">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Current Stats</p>
+                <div className="grid grid-cols-3 gap-x-4 gap-y-1 text-sm text-gray-300">
+                    <div className="flex justify-between"><span>HP:</span> <span className="font-bold text-white">{sheetData.hp}</span></div>
+                    <div className="flex justify-between"><span>STR:</span> <span className="font-bold text-white">{sheetData.strength}</span></div>
+                    <div className="flex justify-between"><span>DEX:</span> <span className="font-bold text-white">{sheetData.dexterity}</span></div>
+                    <div className="flex justify-between"><span>VIT:</span> <span className="font-bold text-white">{sheetData.vitality}</span></div>
+                    <div className="flex justify-between"><span>SPE:</span> <span className="font-bold text-white">{sheetData.special}</span></div>
+                    <div className="flex justify-between"><span>INS:</span> <span className="font-bold text-white">{sheetData.insight}</span></div>
+                </div>
+            </div>
+
+            <div>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Weaknesses</p>
+                <p className="text-sm text-white break-words">{sheetData.weakness}</p>
+            </div>
+        </div>
+    );
+};
+
+
+// --- Type Coverage Component ---
 
 interface CoverageDisplayProps {
     title: string;
@@ -87,13 +179,17 @@ const TeamTypeCoverage: React.FC<TeamTypeCoverageProps> = ({ coverage }) => {
     );
 };
 
-
-const TeamSlot: React.FC<{ 
-    teamMember?: TeamMember; 
-    onSelect: (p: Pokedex) => void; 
+interface TeamSlotProps {
+    teamMember?: TeamMember;
+    onSelect: (p: Pokedex) => void;
     onRemove: (p: Pokedex) => void;
     onAddPokemonClick: () => void;
-}> = ({ teamMember, onSelect, onRemove, onAddPokemonClick }) => {
+    onMouseEnter: (teamMember: TeamMember, element: HTMLElement) => void;
+    onMouseLeave: () => void;
+}
+
+
+const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onAddPokemonClick, onMouseEnter, onMouseLeave }) => {
     if (!teamMember) {
         return (
             <button
@@ -107,44 +203,20 @@ const TeamSlot: React.FC<{
         );
     }
 
-    const { pokedexData: pokemon, sheetData } = teamMember;
+    const { pokedexData: pokemon } = teamMember;
     const imageUrl = `${IMAGE_BASE_URL}${pokemon.Image}`;
+
+    const handleMouseEnter = (event: React.MouseEvent<HTMLDivElement>) => {
+        onMouseEnter(teamMember, event.currentTarget);
+    };
     
     return (
         <div 
             onClick={() => onSelect(pokemon)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={onMouseLeave}
             className="relative w-full h-40 bg-slate-700/80 rounded-lg group animate-fade-in shadow-lg cursor-pointer hover:bg-slate-700 transition-colors flex flex-col items-center justify-center p-2"
         >
-            {/* Tooltip/Popover */}
-            <div className="absolute bottom-full mb-2 w-64 bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 left-1/2 -translate-x-1/2 pointer-events-none">
-                <div className="absolute bottom-[-9px] left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-800 border-b border-r border-slate-600 transform rotate-45"></div>
-                
-                <h4 className="font-bold text-poke-yellow mb-2 text-center text-lg">{pokemon.Name}</h4>
-                
-                <div className="mb-2">
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Ability</p>
-                    <p className="font-semibold text-white">{sheetData.ability}</p>
-                </div>
-
-                <div className="mb-2">
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Current Stats</p>
-                    <div className="grid grid-cols-3 gap-x-4 gap-y-1 text-sm text-gray-300">
-                        <div className="flex justify-between"><span>HP:</span> <span className="font-bold text-white">{sheetData.hp}</span></div>
-                        <div className="flex justify-between"><span>STR:</span> <span className="font-bold text-white">{sheetData.strength}</span></div>
-                        <div className="flex justify-between"><span>DEX:</span> <span className="font-bold text-white">{sheetData.dexterity}</span></div>
-                        <div className="flex justify-between"><span>VIT:</span> <span className="font-bold text-white">{sheetData.vitality}</span></div>
-                        <div className="flex justify-between"><span>SPE:</span> <span className="font-bold text-white">{sheetData.special}</span></div>
-                        <div className="flex justify-between"><span>INS:</span> <span className="font-bold text-white">{sheetData.insight}</span></div>
-                    </div>
-                </div>
-
-                <div>
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Weaknesses</p>
-                    <p className="text-sm text-white break-words">{sheetData.weakness}</p>
-                </div>
-            </div>
-
-
             <button 
                 onClick={(e) => { e.stopPropagation(); onRemove(pokemon); }}
                 className="absolute top-1 right-1 z-10 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 text-xs opacity-50 group-hover:opacity-100 transition-opacity"
@@ -169,12 +241,33 @@ const TeamSlot: React.FC<{
 };
 
 
-const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemoveFromTeam, onAddPokemonClick }) => {
+const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemoveFromTeam, onAddPokemonClick, onOpenSuggestModal }) => {
+    const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const teamCoverage = useMemo(() => calculateTeamTypeCoverage(team), [team]);
+    
+    const handleMouseEnter = useCallback((teamMember: TeamMember, element: HTMLElement) => {
+        setTooltipData({ content: teamMember, rect: element.getBoundingClientRect() });
+    }, []);
+
+    const handleMouseLeave = useCallback(() => {
+        setTooltipData(null);
+    }, []);
 
     return (
         <div className="flex flex-col items-center justify-center h-full animate-fade-in-scale">
-            <h2 className="text-3xl font-bold text-poke-yellow mb-2">Your Team</h2>
+            <PokemonTooltip tooltipData={tooltipData} />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mb-2">
+                <h2 className="text-3xl font-bold text-poke-yellow">Your Team</h2>
+                 <button
+                    onClick={onOpenSuggestModal}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white font-pixel text-xs rounded-md border-b-2 border-purple-800 hover:bg-purple-500 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
+                    title="Get an AI-powered team suggestion!"
+                >
+                    <SparklesIcon className="h-4 w-4" />
+                    <span className="hidden sm:inline">Suggest Team</span>
+                    <span className="sm:hidden">Suggest</span>
+                 </button>
+            </div>
             <p className="text-gray-400 mb-6 text-center">Select Pokémon from the list or manage your team below.</p>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl">
@@ -185,6 +278,8 @@ const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemo
                         onSelect={onSelectPokemon}
                         onRemove={onRemoveFromTeam}
                         onAddPokemonClick={onAddPokemonClick}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
                     />
                 ))}
             </div>

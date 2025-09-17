@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Pokedex, Move, Ability, TeamMember, PokemonData, TrainerData, ItemsData, ItemInstance, Rank } from './types';
 import { fetchAllData } from './services/pokedexService';
@@ -10,6 +6,7 @@ import PokemonDetail from './components/PokemonDetail';
 import Dashboard from './components/Dashboard';
 import { PokeballIcon, MenuIcon, SettingsIcon } from './components/Icons';
 import { createInitialSheetData, calculateWeaknesses, createInitialTrainerData } from './utils';
+import SuggestTeamModal from './components/SuggestTeamModal';
 
 type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
 
@@ -55,7 +52,7 @@ const SettingsModal: React.FC<{
                         </button>
                         <button
                             onClick={() => onSettingsChange({ ...settings, weight: 'metric' })}
-                            className={`w-1/2 p-2 text-sm rounded-md transition-colors ${settings.weight === 'metric' ? 'bg-poke-blue text-white' : 'text-gray-400 hover:bg-slate-600'}`}
+                             className={`w-1/2 p-2 text-sm rounded-md transition-colors ${settings.weight === 'metric' ? 'bg-poke-blue text-white' : 'text-gray-400 hover:bg-slate-600'}`}
                         >
                             Kilograms (kg)
                         </button>
@@ -85,6 +82,7 @@ const App: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
     
@@ -332,6 +330,17 @@ const App: React.FC = () => {
         return team.some(member => member.pokedexData.DexID === selectedPokemon.DexID);
     }, [selectedPokemon, team]);
     
+     const handleAddSuggestionToTeam = useCallback((pokemon: Pokedex) => {
+        if (team.length < 6 && !team.some(member => member.pokedexData.DexID === pokemon.DexID)) {
+            const sheetData = createInitialSheetData(pokemon, unitSettings, trainerData.trainerRank);
+            const newMember: TeamMember = {
+                pokedexData: pokemon,
+                sheetData: sheetData,
+            };
+            setTeam(prevTeam => [...prevTeam, newMember]);
+        }
+    }, [team.length, unitSettings, trainerData.trainerRank]);
+
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white">
@@ -359,6 +368,13 @@ const App: React.FC = () => {
     
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col font-sans">
+             <SuggestTeamModal
+                isOpen={isSuggestModalOpen}
+                onClose={() => setIsSuggestModalOpen(false)}
+                allPokemon={allPokemon}
+                team={team}
+                onAddSuggestionToTeam={handleAddSuggestionToTeam}
+            />
              <SettingsModal 
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
@@ -461,6 +477,7 @@ const App: React.FC = () => {
                                 trainerData={trainerData}
                                 onTrainerDataChange={handleTrainerDataChange}
                                 allItems={allItems}
+                                onOpenSuggestModal={() => setIsSuggestModalOpen(true)}
                             />
                         )}
                     </div>

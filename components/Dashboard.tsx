@@ -11,6 +11,7 @@ interface DashboardProps {
     trainerData: TrainerData;
     onTrainerDataChange: (updaterOrData: ((prev: TrainerData) => TrainerData) | TrainerData) => void;
     allItems: ItemsData | null;
+    onOpenSuggestModal: () => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
@@ -49,6 +50,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                         onSelectPokemon={props.onSelectPokemon}
                         onRemoveFromTeam={props.onRemoveFromTeam}
                         onAddPokemonClick={props.onAddPokemonClick}
+                        onOpenSuggestModal={props.onOpenSuggestModal}
                     />
                 )}
                 {activeView === 'trainer' && (
