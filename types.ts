@@ -1,4 +1,4 @@
-import { RANKS } from './constants';
+import { RANKS } from './constants.js';
 export type Rank = typeof RANKS[number];
 
 export interface Pokedex {
