@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import { TrainerData, Nature, ItemsData, Item, HealingItemsSubCategory, ItemInstance } from '../types';
 import NatureModal from './PokemonDetail/NatureModal';
-import { NATURES, RANK_SKILL_LIMITS, RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../../constants';
+import { NATURES, RANK_SKILL_LIMITS, RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../constants';
 import TrainerSheetHeader from './TrainerSheet/TrainerSheetHeader';
 import TrainerSheetMainContent from './TrainerSheet/TrainerSheetMainContent';
 import TrainerSheetSidebar from './TrainerSheet/TrainerSheetSidebar';
