@@ -1,7 +1,8 @@
 
 
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Pokedex, PokemonData, Move } from '../types';
+import type { Pokedex, PokemonData, Move, Nature } from '../types';
 import { CloseIcon } from './Icons';
 
 import PokemonDetailHeader from './PokemonDetail/PokemonDetailHeader';
@@ -10,7 +11,9 @@ import MiddleColumn from './PokemonDetail/MiddleColumn';
 import RightColumn from './PokemonDetail/RightColumn';
 import MovesSection from './PokemonDetail/MovesSection';
 import MoveModal from './PokemonDetail/MoveModal';
+import NatureModal from './PokemonDetail/NatureModal';
 import { createInitialSheetData } from '../utils';
+import { NATURES } from '../constants';
 
 
 interface PokemonDetailProps {
@@ -28,9 +31,14 @@ interface PokemonDetailProps {
 
 const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, sheetData, onSheetDataChange, unitSettings }) => {
     const [pokemonData, setPokemonData] = useState<PokemonData>(() => sheetData || createInitialSheetData(pokemon, unitSettings));
+    
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
     const [moveSlotIndex, setMoveSlotIndex] = useState<number | null>(null);
     const [moveSearchTerm, setMoveSearchTerm] = useState('');
+
+    const [isNatureModalOpen, setIsNatureModalOpen] = useState(false);
+    const [natureSearchTerm, setNatureSearchTerm] = useState('');
+
     const [expandedMoves, setExpandedMoves] = useState<Set<number>>(new Set());
 
     useEffect(() => {
@@ -48,18 +56,49 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
     const updateField = useCallback((field: keyof PokemonData, value: any) => {
         setPokemonData(prev => {
             const newData = { ...prev, [field]: value };
-            
-            if (field === 'insight') {
-                const newInsight = value as number;
-                const maxMoves = Math.max(0, newInsight + 2);
-                if (prev.moves.length !== maxMoves) {
-                    newData.moves = Array.from({ length: maxMoves }, (_, i) => prev.moves[i] || null);
+            const numericValue = Number(value) || 0;
+
+            switch (field) {
+                // ATTRIBUTES
+                case 'vitality':
+                    newData.hp = String(pokemon.BaseHP + numericValue);
+                    newData.defSDef = `${numericValue} / ${newData.insight}`;
+                    break;
+                case 'insight':
+                    newData.will = String(numericValue + 2);
+                    const maxMoves = Math.max(0, numericValue + 2);
+                    if (prev.moves.length !== maxMoves) {
+                        newData.moves = Array.from({ length: maxMoves }, (_, i) => prev.moves[i] || null);
+                    }
+                    newData.defSDef = `${newData.vitality} / ${numericValue}`;
+                    break;
+                case 'dexterity':
+                    newData.initiative = String(numericValue + newData.alert);
+                    newData.evasionValue = String(numericValue + newData.evasion);
+                    break;
+                case 'strength':
+                case 'special':
+                case 'clash': {
+                    const { strength, special, clash } = newData;
+                    if (clash > 0) {
+                        newData.clashValue = `${strength + clash} / ${special + clash}`;
+                    } else {
+                        newData.clashValue = `${strength} / ${special}`;
+                    }
+                    break;
                 }
+                // SKILLS
+                case 'alert':
+                    newData.initiative = String(newData.dexterity + numericValue);
+                    break;
+                case 'evasion':
+                    newData.evasionValue = String(newData.dexterity + numericValue);
+                    break;
             }
             
             return newData;
         });
-    }, []);
+    }, [pokemon.BaseHP]);
 
     const openMoveModal = useCallback((index: number) => {
         setMoveSlotIndex(index);
@@ -83,6 +122,15 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
         closeMoveModal();
     };
     
+    const handleSelectNature = useCallback((nature: Nature) => {
+        setPokemonData(prev => ({
+            ...prev,
+            pokemonNature: nature.name,
+            confidence: String(nature.confidence),
+        }));
+        setIsNatureModalOpen(false);
+    }, []);
+
     const handleClearMove = useCallback((index: number) => {
         setPokemonData(prev => {
             const newMoves = [...prev.moves];
@@ -110,6 +158,15 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
         .sort((a, b) => a.Name.localeCompare(b.Name)),
         [pokemon.Moves, allMoves, moveSearchTerm]
     );
+    
+    const filteredNatures = useMemo(() => {
+        const term = natureSearchTerm.toLowerCase();
+        if (!term) return NATURES;
+        return NATURES.filter(nature => 
+            nature.name.toLowerCase().includes(term) ||
+            nature.keywords.toLowerCase().includes(term)
+        );
+    }, [natureSearchTerm]);
 
     const availableAbilities = useMemo(() => {
         return [
@@ -130,6 +187,15 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
                 searchTerm={moveSearchTerm}
                 onSearchTermChange={setMoveSearchTerm}
             />
+            <NatureModal
+                isOpen={isNatureModalOpen}
+                onClose={() => setIsNatureModalOpen(false)}
+                natures={filteredNatures}
+                onSelectNature={handleSelectNature}
+                searchTerm={natureSearchTerm}
+                onSearchTermChange={setNatureSearchTerm}
+            />
+
             <button onClick={onClose} className="absolute top-2 right-2 z-20 p-2 rounded-full bg-[#B2483D] text-white hover:bg-poke-red transition-transform transform hover:scale-110" aria-label="Close sheet">
                 <CloseIcon className="w-5 h-5" />
             </button>
@@ -147,8 +213,15 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-4 gap-y-3">
                 <LeftColumn pokemonData={pokemonData} updateField={updateField} />
-                <MiddleColumn pokemonData={pokemonData} updateField={updateField} />
-                <RightColumn pokemonData={pokemonData} updateField={updateField} />
+                <MiddleColumn 
+                    pokemonData={pokemonData} 
+                    updateField={updateField} 
+                    onOpenNatureModal={() => {
+                        setNatureSearchTerm('');
+                        setIsNatureModalOpen(true);
+                    }}
+                />
+                <RightColumn pokemonData={pokemonData} updateField={updateField} pokemon={pokemon} />
             </div>
 
             <MovesSection 

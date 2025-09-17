@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { PokemonData } from '../../types';
 import { CircleRating, LabeledInput } from './Shared';
@@ -5,9 +7,10 @@ import { CircleRating, LabeledInput } from './Shared';
 interface MiddleColumnProps {
     pokemonData: PokemonData;
     updateField: (field: keyof PokemonData, value: any) => void;
+    onOpenNatureModal: () => void;
 }
 
-const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField }) => {
+const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField, onOpenNatureModal }) => {
     const contestStats = [
         { name: 'TOUGH', value: pokemonData.tough, field: 'tough' as const, color: 'bg-[#F7F0A0]' },
         { name: 'COOL', value: pokemonData.cool, field: 'cool' as const, color: 'bg-[#F4A27A]' },
@@ -34,13 +37,13 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField })
                             <label htmlFor="pokemonNature" className="text-[#3A3A3A] font-bold text-sm uppercase mr-2 flex-shrink-0">
                                 NATURE:
                             </label>
-                            <input
+                            <button
                                 id="pokemonNature"
-                                type="text"
-                                value={pokemonData.pokemonNature}
-                                onChange={(e) => updateField('pokemonNature', e.target.value)}
-                                className="w-full bg-transparent focus:outline-none font-sans text-sm text-black p-0"
-                            />
+                                onClick={onOpenNatureModal}
+                                className="w-full bg-transparent focus:outline-none font-sans text-sm text-black p-0 text-left hover:opacity-70 transition-opacity"
+                            >
+                                {pokemonData.pokemonNature || 'Select Nature...'}
+                            </button>
                         </div>
                         <div className="flex items-stretch gap-2">
                             <label htmlFor="confidence" className="text-white font-bold text-sm uppercase flex items-center justify-start px-1 flex-shrink-0">
@@ -50,8 +53,8 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField })
                                 id="confidence"
                                 type="text"
                                 value={pokemonData.confidence}
-                                onChange={(e) => updateField('confidence', e.target.value)}
-                                className="w-full bg-white rounded-xl px-2 py-1.5 text-black text-sm font-sans focus:outline-none border-2 border-[#3A3A3A]"
+                                readOnly
+                                className="w-full bg-white rounded-xl px-2 py-1.5 text-black text-sm font-sans focus:outline-none border-2 border-[#3A3A3A] cursor-default"
                             />
                         </div>
                     </div>
@@ -141,8 +144,8 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField })
                     <textarea
                         id="weakness"
                         value={pokemonData.weakness}
-                        onChange={(e) => updateField('weakness', e.target.value)}
-                        className="bg-transparent text-black font-sans text-sm focus:outline-none w-full p-0 resize-none"
+                        readOnly={true}
+                        className="bg-transparent text-black font-sans text-sm focus:outline-none w-full p-0 resize-none cursor-default"
                         rows={2}
                     />
                 </div>

@@ -1,4 +1,5 @@
 
+
 export const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/Willowlark/Pokerole-Data/master/images/HomeSprites/';
 
 export const TYPE_COLORS: { [key: string]: string } = {
@@ -20,4 +21,54 @@ export const TYPE_COLORS: { [key: string]: string } = {
     Dark: 'bg-gray-700 text-white',
     Steel: 'bg-slate-400 text-black',
     Fairy: 'bg-pink-300 text-black',
+};
+
+
+export const NATURES = [
+    { name: 'Adamant', keywords: 'Powerful, Fierce, Relentless', confidence: 4 },
+    { name: 'Bashful', keywords: 'Compassionate, Vulnerable, Family Oriented', confidence: 6 },
+    { name: 'Bold', keywords: 'Adventurous, Confident, Daring', confidence: 9 },
+    { name: 'Brave', keywords: 'Fearless, Level-headed, Protector', confidence: 9 },
+    { name: 'Calm', keywords: 'Reasonable, Peaceful, Balanced', confidence: 8 },
+    { name: 'Careful', keywords: 'Analytic, Skeptical, Withdrawn', confidence: 5 },
+    { name: 'Docile', keywords: 'Kind, Team worker, Service spirit', confidence: 7 },
+    { name: 'Gentle', keywords: 'Graceful, Charismatic, Extroverts', confidence: 10 },
+    { name: 'Hardy', keywords: 'Dependable, Resilient, Resourceful', confidence: 9 },
+    { name: 'Hasty', keywords: 'Eager, Enthusiastic, Hustle', confidence: 7 },
+    { name: 'Impish', keywords: 'Mischievous, Witty, Playful', confidence: 7 },
+    { name: 'Jolly', keywords: 'Cheerful, Charming, Energetic', confidence: 10 },
+    { name: 'Lax', keywords: 'Unconcerned, Indolent, Simple', confidence: 8 },
+    { name: 'Lonely', keywords: 'Independent, Introspective, Solitary', confidence: 5 },
+    { name: 'Mild', keywords: 'Meek, Serene, Comforting', confidence: 8 },
+    { name: 'Modest', keywords: 'Measured, Self-Assured, Hard Worker', confidence: 10 },
+    { name: 'Naive', keywords: 'Curious, Lighthearted, Innocent', confidence: 7 },
+    { name: 'Naughty', keywords: 'Devious, Rebel, Sly', confidence: 6 },
+    { name: 'Quiet', keywords: 'Silent, Reserved, Espectator', confidence: 5 },
+    { name: 'Quirky', keywords: 'Unusual, Open-Minded, Original', confidence: 9 },
+    { name: 'Rash', keywords: 'Reckless, Unrefined, Daredevil', confidence: 6 },
+    { name: 'Relaxed', keywords: 'Carefree, Meditative, Nonchalant', confidence: 8 },
+    { name: 'Sassy', keywords: 'Lively, Irreverent, Mouthy', confidence: 7 },
+    { name: 'Serious', keywords: 'Steadfast, Rigid, Commited', confidence: 4 },
+    { name: 'Timid', keywords: 'Shy, Apprehensive, Sensible', confidence: 4 },
+];
+
+export const TYPE_CHART: { [key: string]: { weaknesses: string[], resistances: string[], immunities: string[] } } = {
+  "Normal": { "weaknesses": ["Fighting"], "resistances": [], "immunities": ["Ghost"] },
+  "Fire": { "weaknesses": ["Water", "Ground", "Rock"], "resistances": ["Fire", "Grass", "Ice", "Bug", "Steel", "Fairy"], "immunities": [] },
+  "Water": { "weaknesses": ["Grass", "Electric"], "resistances": ["Water", "Fire", "Ice", "Steel"], "immunities": [] },
+  "Grass": { "weaknesses": ["Fire", "Ice", "Poison", "Flying", "Bug"], "resistances": ["Water", "Electric", "Grass", "Ground"], "immunities": [] },
+  "Electric": { "weaknesses": ["Ground"], "resistances": ["Electric", "Flying", "Steel"], "immunities": [] },
+  "Ice": { "weaknesses": ["Fire", "Fighting", "Rock", "Steel"], "resistances": ["Ice"], "immunities": [] },
+  "Fighting": { "weaknesses": ["Flying", "Psychic", "Fairy"], "resistances": ["Bug", "Rock", "Dark"], "immunities": [] },
+  "Poison": { "weaknesses": ["Ground", "Psychic"], "resistances": ["Fighting", "Poison", "Bug", "Grass", "Fairy"], "immunities": [] },
+  "Ground": { "weaknesses": ["Water", "Grass", "Ice"], "resistances": ["Poison", "Rock"], "immunities": ["Electric"] },
+  "Flying": { "weaknesses": ["Electric", "Ice", "Rock"], "resistances": ["Fighting", "Bug", "Grass"], "immunities": ["Ground"] },
+  "Psychic": { "weaknesses": ["Bug", "Ghost", "Dark"], "resistances": ["Fighting", "Psychic"], "immunities": [] },
+  "Bug": { "weaknesses": ["Fire", "Flying", "Rock"], "resistances": ["Fighting", "Grass", "Ground"], "immunities": [] },
+  "Rock": { "weaknesses": ["Water", "Grass", "Fighting", "Ground", "Steel"], "resistances": ["Normal", "Fire", "Poison", "Flying"], "immunities": [] },
+  "Ghost": { "weaknesses": ["Ghost", "Dark"], "resistances": ["Poison", "Bug"], "immunities": ["Normal", "Fighting"] },
+  "Dragon": { "weaknesses": ["Ice", "Dragon", "Fairy"], "resistances": ["Fire", "Water", "Grass", "Electric"], "immunities": [] },
+  "Dark": { "weaknesses": ["Fighting", "Bug", "Fairy"], "resistances": ["Ghost", "Dark"], "immunities": ["Psychic"] },
+  "Steel": { "weaknesses": ["Fire", "Fighting", "Ground"], "resistances": ["Normal", "Grass", "Ice", "Flying", "Psychic", "Bug", "Rock", "Dragon", "Steel", "Fairy"], "immunities": ["Poison"] },
+  "Fairy": { "weaknesses": ["Poison", "Steel"], "resistances": ["Fighting", "Bug", "Dark"], "immunities": ["Dragon"] }
 };

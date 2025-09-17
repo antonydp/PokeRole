@@ -1,5 +1,6 @@
 
 
+
 export interface Pokedex {
   Number: number;
   DexID: string;
@@ -91,6 +92,12 @@ export interface Ability {
   Name: string;
   Effect: string;
   Description: string;
+}
+
+export interface Nature {
+  name: string;
+  keywords: string;
+  confidence: number;
 }
 
 export interface PokemonData {

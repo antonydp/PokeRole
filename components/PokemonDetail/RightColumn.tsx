@@ -1,14 +1,16 @@
 
+
 import React from 'react';
-import { PokemonData } from '../../types';
+import { Pokedex, PokemonData } from '../../types';
 import { LabeledInput } from './Shared';
 
 interface RightColumnProps {
     pokemonData: PokemonData;
     updateField: (field: keyof PokemonData, value: any) => void;
+    pokemon: Pokedex;
 }
 
-const RightColumn: React.FC<RightColumnProps> = ({ pokemonData, updateField }) => {
+const RightColumn: React.FC<RightColumnProps> = ({ pokemonData, updateField, pokemon }) => {
     const quickRefFields: { label: string, field: keyof PokemonData }[] = [
         { label: 'INITIATIVE:', field: 'initiative' }, { label: 'ACCURACY:', field: 'accuracy' },
         { label: 'DAMAGE:', field: 'damage' }, { label: 'EVASION:', field: 'evasionValue' },
@@ -18,12 +20,24 @@ const RightColumn: React.FC<RightColumnProps> = ({ pokemonData, updateField }) =
     return (
         <div className="lg:col-span-2 space-y-2.5">
             <div className="bg-[#3A3A3A] rounded-2xl p-2 w-full flex items-center gap-2">
-                <label className="text-white font-bold text-sm w-14 flex-shrink-0">HP</label>
-                <input id="hp" type="text" value={pokemonData.hp} onChange={(e) => updateField('hp', e.target.value)} className="w-full bg-white rounded-lg px-2 py-1 text-black text-sm font-sans border-2 border-[#3A3A3A]" />
+                <label className="text-white font-bold text-sm w-14 flex-shrink-0 font-pixel">HP</label>
+                <div 
+                    id="hp"
+                    className="w-full bg-white rounded-lg px-2 py-1.5 text-black text-center text-xs border-2 border-[#3A3A3A]"
+                    aria-label={`HP calculation: ${pokemon.BaseHP} + ${pokemonData.vitality}`}
+                >
+                    {pokemon.BaseHP}+{pokemonData.vitality}={pokemon.BaseHP + pokemonData.vitality}
+                </div>
             </div>
             <div className="bg-[#3A3A3A] rounded-2xl p-2 w-full flex items-center gap-2">
-                <label className="text-white font-bold text-sm w-14 flex-shrink-0">WILL</label>
-                <input id="will" type="text" value={pokemonData.will} onChange={(e) => updateField('will', e.target.value)} className="w-full bg-white rounded-lg px-2 py-1 text-black text-sm font-sans border-2 border-[#3A3A3A]" />
+                <label className="text-white font-bold text-sm w-14 flex-shrink-0 font-pixel">WILL</label>
+                <div 
+                    id="will"
+                    className="w-full bg-white rounded-lg px-2 py-1.5 text-black text-center text-xs border-2 border-[#3A3A3A]"
+                    aria-label={`Will calculation: ${pokemonData.insight} + 2`}
+                >
+                    2+{pokemonData.insight}={pokemonData.insight + 2}
+                </div>
             </div>
 
             <LabeledInput id="item" label="ITEM:" value={pokemonData.item} onChange={v => updateField('item', v)} />

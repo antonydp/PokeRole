@@ -8,7 +8,7 @@ import PokemonDetail from './components/PokemonDetail';
 import TeamBuilder from './components/TeamBuilder';
 import { PokeballIcon, MenuIcon, SettingsIcon } from './components/Icons';
 import { GoogleGenAI, Type } from "@google/genai";
-import { createInitialSheetData } from './utils';
+import { createInitialSheetData, calculateWeaknesses } from './utils';
 
 type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
 
@@ -299,7 +299,20 @@ const App: React.FC = () => {
                     setUnitSettings(loadedSettings);
                 }
 
-                setTeam(loadedTeam.slice(0, 6)); 
+                const teamWithUpdatedWeaknesses = loadedTeam.map(member => {
+                    if (!member.pokedexData) return member;
+                    const weakness = calculateWeaknesses(member.pokedexData.Type1, member.pokedexData.Type2);
+                    return {
+                        ...member,
+                        sheetData: {
+                            ...member.sheetData,
+                            weakness,
+                        }
+                    };
+                });
+
+
+                setTeam(teamWithUpdatedWeaknesses.slice(0, 6)); 
                 setError(null);
                 setSelectedPokemon(null);
             } catch (err) {
