@@ -3,19 +3,35 @@ import { TrainerData, PotionBottle, Item, ItemInstance } from '../../types';
 import { CircleRating } from '../PokemonDetail/Shared';
 import PotionManager from './PotionManager';
 import Pocket from './Pocket';
+import { PointTracker } from './Shared';
 
 interface TrainerSheetSidebarProps {
     trainerData: TrainerData;
     onUpdateField: (field: keyof TrainerData, value: any) => void;
+    onSocialAttributeChange: (field: keyof TrainerData, value: number) => void;
     onOpenItemModal: () => void;
     canAddItem: boolean;
     itemMap: Map<string, Item>;
     onPocketUpdate: (pocket: 'smallPocket' | 'mainPocket', updatedPocket: ItemInstance[]) => void;
     onItemMouseEnter: (content: { name: string; description: string }, element: HTMLElement) => void;
     onItemMouseLeave: () => void;
+    points: { social: { spent: number; total: number; } };
+    isSocialAttributePoolExhausted: boolean;
 }
 
-const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({ trainerData, onUpdateField, onOpenItemModal, canAddItem, itemMap, onPocketUpdate, onItemMouseEnter, onItemMouseLeave }) => {
+const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({ 
+    trainerData, 
+    onUpdateField, 
+    onSocialAttributeChange, 
+    onOpenItemModal, 
+    canAddItem, 
+    itemMap, 
+    onPocketUpdate, 
+    onItemMouseEnter, 
+    onItemMouseLeave,
+    points,
+    isSocialAttributePoolExhausted
+}) => {
     
     const socialAttributes = [
         { name: 'TOUGH', value: trainerData.tough, field: 'tough' as const, color: 'bg-[#F7F0A0]' },
@@ -31,13 +47,23 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({ trainerData, 
     
     return (
         <div className="lg:col-span-5 space-y-3">
-             <div className="flex gap-2">
-                {socialAttributes.map(attr => (
-                    <div key={attr.name} className={`${attr.color} rounded-lg p-1 border-2 border-[#3A3A3A] flex-grow flex flex-col justify-center items-center`}>
-                        <span className="text-[#3A3A3A] font-bold text-[10px] tracking-wider">{attr.name}</span>
-                        <CircleRating value={attr.value} max={5} onChange={(value) => onUpdateField(attr.field, value)} circleClassName="w-3 h-3" className="mt-1" />
-                    </div>
-                ))}
+             <div className="space-y-2">
+                <PointTracker label="Social Points" spent={points.social.spent} total={points.social.total} />
+                <div className="flex gap-2">
+                    {socialAttributes.map(attr => (
+                        <div key={attr.name} className={`${attr.color} rounded-lg p-1 border-2 border-[#3A3A3A] flex-grow flex flex-col justify-center items-center`}>
+                            <span className="text-[#3A3A3A] font-bold text-[10px] tracking-wider">{attr.name}</span>
+                            <CircleRating 
+                                value={attr.value} 
+                                max={5} 
+                                onChange={(value) => onSocialAttributeChange(attr.field, value)} 
+                                circleClassName="w-3 h-3" 
+                                className="mt-1" 
+                                isPoolExhausted={isSocialAttributePoolExhausted}
+                            />
+                        </div>
+                    ))}
+                </div>
             </div>
             <PotionManager potions={trainerData.potions} onUpdate={handlePotionsChange} />
 

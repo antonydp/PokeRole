@@ -1,5 +1,5 @@
-import { Pokedex, PokemonData, TrainerData, ItemInstance, TeamMember, TeamTypeCoverageData } from './types';
-import { TYPE_CHART } from './constants';
+import { Pokedex, PokemonData, TrainerData, ItemInstance, TeamMember, TeamTypeCoverageData, Rank } from './types';
+import { TYPE_CHART, RANKS, RANK_ORDER } from './constants';
 
 type UnitSettings = {
     height: 'imperial' | 'metric';
@@ -48,7 +48,7 @@ export const calculateWeaknesses = (type1: string, type2?: string): string => {
 };
 
 
-export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSettings): PokemonData => {
+export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSettings, trainerRank: Rank): PokemonData => {
     // A Pokémon can learn a number of moves equal to its Insight score + 2.
     const emptyMoves = Array(pokemon.Insight + 2).fill(null);
     
@@ -70,6 +70,8 @@ export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSetti
         : `${pokemon.Weight.Kilograms}kg`;
         
     const weaknessString = calculateWeaknesses(pokemon.Type1, pokemon.Type2);
+
+    const rankBonus = RANK_ORDER[trainerRank] >= RANK_ORDER['Master'] ? 2 : 0;
 
     return {
         pokemonNumber: String(pokemon.Number).padStart(4, '0'),
@@ -94,17 +96,17 @@ export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSetti
         accessory: '',
         type: [pokemon.Type1, pokemon.Type2].filter(Boolean).join(' / '),
         weakness: weaknessString,
-        hp: String(pokemon.BaseHP + pokemon.Vitality),
-        will: String(pokemon.Insight + 2),
+        hp: String(pokemon.BaseHP + pokemon.Vitality + rankBonus),
+        will: String(pokemon.Insight + 2 + rankBonus),
         item: '',
         status: 'Healthy',
-        initiative: String(pokemon.Dexterity + 0),
+        initiative: String(pokemon.Dexterity + 0 + rankBonus),
         accuracy: '',
         damage: '',
         evasionValue: String(pokemon.Dexterity + 0),
         clashValue: `${pokemon.Strength} / ${pokemon.Special}`,
-        defSDef: `${pokemon.Vitality} / ${pokemon.Insight}`,
-        rank: pokemon.RecommendedRank || 'Starter',
+        defSDef: `${pokemon.Vitality + rankBonus} / ${pokemon.Insight + rankBonus}`,
+        rank: trainerRank,
         size: sizeString,
         weight: weightString,
         moves: emptyMoves,
@@ -118,7 +120,7 @@ export const createInitialTrainerData = (): TrainerData => {
         name: 'Ash Ketchum',
         age: '10',
         hometown: 'Pallet Town',
-        trainerRank: 'Rookie',
+        trainerRank: 'Starter',
         playerName: 'Player 1',
         concept: 'Ambitious Battler',
         nature: 'Brave',
@@ -222,4 +224,13 @@ export const calculateTeamTypeCoverage = (team: TeamMember[]): TeamTypeCoverageD
     }
 
     return coverage;
+};
+
+export const parseMoveRank = (learnString: string): Rank | null => {
+    // This function now handles both "Rank: Starter" and just "Starter" formats.
+    const rankStr = learnString.replace('Rank: ', '').trim();
+    if ((RANKS as readonly string[]).includes(rankStr)) {
+        return rankStr as Rank;
+    }
+    return null;
 };

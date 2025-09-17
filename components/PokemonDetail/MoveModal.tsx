@@ -1,13 +1,12 @@
-
 import React from 'react';
-import { Move } from '../../types';
-import { CloseIcon } from '../Icons';
+import { Move, LearnableMove } from '../../types';
+import { CloseIcon, LockIcon } from '../Icons';
 import TypeBadge from '../TypeBadge';
 
 interface MoveModalProps {
     isOpen: boolean;
     onClose: () => void;
-    learnableMoves: Move[];
+    learnableMoves: LearnableMove[];
     onSelectMove: (move: Move) => void;
     searchTerm: string;
     onSearchTermChange: (term: string) => void;
@@ -37,11 +36,22 @@ const MoveModal: React.FC<MoveModalProps> = ({
                     />
                 </div>
                 <div className="overflow-y-auto p-2">
-                    {learnableMoves.length > 0 ? learnableMoves.map(move => (
-                        <button key={move._id} onClick={() => onSelectMove(move)} className="w-full text-left p-3 my-1 bg-slate-700 rounded-lg hover:bg-poke-blue transition-colors flex justify-between items-center">
+                    {learnableMoves.length > 0 ? learnableMoves.map(({ move, isAvailable, requiredRank }) => (
+                        <button
+                            key={move._id}
+                            onClick={() => onSelectMove(move)}
+                            disabled={!isAvailable}
+                            className={`w-full text-left p-3 my-1 bg-slate-700 rounded-lg transition-colors flex justify-between items-center ${isAvailable ? 'hover:bg-poke-blue' : 'opacity-60 cursor-not-allowed'}`}
+                        >
                             <div>
                                 <p className="font-bold text-white">{move.Name}</p>
                                 <p className="text-sm text-gray-400 hidden sm:block">{move.Effect}</p>
+                                {!isAvailable && requiredRank && (
+                                    <div className="flex items-center gap-1.5 mt-2 text-poke-yellow text-xs font-semibold">
+                                        <LockIcon className="w-4 h-4" />
+                                        <span>Requires {requiredRank} Rank</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="text-right flex-shrink-0 ml-2">
                                 <TypeBadge type={move.Type} />

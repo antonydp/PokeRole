@@ -1,5 +1,5 @@
-
-
+import { RANKS } from './constants';
+export type Rank = typeof RANKS[number];
 
 export interface Pokedex {
   Number: number;
@@ -153,6 +153,12 @@ export interface PokemonData {
     moves: (string | null)[];
 }
 
+export interface LearnableMove {
+  move: Move;
+  isAvailable: boolean;
+  requiredRank: Rank | null;
+}
+
 export interface TeamMember {
   pokedexData: Pokedex;
   sheetData: PokemonData;
@@ -177,7 +183,7 @@ export interface TrainerData {
   name: string;
   age: string;
   hometown: string;
-  trainerRank: string;
+  trainerRank: Rank;
   playerName: string;
   concept: string;
   nature: string;

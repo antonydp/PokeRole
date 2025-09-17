@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export const CircleRating: React.FC<{
@@ -7,20 +6,32 @@ export const CircleRating: React.FC<{
   onChange: (value: number) => void;
   className?: string;
   circleClassName?: string;
-}> = ({ value, max, onChange, className = '', circleClassName = 'w-4 h-4' }) => {
+  limit?: number;
+  isPoolExhausted?: boolean;
+}> = ({ value, max, onChange, className = '', circleClassName = 'w-4 h-4', limit, isPoolExhausted = false }) => {
   return (
     <div className={`flex flex-row flex-nowrap gap-1 items-center ${className}`}>
-      {Array.from({ length: max }, (_, i) => (
-        <button
-          key={i}
-          type="button"
-          aria-label={`Set rating to ${i + 1}`}
-          onClick={() => onChange(i < value ? i : i + 1)}
-          className={`${circleClassName} rounded-full transition-colors ${
-            i < value ? 'bg-white' : 'bg-black/20 hover:bg-white/50'
-          }`}
-        />
-      ))}
+      {Array.from({ length: max }, (_, i) => {
+        const isFilled = i < value;
+        const isOverLimit = limit !== undefined && isFilled && i >= limit;
+        const isDisabled = !isFilled && isPoolExhausted;
+        
+        return (
+          <button
+            key={i}
+            type="button"
+            aria-label={`Set rating to ${i + 1}`}
+            onClick={() => onChange(i < value ? i : i + 1)}
+            disabled={isDisabled}
+            className={`${circleClassName} rounded-full transition-colors ${
+              isOverLimit ? 'bg-red-500' 
+              : isFilled ? 'bg-white' 
+              : isDisabled ? 'bg-black/20 cursor-not-allowed'
+              : 'bg-black/20 hover:bg-white/50'
+            }`}
+          />
+        );
+      })}
     </div>
   );
 };
@@ -45,5 +56,14 @@ export const LabeledInput: React.FC<{
             readOnly={isReadOnly}
             className={`bg-transparent text-black font-sans text-sm text-right focus:outline-none w-1/2 p-0 ${isReadOnly ? 'cursor-default' : ''}`}
         />
+    </div>
+);
+
+export const PointTracker: React.FC<{ label: string; spent: number; total: number; }> = ({ label, spent, total }) => (
+    <div className="bg-black/20 text-white font-pixel p-2 rounded-lg text-center border-2 border-black/30 mb-2">
+        <span className="text-sm tracking-wider opacity-80">{label}</span>
+        <div className={`text-base font-bold mt-1 transition-colors ${spent > total ? 'text-red-500 animate-pulse' : 'text-poke-yellow'}`}>
+            {spent} / {total}
+        </div>
     </div>
 );

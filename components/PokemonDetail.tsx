@@ -1,8 +1,5 @@
-
-
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Pokedex, PokemonData, Move, Nature } from '../types';
+import type { Pokedex, PokemonData, Move, Nature, Rank, LearnableMove } from '../types';
 import { CloseIcon } from './Icons';
 
 import PokemonDetailHeader from './PokemonDetail/PokemonDetailHeader';
@@ -12,9 +9,12 @@ import RightColumn from './PokemonDetail/RightColumn';
 import MovesSection from './PokemonDetail/MovesSection';
 import MoveModal from './PokemonDetail/MoveModal';
 import NatureModal from './PokemonDetail/NatureModal';
-import { createInitialSheetData } from '../utils';
-import { NATURES } from '../constants';
+import { createInitialSheetData, parseMoveRank } from '../utils';
+import { NATURES, RANK_ORDER, RANK_SKILL_LIMITS, RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../constants';
 
+const ATTRIBUTE_FIELDS: (keyof PokemonData)[] = ['strength', 'dexterity', 'vitality', 'special', 'insight'];
+const SOCIAL_ATTRIBUTE_FIELDS: (keyof PokemonData)[] = ['tough', 'cool', 'beauty', 'cute', 'clever'];
+const SKILL_FIELDS: (keyof PokemonData)[] = ['brawl', 'channel', 'clash', 'evasion', 'alert', 'athletic', 'nature', 'stealth', 'allure', 'etiquette', 'intimidate', 'perform', 'extraSkillValue'];
 
 interface PokemonDetailProps {
     pokemon: Pokedex;
@@ -27,10 +27,11 @@ interface PokemonDetailProps {
     sheetData?: PokemonData;
     onSheetDataChange: (pokemonDexID: string, newSheetData: PokemonData) => void;
     unitSettings: { height: 'imperial' | 'metric', weight: 'imperial' | 'metric' };
+    trainerRank: Rank;
 }
 
-const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, sheetData, onSheetDataChange, unitSettings }) => {
-    const [pokemonData, setPokemonData] = useState<PokemonData>(() => sheetData || createInitialSheetData(pokemon, unitSettings));
+const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, sheetData, onSheetDataChange, unitSettings, trainerRank }) => {
+    const [pokemonData, setPokemonData] = useState<PokemonData>(() => sheetData || createInitialSheetData(pokemon, unitSettings, trainerRank));
     
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
     const [moveSlotIndex, setMoveSlotIndex] = useState<number | null>(null);
@@ -42,63 +43,126 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
     const [expandedMoves, setExpandedMoves] = useState<Set<number>>(new Set());
 
     useEffect(() => {
-        setPokemonData(sheetData || createInitialSheetData(pokemon, unitSettings));
+        setPokemonData(sheetData || createInitialSheetData(pokemon, unitSettings, trainerRank));
         setExpandedMoves(new Set());
-    }, [pokemon, sheetData, unitSettings]);
+    }, [pokemon, sheetData, unitSettings, trainerRank]);
 
     useEffect(() => {
         if (isInTeam) {
             onSheetDataChange(pokemon.DexID, pokemonData);
         }
     }, [pokemonData, onSheetDataChange, isInTeam, pokemon.DexID]);
+    
+    const points = useMemo(() => {
+        const currentRank = pokemonData.rank as Rank;
+        const totalAttributePoints = RANK_ATTRIBUTE_POINTS[currentRank];
+        const totalSocialAttributePoints = RANK_SOCIAL_ATTRIBUTE_POINTS[currentRank];
+        const totalSkillPoints = RANK_SKILL_POINTS[currentRank];
 
+        const spentAttributePoints = 
+            (pokemonData.strength - pokemon.Strength) +
+            (pokemonData.dexterity - pokemon.Dexterity) +
+            (pokemonData.vitality - pokemon.Vitality) +
+            (pokemonData.special - pokemon.Special) +
+            (pokemonData.insight - pokemon.Insight);
+        
+        const spentSocialAttributePoints =
+            (pokemonData.tough - 1) +
+            (pokemonData.cool - 1) +
+            (pokemonData.beauty - 1) +
+            (pokemonData.cute - 1) +
+            (pokemonData.clever - 1);
 
-    const updateField = useCallback((field: keyof PokemonData, value: any) => {
+        const spentSkillPoints = 
+            pokemonData.brawl + pokemonData.channel + pokemonData.clash + pokemonData.evasion +
+            pokemonData.alert + pokemonData.athletic + pokemonData.nature + pokemonData.stealth +
+            pokemonData.allure + pokemonData.etiquette + pokemonData.intimidate + pokemonData.perform +
+            pokemonData.extraSkillValue;
+        
+        return {
+            attributes: { spent: Math.max(0, spentAttributePoints), total: totalAttributePoints },
+            social: { spent: Math.max(0, spentSocialAttributePoints), total: totalSocialAttributePoints },
+            skills: { spent: Math.max(0, spentSkillPoints), total: totalSkillPoints },
+        };
+    }, [pokemonData, pokemon]);
+
+    const isAttributePoolExhausted = points.attributes.spent >= points.attributes.total;
+    const isSocialAttributePoolExhausted = points.social.spent >= points.social.total;
+    const isSkillPoolExhausted = points.skills.spent >= points.skills.total;
+
+    const handleDataChange = useCallback((field: keyof PokemonData, value: any) => {
         setPokemonData(prev => {
+            const oldValue = (prev[field] as number) || 0;
+            const isIncreasing = Number(value) > oldValue;
+
+            if (isIncreasing) {
+                 const currentSpentAttributes = (prev.strength - pokemon.Strength) + (prev.dexterity - pokemon.Dexterity) + (prev.vitality - pokemon.Vitality) + (prev.special - pokemon.Special) + (prev.insight - pokemon.Insight);
+                 if (ATTRIBUTE_FIELDS.includes(field as any) && currentSpentAttributes >= points.attributes.total) return prev;
+
+                 const currentSpentSocial = (prev.tough - 1) + (prev.cool - 1) + (prev.beauty - 1) + (prev.cute - 1) + (prev.clever - 1);
+                 if (SOCIAL_ATTRIBUTE_FIELDS.includes(field as any) && currentSpentSocial >= points.social.total) return prev;
+                 
+                 const currentSpentSkills = SKILL_FIELDS.reduce((acc, f) => acc + ((prev[f] as number) || 0), 0);
+                 if (SKILL_FIELDS.includes(field as any) && currentSpentSkills >= points.skills.total) return prev;
+            }
+
             const newData = { ...prev, [field]: value };
             const numericValue = Number(value) || 0;
-
-            switch (field) {
-                // ATTRIBUTES
-                case 'vitality':
-                    newData.hp = String(pokemon.BaseHP + numericValue);
-                    newData.defSDef = `${numericValue} / ${newData.insight}`;
-                    break;
-                case 'insight':
-                    newData.will = String(numericValue + 2);
-                    const maxMoves = Math.max(0, numericValue + 2);
-                    if (prev.moves.length !== maxMoves) {
-                        newData.moves = Array.from({ length: maxMoves }, (_, i) => prev.moves[i] || null);
+            
+            // This function will apply the bonus for Master/Champion ranks
+            const getRankBonus = (rank: Rank) => RANK_ORDER[rank] >= RANK_ORDER['Master'] ? 2 : 0;
+            
+            // If the rank is changed, we must recalculate all affected stats
+            if (field === 'rank') {
+                const rankBonus = getRankBonus(value as Rank);
+                newData.hp = String(pokemon.BaseHP + newData.vitality + rankBonus);
+                newData.will = String(newData.insight + 2 + rankBonus);
+                newData.initiative = String(newData.dexterity + newData.alert + rankBonus);
+                newData.defSDef = `${newData.vitality + rankBonus} / ${newData.insight + rankBonus}`;
+            } else {
+                // For other changes, get the bonus from the pokemon's current rank
+                const rankBonus = getRankBonus(newData.rank as Rank);
+                
+                switch (field) {
+                    case 'vitality':
+                        newData.hp = String(pokemon.BaseHP + numericValue + rankBonus);
+                        newData.defSDef = `${numericValue + rankBonus} / ${newData.insight + rankBonus}`;
+                        break;
+                    case 'insight':
+                        newData.will = String(numericValue + 2 + rankBonus);
+                        const maxMoves = Math.max(0, numericValue + 2);
+                        if (prev.moves.length !== maxMoves) {
+                            newData.moves = Array.from({ length: maxMoves }, (_, i) => prev.moves[i] || null);
+                        }
+                        newData.defSDef = `${newData.vitality + rankBonus} / ${numericValue + rankBonus}`;
+                        break;
+                    case 'dexterity':
+                        newData.initiative = String(numericValue + newData.alert + rankBonus);
+                        newData.evasionValue = String(numericValue + newData.evasion);
+                        break;
+                    case 'strength':
+                    case 'special':
+                    case 'clash': {
+                        const { strength, special, clash } = newData;
+                        if (clash > 0) {
+                            newData.clashValue = `${strength + clash} / ${special + clash}`;
+                        } else {
+                            newData.clashValue = `${strength} / ${special}`;
+                        }
+                        break;
                     }
-                    newData.defSDef = `${newData.vitality} / ${numericValue}`;
-                    break;
-                case 'dexterity':
-                    newData.initiative = String(numericValue + newData.alert);
-                    newData.evasionValue = String(numericValue + newData.evasion);
-                    break;
-                case 'strength':
-                case 'special':
-                case 'clash': {
-                    const { strength, special, clash } = newData;
-                    if (clash > 0) {
-                        newData.clashValue = `${strength + clash} / ${special + clash}`;
-                    } else {
-                        newData.clashValue = `${strength} / ${special}`;
-                    }
-                    break;
+                    case 'alert':
+                        newData.initiative = String(newData.dexterity + numericValue + rankBonus);
+                        break;
+                    case 'evasion':
+                        newData.evasionValue = String(newData.dexterity + numericValue);
+                        break;
                 }
-                // SKILLS
-                case 'alert':
-                    newData.initiative = String(newData.dexterity + numericValue);
-                    break;
-                case 'evasion':
-                    newData.evasionValue = String(newData.dexterity + numericValue);
-                    break;
             }
             
             return newData;
         });
-    }, [pokemon.BaseHP]);
+    }, [points, pokemon]);
 
     const openMoveModal = useCallback((index: number) => {
         setMoveSlotIndex(index);
@@ -151,13 +215,37 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
         });
     }, []);
 
-    const learnableMoves = useMemo(() => pokemon.Moves
-        .map(learnset => allMoves[learnset.Name.toLowerCase().replace(/ /g, '-')])
-        .filter((move): move is Move => !!move)
-        .filter(move => move.Name.toLowerCase().includes(moveSearchTerm.toLowerCase()))
-        .sort((a, b) => a.Name.localeCompare(b.Name)),
-        [pokemon.Moves, allMoves, moveSearchTerm]
-    );
+    const learnableMoves = useMemo((): LearnableMove[] => {
+        const trainerRankOrder = RANK_ORDER[trainerRank];
+        
+        return pokemon.Moves
+            .map(learnset => ({
+                move: allMoves[learnset.Name.toLowerCase().replace(/'/g, "").replace(/ /g, "-")],
+                learnset
+            }))
+            .filter(({ move }) => !!move)
+            .map(({ move, learnset }) => {
+                const requiredRank = parseMoveRank(learnset.Learned);
+                let isAvailable = true;
+
+                if (requiredRank) {
+                    const moveRankOrder = RANK_ORDER[requiredRank];
+                    if (moveRankOrder > trainerRankOrder) {
+                        isAvailable = false;
+                    }
+                }
+                 // If not a Rank move (e.g., Level up, Tutor), it's available by default in this implementation
+                return { move, isAvailable, requiredRank };
+            })
+            .filter((item): item is { move: Move; isAvailable: boolean; requiredRank: Rank | null } => !!item.move) // Type guard
+            .filter(({ move }) => move.Name.toLowerCase().includes(moveSearchTerm.toLowerCase()))
+            .sort((a, b) => {
+                // Sort by availability first, then alphabetically
+                if (a.isAvailable && !b.isAvailable) return -1;
+                if (!a.isAvailable && b.isAvailable) return 1;
+                return a.move.Name.localeCompare(b.move.Name);
+            });
+    }, [pokemon.Moves, allMoves, moveSearchTerm, trainerRank]);
     
     const filteredNatures = useMemo(() => {
         const term = natureSearchTerm.toLowerCase();
@@ -176,6 +264,8 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
             ...(pokemon.EventAbilities?.split(',').map(a => a.trim()) || [])
         ].filter((a): a is string => !!a && a.trim() !== '');
     }, [pokemon]);
+    
+    const skillLimit = useMemo(() => RANK_SKILL_LIMITS[pokemonData.rank as Rank], [pokemonData.rank]);
 
     return (
         <div className="relative w-full max-w-7xl mx-auto p-4 rounded-xl font-pixel animate-fade-in-scale" style={{ backgroundColor: '#E46243' }}>
@@ -202,7 +292,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
 
             <PokemonDetailHeader
                 pokemonData={pokemonData}
-                updateField={updateField}
+                updateField={handleDataChange}
                 isInTeam={isInTeam}
                 teamIsFull={teamIsFull}
                 onAddToTeam={() => onAddToTeam(pokemon, pokemonData)}
@@ -212,16 +302,26 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-4 gap-y-3">
-                <LeftColumn pokemonData={pokemonData} updateField={updateField} />
+                <LeftColumn 
+                    pokemon={pokemon}
+                    pokemonData={pokemonData} 
+                    onDataChange={handleDataChange} 
+                    skillLimit={skillLimit} 
+                    points={points}
+                    isAttributePoolExhausted={isAttributePoolExhausted}
+                    isSkillPoolExhausted={isSkillPoolExhausted}
+                />
                 <MiddleColumn 
                     pokemonData={pokemonData} 
-                    updateField={updateField} 
+                    onDataChange={handleDataChange} 
                     onOpenNatureModal={() => {
                         setNatureSearchTerm('');
                         setIsNatureModalOpen(true);
                     }}
+                    points={points}
+                    isSocialAttributePoolExhausted={isSocialAttributePoolExhausted}
                 />
-                <RightColumn pokemonData={pokemonData} updateField={updateField} pokemon={pokemon} />
+                <RightColumn pokemonData={pokemonData} updateField={handleDataChange} pokemon={pokemon} trainerRank={trainerRank} />
             </div>
 
             <MovesSection 

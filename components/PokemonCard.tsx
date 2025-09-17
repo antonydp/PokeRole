@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Pokedex } from '../types';
 import { IMAGE_BASE_URL } from '../constants';
@@ -30,9 +31,16 @@ const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onSelect }) => {
                 className="w-16 h-16 object-contain group-hover:animate-wobble"
                 loading="lazy"
             />
-            <div className="ml-3 flex-grow">
-                <p className="text-xs text-gray-400">#{String(pokemon.Number).padStart(4, '0')}</p>
-                <h3 className="font-bold text-lg text-white">{pokemon.Name}</h3>
+            <div className="ml-3 flex-grow overflow-hidden">
+                <div className="flex justify-between items-baseline">
+                    <p className="text-xs text-gray-400">#{String(pokemon.Number).padStart(4, '0')}</p>
+                    {pokemon.RecommendedRank && pokemon.RecommendedRank !== 'Starter' && (
+                        <p className="text-xs text-poke-yellow/80 font-semibold truncate pr-2" title={`Recommended Rank: ${pokemon.RecommendedRank}`}>
+                            Rec: {pokemon.RecommendedRank}
+                        </p>
+                    )}
+                </div>
+                <h3 className="font-bold text-lg text-white -mt-1 truncate">{pokemon.Name}</h3>
                 <div className="flex space-x-2 mt-1">
                     <TypeBadge type={pokemon.Type1} />
                     {pokemon.Type2 && <TypeBadge type={pokemon.Type2} />}

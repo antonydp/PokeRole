@@ -1,16 +1,18 @@
-
-
 import React from 'react';
 import { PokemonData } from '../../types';
-import { CircleRating, LabeledInput } from './Shared';
+import { CircleRating, LabeledInput, PointTracker } from './Shared';
 
 interface MiddleColumnProps {
     pokemonData: PokemonData;
-    updateField: (field: keyof PokemonData, value: any) => void;
+    onDataChange: (field: keyof PokemonData, value: any) => void;
     onOpenNatureModal: () => void;
+    points: {
+        social: { spent: number; total: number; };
+    };
+    isSocialAttributePoolExhausted: boolean;
 }
 
-const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField, onOpenNatureModal }) => {
+const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, onOpenNatureModal, points, isSocialAttributePoolExhausted }) => {
     const contestStats = [
         { name: 'TOUGH', value: pokemonData.tough, field: 'tough' as const, color: 'bg-[#F7F0A0]' },
         { name: 'COOL', value: pokemonData.cool, field: 'cool' as const, color: 'bg-[#F4A27A]' },
@@ -23,10 +25,11 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField, o
         <div className="lg:col-span-5 flex flex-col gap-3 h-full">
             <div className="flex gap-2 flex-grow">
                 <div className="w-1/4 flex-shrink-0 flex flex-col gap-1.5">
+                    <PointTracker label="Social Points" spent={points.social.spent} total={points.social.total} />
                     {contestStats.map(attr => (
                         <div key={attr.name} className={`${attr.color} rounded-2xl p-2 border-2 border-[#3A3A3A] flex-grow flex flex-col justify-center items-center`}>
                             <span className="text-[#3A3A3A] font-bold text-xs tracking-wider">{attr.name}</span>
-                            <CircleRating value={attr.value} max={5} onChange={(value) => updateField(attr.field, value)} circleClassName="w-3.5 h-3.5" className="mt-1" />
+                            <CircleRating value={attr.value} max={5} onChange={(value) => onDataChange(attr.field, value)} isPoolExhausted={isSocialAttributePoolExhausted} circleClassName="w-3.5 h-3.5" className="mt-1" />
                         </div>
                     ))}
                 </div>
@@ -64,11 +67,11 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField, o
                         <div className="bg-[#2DB3B3] rounded-2xl p-2 w-1/2 border-4 border-[#3A3A3A] flex flex-col justify-around">
                             <div className="flex flex-col items-center">
                                 <label className="text-white text-[10px] font-bold">HAPPINESS</label>
-                                <CircleRating value={pokemonData.happiness} max={5} onChange={(v) => updateField('happiness', v)} circleClassName="w-3 h-3" className="mt-0.5"/>
+                                <CircleRating value={pokemonData.happiness} max={5} onChange={(v) => onDataChange('happiness', v)} circleClassName="w-3 h-3" className="mt-0.5"/>
                             </div>
                             <div className="flex flex-col items-center">
                                 <label className="text-white text-[10px] font-bold">LOYALTY</label>
-                                <CircleRating value={pokemonData.loyalty} max={5} onChange={(v) => updateField('loyalty', v)} circleClassName="w-3 h-3" className="mt-0.5" />
+                                <CircleRating value={pokemonData.loyalty} max={5} onChange={(v) => onDataChange('loyalty', v)} circleClassName="w-3 h-3" className="mt-0.5" />
                             </div>
                         </div>
                         <div className="w-1/2 flex flex-col justify-center">
@@ -81,7 +84,7 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField, o
                                         id="battles"
                                         type="text"
                                         value={pokemonData.numberOfBattles}
-                                        onChange={(e) => updateField('numberOfBattles', e.target.value)}
+                                        onChange={(e) => onDataChange('numberOfBattles', e.target.value)}
                                         className="w-full bg-white rounded-xl px-2 py-1.5 mt-1 text-black text-center text-sm font-sans focus:outline-none border-2 border-transparent focus:border-[#3A3A3A]"
                                     />
                                 </div>
@@ -93,7 +96,7 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField, o
                                         id="victories"
                                         type="text"
                                         value={pokemonData.victories}
-                                        onChange={(e) => updateField('victories', e.target.value)}
+                                        onChange={(e) => onDataChange('victories', e.target.value)}
                                         className="w-full bg-white rounded-xl px-2 py-1.5 mt-1 text-black text-center text-sm font-sans focus:outline-none border-2 border-transparent focus:border-[#3A3A3A]"
                                     />
                                 </div>
@@ -110,7 +113,7 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, updateField, o
                             <textarea
                                 id="accessory"
                                 value={pokemonData.accessory}
-                                onChange={(e) => updateField('accessory', e.target.value)}
+                                onChange={(e) => onDataChange('accessory', e.target.value)}
                                 className="bg-transparent text-black font-sans text-sm focus:outline-none w-full p-0 resize-none"
                                 rows={4}
                             />

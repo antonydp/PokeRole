@@ -3,7 +3,7 @@
 
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Pokedex, Move, Ability, TeamMember, PokemonData, TrainerData, ItemsData, ItemInstance } from './types';
+import { Pokedex, Move, Ability, TeamMember, PokemonData, TrainerData, ItemsData, ItemInstance, Rank } from './types';
 import { fetchAllData } from './services/pokedexService';
 import PokemonList from './components/PokemonList';
 import PokemonDetail from './components/PokemonDetail';
@@ -450,6 +450,7 @@ const App: React.FC = () => {
                                 sheetData={team.find(member => member.pokedexData.DexID === selectedPokemon.DexID)?.sheetData}
                                 onSheetDataChange={handleSheetDataChange}
                                 unitSettings={unitSettings}
+                                trainerRank={trainerData.trainerRank}
                             />
                         ) : (
                             <Dashboard 

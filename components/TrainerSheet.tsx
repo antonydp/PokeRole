@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import { TrainerData, Nature, ItemsData, Item, HealingItemsSubCategory, ItemInstance } from '../types';
 import NatureModal from './PokemonDetail/NatureModal';
-import { NATURES } from '../../constants';
+import { NATURES, RANK_SKILL_LIMITS, RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../../constants';
 import TrainerSheetHeader from './TrainerSheet/TrainerSheetHeader';
 import TrainerSheetMainContent from './TrainerSheet/TrainerSheetMainContent';
 import TrainerSheetSidebar from './TrainerSheet/TrainerSheetSidebar';
@@ -89,13 +89,70 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
     const [isItemModalOpen, setIsItemModalOpen] = useState(false);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     
-    const updateField = useCallback((field: keyof TrainerData, value: any) => {
-        onDataChange({ ...trainerData, [field]: value });
-    }, [trainerData, onDataChange]);
+    // --- Point Calculation Logic ---
+
+    const totalAttributePoints = useMemo(() => RANK_ATTRIBUTE_POINTS[trainerData.trainerRank], [trainerData.trainerRank]);
+    const totalSocialAttributePoints = useMemo(() => RANK_SOCIAL_ATTRIBUTE_POINTS[trainerData.trainerRank], [trainerData.trainerRank]);
+    const totalSkillPoints = useMemo(() => RANK_SKILL_POINTS[trainerData.trainerRank], [trainerData.trainerRank]);
+
+    const spentAttributePoints = useMemo(() => (trainerData.strength - 1) + (trainerData.dexterity - 1) + (trainerData.vitality - 1) + (trainerData.insight - 1), [trainerData.strength, trainerData.dexterity, trainerData.vitality, trainerData.insight]);
+    const spentSocialAttributePoints = useMemo(() => (trainerData.tough - 1) + (trainerData.cool - 1) + (trainerData.beauty - 1) + (trainerData.clever - 1) + (trainerData.cute - 1), [trainerData.tough, trainerData.cool, trainerData.beauty, trainerData.clever, trainerData.cute]);
+    const spentSkillPoints = useMemo(() => 
+        trainerData.brawl + trainerData.throw + trainerData.evasion + trainerData.weapons +
+        trainerData.alert + trainerData.athletic + trainerData.natureSkill + trainerData.stealth +
+        trainerData.allure + trainerData.etiquette + trainerData.intimidate + trainerData.perform +
+        trainerData.crafts + trainerData.lore + trainerData.medicine + trainerData.science +
+        trainerData.extraSkills.reduce((acc, skill) => acc + (skill.value || 0), 0), 
+    [trainerData]);
+
+    const isAttributePoolExhausted = spentAttributePoints >= totalAttributePoints;
+    const isSocialAttributePoolExhausted = spentSocialAttributePoints >= totalSocialAttributePoints;
+    const isSkillPoolExhausted = spentSkillPoints >= totalSkillPoints;
+    
+    // --- Data Update Handlers ---
+
+    const updateData = useCallback((updater: (prev: TrainerData) => TrainerData) => {
+        onDataChange(updater);
+    }, [onDataChange]);
+    
+    const handleFieldChange = useCallback((field: keyof TrainerData, value: any) => {
+        updateData(prev => ({...prev, [field]: value}));
+    }, [updateData]);
+
+    const handlePointFieldChange = useCallback((
+        field: keyof TrainerData, 
+        newValue: number,
+        pool: { spent: number, total: number }
+    ) => {
+        updateData(prev => {
+            const oldValue = (prev[field] as number) || 0;
+            const isIncreasing = newValue > oldValue;
+            if(isIncreasing && pool.spent >= pool.total) {
+                return prev; // Don't update
+            }
+            return { ...prev, [field]: newValue };
+        });
+    }, [updateData]);
+
+    const handleExtraSkillChange = useCallback((index: number, field: 'name' | 'value', value: string | number) => {
+        updateData(prev => {
+            const currentSpentSkills = spentSkillPoints; // Use pre-calculated value for check
+            if (field === 'value') {
+                const oldValue = prev.extraSkills[index]?.value || 0;
+                const isIncreasing = (value as number) > oldValue;
+                if (isIncreasing && currentSpentSkills >= totalSkillPoints) {
+                    return prev;
+                }
+            }
+            const newExtraSkills = [...prev.extraSkills];
+            newExtraSkills[index] = { ...newExtraSkills[index], [field]: value };
+            return { ...prev, extraSkills: newExtraSkills };
+        });
+    }, [updateData, spentSkillPoints, totalSkillPoints]);
 
     const handlePocketUpdate = useCallback((pocket: 'smallPocket' | 'mainPocket', updatedPocket: ItemInstance[]) => {
-        onDataChange({ ...trainerData, [pocket]: updatedPocket });
-    }, [trainerData, onDataChange]);
+        handleFieldChange(pocket, updatedPocket);
+    }, [handleFieldChange]);
     
     const onItemMouseEnter = useCallback((content: { name: string; description: string }, element: HTMLElement) => {
         setTooltipData({ content, rect: element.getBoundingClientRect() });
@@ -108,51 +165,40 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
     const handleAchievementChange = useCallback((index: number, field: 'text' | 'completed', value: string | boolean) => {
         const newAchievements = [...trainerData.achievements];
         newAchievements[index] = { ...newAchievements[index], [field]: value };
-        updateField('achievements', newAchievements);
-    }, [trainerData.achievements, updateField]);
-
-    const handleExtraSkillChange = useCallback((index: number, field: 'name' | 'value', value: string | number) => {
-        const newExtraSkills = [...trainerData.extraSkills];
-        newExtraSkills[index] = { ...newExtraSkills[index], [field]: value };
-        updateField('extraSkills', newExtraSkills);
-    }, [trainerData.extraSkills, updateField]);
+        handleFieldChange('achievements', newAchievements);
+    }, [trainerData.achievements, handleFieldChange]);
 
     const handleSelectNature = useCallback((nature: Nature) => {
-        onDataChange({
-            ...trainerData,
+        updateData(prev => ({
+            ...prev,
             nature: nature.name,
             confidence: String(nature.confidence),
-        });
+        }));
         setIsNatureModalOpen(false);
-    }, [trainerData, onDataChange]);
+    }, [updateData]);
 
     const handleAddItem = useCallback((item: Item) => {
         const pocketName = item.usable_in_battle ? 'smallPocket' : 'mainPocket';
-
-        onDataChange((currentTrainerData: TrainerData) => {
+        updateData((currentTrainerData: TrainerData) => {
             const currentPocket: ItemInstance[] = currentTrainerData[pocketName] || [];
             const existingItemIndex = currentPocket.findIndex(i => i.name.toLowerCase() === item.name.toLowerCase());
-            
             let newPocket: ItemInstance[];
 
             if (existingItemIndex > -1) {
-                // Increment quantity of existing item
                 newPocket = [...currentPocket];
                 const existingItem = newPocket[existingItemIndex];
                 newPocket[existingItemIndex] = { ...existingItem, quantity: existingItem.quantity + 1 };
             } else {
-                // Add new item instance
                 newPocket = [...currentPocket, {
                     id: `${item.name.replace(/\s+/g, '-')}-${Date.now()}`,
                     name: item.name,
                     quantity: 1,
-                    description: item.description, // Pass the description
+                    description: item.description,
                 }];
             }
-            
             return { ...currentTrainerData, [pocketName]: newPocket };
         });
-    }, [onDataChange]);
+    }, [updateData]);
 
     const filteredNatures = useMemo(() => {
         const term = natureSearchTerm.toLowerCase();
@@ -183,6 +229,8 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
         });
         return map;
     }, [allItems]);
+    
+    const skillLimit = useMemo(() => RANK_SKILL_LIMITS[trainerData.trainerRank], [trainerData.trainerRank]);
 
     return (
         <>
@@ -207,27 +255,40 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
                 
                 <TrainerSheetHeader 
                     trainerData={trainerData}
-                    onUpdateField={updateField}
+                    onUpdateField={handleFieldChange}
                     onOpenNatureModal={openNatureModal}
                 />
                 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                     <TrainerSheetMainContent
                         trainerData={trainerData}
-                        onUpdateField={updateField}
+                        onAttributeChange={(field, value) => handlePointFieldChange(field, value, { spent: spentAttributePoints, total: totalAttributePoints })}
+                        onSkillChange={(field, value) => handlePointFieldChange(field, value, { spent: spentSkillPoints, total: totalSkillPoints })}
                         onAchievementChange={handleAchievementChange}
                         onExtraSkillChange={handleExtraSkillChange}
+                        skillLimit={skillLimit}
+                        points={{
+                            attributes: { spent: spentAttributePoints, total: totalAttributePoints },
+                            skills: { spent: spentSkillPoints, total: totalSkillPoints }
+                        }}
+                        isAttributePoolExhausted={isAttributePoolExhausted}
+                        isSkillPoolExhausted={isSkillPoolExhausted}
                     />
                     
                     <TrainerSheetSidebar
                         trainerData={trainerData}
-                        onUpdateField={updateField}
+                        onUpdateField={handleFieldChange}
+                        onSocialAttributeChange={(field, value) => handlePointFieldChange(field, value, { spent: spentSocialAttributePoints, total: totalSocialAttributePoints })}
                         onOpenItemModal={() => setIsItemModalOpen(true)}
                         canAddItem={!!allItems}
                         itemMap={itemMap}
                         onPocketUpdate={handlePocketUpdate}
                         onItemMouseEnter={onItemMouseEnter}
                         onItemMouseLeave={onItemMouseLeave}
+                        points={{
+                            social: { spent: spentSocialAttributePoints, total: totalSocialAttributePoints }
+                        }}
+                        isSocialAttributePoolExhausted={isSocialAttributePoolExhausted}
                     />
                 </div>
             </div>

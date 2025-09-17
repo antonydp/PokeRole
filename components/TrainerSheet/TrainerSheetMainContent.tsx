@@ -1,15 +1,33 @@
 import React from 'react';
 import { TrainerData } from '../../types';
-import { CoreAttribute, SkillBlock, ExtraSkillBlock, AchievementsBlock } from './Shared';
+import { CoreAttribute, SkillBlock, ExtraSkillBlock, AchievementsBlock, PointTracker } from './Shared';
 
 interface TrainerSheetMainContentProps {
     trainerData: TrainerData;
-    onUpdateField: (field: keyof TrainerData, value: any) => void;
+    onAttributeChange: (field: keyof TrainerData, value: number) => void;
+    onSkillChange: (field: keyof TrainerData, value: number) => void;
     onAchievementChange: (index: number, field: 'text' | 'completed', value: string | boolean) => void;
     onExtraSkillChange: (index: number, field: 'name' | 'value', value: string | number) => void;
+    skillLimit: number;
+    points: {
+        attributes: { spent: number; total: number; };
+        skills: { spent: number; total: number; };
+    };
+    isAttributePoolExhausted: boolean;
+    isSkillPoolExhausted: boolean;
 }
 
-const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({ trainerData, onUpdateField, onAchievementChange, onExtraSkillChange }) => {
+const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({ 
+    trainerData, 
+    onAttributeChange, 
+    onSkillChange, 
+    onAchievementChange, 
+    onExtraSkillChange, 
+    skillLimit,
+    points,
+    isAttributePoolExhausted,
+    isSkillPoolExhausted
+}) => {
     
     const coreAttributes = [
         { name: 'STRENGTH', value: trainerData.strength, field: 'strength' as const },
@@ -48,27 +66,27 @@ const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({ train
     return (
         <div className="lg:col-span-7">
              <div className="grid grid-cols-1 md:grid-cols-4 gap-4" style={{alignItems: 'start'}}>
-                {/* Col 1: Core Attributes */}
-                <div className="space-y-4 md:col-span-2">
-                    {coreAttributes.map(attr => <CoreAttribute key={attr.name} name={attr.name} value={attr.value} onChange={v => onUpdateField(attr.field, v)} />)}
+                {/* Col 1 & 2: Core Attributes & Achievements */}
+                <div className="md:col-span-2 space-y-4">
+                    <PointTracker label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
+                    <div className="space-y-4">
+                        {coreAttributes.map(attr => <CoreAttribute key={attr.name} name={attr.name} value={attr.value} onChange={v => onAttributeChange(attr.field, v)} isPoolExhausted={isAttributePoolExhausted} />)}
+                    </div>
+                     <AchievementsBlock achievements={trainerData.achievements} onAchievementChange={onAchievementChange} />
                 </div>
 
-                {/* Col 2: Fight & Survival */}
+                {/* Col 3: Fight & Survival */}
                 <div className="space-y-4">
-                    <SkillBlock title="FIGHT" skills={skills.FIGHT} onSkillChange={onUpdateField} />
-                    <SkillBlock title="SURVIVAL" skills={skills.SURVIVAL} onSkillChange={onUpdateField} />
+                    <PointTracker label="Skill Points" spent={points.skills.spent} total={points.skills.total} />
+                    <SkillBlock title="FIGHT" skills={skills.FIGHT} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} />
+                    <SkillBlock title="SURVIVAL" skills={skills.SURVIVAL} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} />
                 </div>
                 
-                {/* Col 3: Social, Knowledge, Extra */}
-                <div className="space-y-4 md:row-span-2">
-                    <SkillBlock title="SOCIAL" skills={skills.SOCIAL} onSkillChange={onUpdateField} />
-                    <SkillBlock title="KNOWLEDGE" skills={skills.KNOWLEDGE} onSkillChange={onUpdateField} />
-                    <ExtraSkillBlock title="EXTRA" extraSkills={trainerData.extraSkills} onSkillChange={onExtraSkillChange} />
-                </div>
-
-                {/* Achievements spanning Col 1 and 2 */}
-                <div className="md:col-span-3">
-                    <AchievementsBlock achievements={trainerData.achievements} onAchievementChange={onAchievementChange} />
+                {/* Col 4: Social, Knowledge, Extra */}
+                <div className="space-y-4">
+                    <SkillBlock title="SOCIAL" skills={skills.SOCIAL} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} />
+                    <SkillBlock title="KNOWLEDGE" skills={skills.KNOWLEDGE} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} />
+                    <ExtraSkillBlock title="EXTRA" extraSkills={trainerData.extraSkills} onSkillChange={onExtraSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} />
                 </div>
             </div>
         </div>

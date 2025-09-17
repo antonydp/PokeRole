@@ -63,23 +63,32 @@ export const PokedexCounter: React.FC<{
     );
 };
 
-
-export const CoreAttribute: React.FC<{ name: string; value: number; onChange: (v: number) => void }> = ({ name, value, onChange }) => (
-    <div className="bg-[#2DB3B3] rounded-2xl p-3 border-4 border-[#3A3A3A] flex flex-col justify-center">
-        <div className="flex flex-col items-center gap-2">
-            <span className="text-white font-bold text-sm tracking-wider">{name}</span>
-            <CircleRating value={value} max={12} onChange={onChange} className="justify-center" circleClassName="w-5 h-5" />
+export const PointTracker: React.FC<{ label: string; spent: number; total: number; }> = ({ label, spent, total }) => (
+    <div className="bg-black/20 text-white font-pixel p-2 rounded-lg text-center border-2 border-black/30 mb-2">
+        <span className="text-sm tracking-wider opacity-80">{label}</span>
+        <div className={`text-base font-bold mt-1 transition-colors ${spent > total ? 'text-red-500 animate-pulse' : 'text-poke-yellow'}`}>
+            {spent} / {total}
         </div>
     </div>
 );
 
-export const SkillBlock: React.FC<{ title: string; skills: { name: string; value: number; field: keyof TrainerData }[]; onSkillChange: (field: keyof TrainerData, value: number) => void }> = ({ title, skills, onSkillChange }) => (
+
+export const CoreAttribute: React.FC<{ name: string; value: number; onChange: (v: number) => void; isPoolExhausted?: boolean; }> = ({ name, value, onChange, isPoolExhausted }) => (
+    <div className="bg-[#2DB3B3] rounded-2xl p-3 border-4 border-[#3A3A3A] flex flex-col justify-center">
+        <div className="flex flex-col items-center gap-2">
+            <span className="text-white font-bold text-sm tracking-wider">{name}</span>
+            <CircleRating value={value} max={12} onChange={onChange} className="justify-center" circleClassName="w-5 h-5" isPoolExhausted={isPoolExhausted} />
+        </div>
+    </div>
+);
+
+export const SkillBlock: React.FC<{ title: string; skills: { name: string; value: number; field: keyof TrainerData }[]; onSkillChange: (field: keyof TrainerData, value: number) => void; skillLimit: number; isPoolExhausted?: boolean; }> = ({ title, skills, onSkillChange, skillLimit, isPoolExhausted }) => (
     <div className="flex">
         <div className="bg-[#C95649]/90 p-2 flex-grow flex flex-col justify-center gap-y-2 rounded-l-2xl">
             {skills.map(skill => (
                 <div key={skill.name} className="flex flex-col items-center">
                     <span className="text-white text-[10px] uppercase font-bold">{skill.name}</span>
-                    <CircleRating value={skill.value} max={5} onChange={v => onSkillChange(skill.field, v)} circleClassName="w-3 h-3" className="gap-1.5" />
+                    <CircleRating value={skill.value} max={5} onChange={v => onSkillChange(skill.field, v)} limit={skillLimit} circleClassName="w-3 h-3" className="gap-1.5" isPoolExhausted={isPoolExhausted} />
                 </div>
             ))}
         </div>
@@ -89,7 +98,7 @@ export const SkillBlock: React.FC<{ title: string; skills: { name: string; value
     </div>
 );
 
-export const ExtraSkillBlock: React.FC<{ title: string; extraSkills: { name: string; value: number }[]; onSkillChange: (index: number, field: 'name' | 'value', value: string | number) => void }> = ({ title, extraSkills, onSkillChange }) => (
+export const ExtraSkillBlock: React.FC<{ title: string; extraSkills: { name: string; value: number }[]; onSkillChange: (index: number, field: 'name' | 'value', value: string | number) => void; skillLimit: number; isPoolExhausted?: boolean; }> = ({ title, extraSkills, onSkillChange, skillLimit, isPoolExhausted }) => (
      <div className="flex">
         <div className="bg-[#C95649]/90 p-2 flex-grow flex flex-col justify-center gap-y-2 rounded-l-2xl">
             {extraSkills.map((skill, index) => (
@@ -101,7 +110,7 @@ export const ExtraSkillBlock: React.FC<{ title: string; extraSkills: { name: str
                         onChange={e => onSkillChange(index, 'name', e.target.value)}
                         className="w-full bg-white rounded-xl px-2 py-0.5 text-black text-xs font-sans border-2 border-[#3A3A3A] placeholder:text-gray-400"
                     />
-                    <CircleRating value={skill.value} max={5} onChange={v => onSkillChange(index, 'value', v)} circleClassName="w-3 h-3" className="gap-1.5 justify-center" />
+                    <CircleRating value={skill.value} max={5} onChange={v => onSkillChange(index, 'value', v)} limit={skillLimit} circleClassName="w-3 h-3" className="gap-1.5 justify-center" isPoolExhausted={isPoolExhausted} />
                 </div>
             ))}
         </div>
