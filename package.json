@@ -5,19 +5,23 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "vercel": "vercel dev",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
     "@google/genai": "^1.19.0",
-    "openai": "^4.94.0"
+    "dotenv": "^17.2.2",
+    "openai": "^4.94.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@vercel/node": "^5.3.22",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
+    "vercel": "^48.0.2",
     "vite": "^6.2.0"
   }
 }
