@@ -1,5 +1,6 @@
-import { Pokedex, PokemonData, TrainerData, ItemInstance, TeamMember, TeamTypeCoverageData, Rank } from './types';
-import { TYPE_CHART, RANKS, RANK_ORDER } from './constants';
+import { Pokedex, PokemonData, TrainerData, ItemInstance, TeamMember, TeamTypeCoverageData, Rank } from './types.js';
+import { TYPE_CHART, RANKS } from './constants.js';
+import { calculateClash, calculateDefSDef, calculateEvasion, calculateInitiative, calculateMaxMoves, calculatePokemonHP, calculatePokemonWill, getRankBonus } from './corebook.js';
 
 type UnitSettings = {
     height: 'imperial' | 'metric';
@@ -50,7 +51,7 @@ export const calculateWeaknesses = (type1: string, type2?: string): string => {
 
 export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSettings, trainerRank: Rank): PokemonData => {
     // A Pokémon can learn a number of moves equal to its Insight score + 2.
-    const emptyMoves = Array(pokemon.Insight + 2).fill(null);
+    const emptyMoves = Array(calculateMaxMoves(pokemon.Insight)).fill(null);
     
     const availableAbilities = [
         pokemon.Ability1,
@@ -71,7 +72,7 @@ export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSetti
         
     const weaknessString = calculateWeaknesses(pokemon.Type1, pokemon.Type2);
 
-    const rankBonus = RANK_ORDER[trainerRank] >= RANK_ORDER['Master'] ? 2 : 0;
+    const rankBonus = getRankBonus(trainerRank);
 
     return {
         pokemonNumber: String(pokemon.Number).padStart(4, '0'),
@@ -96,16 +97,16 @@ export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSetti
         accessory: '',
         type: [pokemon.Type1, pokemon.Type2].filter(Boolean).join(' / '),
         weakness: weaknessString,
-        hp: String(pokemon.BaseHP + pokemon.Vitality + rankBonus),
-        will: String(pokemon.Insight + 2 + rankBonus),
+        hp: String(calculatePokemonHP(pokemon.BaseHP, pokemon.Vitality, trainerRank)),
+        will: String(calculatePokemonWill(pokemon.Insight, trainerRank)),
         item: '',
         status: 'Healthy',
-        initiative: String(pokemon.Dexterity + 0 + rankBonus),
+        initiative: String(calculateInitiative(pokemon.Dexterity, 0, trainerRank)),
         accuracy: '',
         damage: '',
-        evasionValue: String(pokemon.Dexterity + 0),
-        clashValue: `${pokemon.Strength} / ${pokemon.Special}`,
-        defSDef: `${pokemon.Vitality + rankBonus} / ${pokemon.Insight + rankBonus}`,
+        evasionValue: String(calculateEvasion(pokemon.Dexterity, 0)),
+        clashValue: calculateClash(pokemon.Strength, pokemon.Special, 0),
+        defSDef: calculateDefSDef(pokemon.Vitality, pokemon.Insight, trainerRank),
         rank: trainerRank,
         size: sizeString,
         weight: weightString,

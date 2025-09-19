@@ -1,11 +1,12 @@
 import React, { useCallback, useState, useMemo, useEffect } from 'react';
-import { TrainerData, Nature, ItemsData, Item, HealingItemsSubCategory, ItemInstance } from '../types';
-import NatureModal from './PokemonDetail/NatureModal';
-import { NATURES, RANK_SKILL_LIMITS, RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../constants';
-import TrainerSheetHeader from './TrainerSheet/TrainerSheetHeader';
-import TrainerSheetMainContent from './TrainerSheet/TrainerSheetMainContent';
-import TrainerSheetSidebar from './TrainerSheet/TrainerSheetSidebar';
-import ItemModal from './TrainerSheet/ItemModal';
+import { TrainerData, Nature, ItemsData, Item, HealingItemsSubCategory, ItemInstance } from '../types.js';
+import NatureModal from './PokemonDetail/NatureModal.js';
+import { NATURES } from '../constants.js';
+import { RANK_SKILL_LIMITS, RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../corebook.js';
+import TrainerSheetHeader from './TrainerSheet/TrainerSheetHeader.js';
+import TrainerSheetMainContent from './TrainerSheet/TrainerSheetMainContent.js';
+import TrainerSheetSidebar from './TrainerSheet/TrainerSheetSidebar.js';
+import ItemModal from './TrainerSheet/ItemModal.js';
 
 interface TrainerSheetProps {
     trainerData: TrainerData;

@@ -27,55 +27,6 @@ export const TYPE_COLORS: { [key: string]: string } = {
 export const RANKS = ['Starter', 'Beginner', 'Amateur', 'Ace', 'Pro', 'Master', 'Champion'] as const;
 export type Rank = typeof RANKS[number];
 
-export const RANK_SKILL_LIMITS: Record<Rank, number> = {
-    Starter: 1,
-    Beginner: 2,
-    Amateur: 3,
-    Ace: 4,
-    Pro: 5,
-    Master: 5,
-    Champion: 5,
-};
-
-export const RANK_ORDER: Record<Rank, number> = {
-    Starter: 0,
-    Beginner: 1,
-    Amateur: 2,
-    Ace: 3,
-    Pro: 4,
-    Master: 5,
-    Champion: 6,
-};
-
-export const RANK_ATTRIBUTE_POINTS: Record<Rank, number> = {
-    Starter: 0,
-    Beginner: 2,
-    Amateur: 4,
-    Ace: 6,
-    Pro: 8,
-    Master: 8,
-    Champion: 10, // Total 14, base 4 -> 10 to spend
-};
-
-export const RANK_SOCIAL_ATTRIBUTE_POINTS: Record<Rank, number> = {
-    Starter: 0,
-    Beginner: 2,
-    Amateur: 4,
-    Ace: 6,
-    Pro: 8,
-    Master: 9, // Total 14, base 5 -> 9 to spend
-    Champion: 9,
-};
-
-export const RANK_SKILL_POINTS: Record<Rank, number> = {
-    Starter: 5,
-    Beginner: 9,
-    Amateur: 12,
-    Ace: 14,
-    Pro: 15,
-    Master: 15,
-    Champion: 16,
-};
 
 
 export const NATURES = [

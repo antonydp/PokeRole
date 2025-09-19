@@ -1,16 +1,31 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Pokedex, PokemonData, Move, Nature, Rank, LearnableMove } from '../types';
-import { CloseIcon } from './Icons';
+import type { Pokedex, PokemonData, Move, Nature, Rank, LearnableMove } from '../types.js';
+import { CloseIcon } from './Icons.js';
 
-import PokemonDetailHeader from './PokemonDetail/PokemonDetailHeader';
-import LeftColumn from './PokemonDetail/LeftColumn';
-import MiddleColumn from './PokemonDetail/MiddleColumn';
-import RightColumn from './PokemonDetail/RightColumn';
-import MovesSection from './PokemonDetail/MovesSection';
-import MoveModal from './PokemonDetail/MoveModal';
-import NatureModal from './PokemonDetail/NatureModal';
-import { createInitialSheetData, parseMoveRank } from '../utils';
-import { NATURES, RANK_ORDER, RANK_SKILL_LIMITS, RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../constants';
+import PokemonDetailHeader from './PokemonDetail/PokemonDetailHeader.js';
+import LeftColumn from './PokemonDetail/LeftColumn.js';
+import MiddleColumn from './PokemonDetail/MiddleColumn.js';
+import RightColumn from './PokemonDetail/RightColumn.js';
+import MovesSection from './PokemonDetail/MovesSection.js';
+import MoveModal from './PokemonDetail/MoveModal.js';
+import NatureModal from './PokemonDetail/NatureModal.js';
+import { createInitialSheetData, parseMoveRank } from '../utils.js';
+import { NATURES } from '../constants.js';
+import {
+    RANK_ORDER,
+    RANK_SKILL_LIMITS,
+    RANK_ATTRIBUTE_POINTS,
+    RANK_SOCIAL_ATTRIBUTE_POINTS,
+    RANK_SKILL_POINTS,
+    getRankBonus,
+    calculatePokemonHP,
+    calculatePokemonWill,
+    calculateInitiative,
+    calculateDefSDef,
+    calculateEvasion,
+    calculateClash,
+    calculateMaxMoves
+} from '../corebook.js';
 
 const ATTRIBUTE_FIELDS: (keyof PokemonData)[] = ['strength', 'dexterity', 'vitality', 'special', 'insight'];
 const SOCIAL_ATTRIBUTE_FIELDS: (keyof PokemonData)[] = ['tough', 'cool', 'beauty', 'cute', 'clever'];
@@ -102,60 +117,52 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
                  const currentSpentSocial = (prev.tough - 1) + (prev.cool - 1) + (prev.beauty - 1) + (prev.cute - 1) + (prev.clever - 1);
                  if (SOCIAL_ATTRIBUTE_FIELDS.includes(field as any) && currentSpentSocial >= points.social.total) return prev;
                  
-                 const currentSpentSkills = SKILL_FIELDS.reduce((acc, f) => acc + ((prev[f] as number) || 0), 0);
+                 const currentSpentSkills =
+                    prev.brawl + prev.channel + prev.clash + prev.evasion +
+                    prev.alert + prev.athletic + prev.nature + prev.stealth +
+                    prev.allure + prev.etiquette + prev.intimidate + prev.perform +
+                    prev.extraSkillValue;
                  if (SKILL_FIELDS.includes(field as any) && currentSpentSkills >= points.skills.total) return prev;
             }
 
             const newData = { ...prev, [field]: value };
             const numericValue = Number(value) || 0;
             
-            // This function will apply the bonus for Master/Champion ranks
-            const getRankBonus = (rank: Rank) => RANK_ORDER[rank] >= RANK_ORDER['Master'] ? 2 : 0;
-            
-            // If the rank is changed, we must recalculate all affected stats
             if (field === 'rank') {
-                const rankBonus = getRankBonus(value as Rank);
-                newData.hp = String(pokemon.BaseHP + newData.vitality + rankBonus);
-                newData.will = String(newData.insight + 2 + rankBonus);
-                newData.initiative = String(newData.dexterity + newData.alert + rankBonus);
-                newData.defSDef = `${newData.vitality + rankBonus} / ${newData.insight + rankBonus}`;
+                const newRank = value as Rank;
+                newData.hp = String(calculatePokemonHP(pokemon.BaseHP, newData.vitality, newRank));
+                newData.will = String(calculatePokemonWill(newData.insight, newRank));
+                newData.initiative = String(calculateInitiative(newData.dexterity, newData.alert, newRank));
+                newData.defSDef = calculateDefSDef(newData.vitality, newData.insight, newRank);
             } else {
-                // For other changes, get the bonus from the pokemon's current rank
-                const rankBonus = getRankBonus(newData.rank as Rank);
-                
+                const currentRank = newData.rank as Rank;
                 switch (field) {
                     case 'vitality':
-                        newData.hp = String(pokemon.BaseHP + numericValue + rankBonus);
-                        newData.defSDef = `${numericValue + rankBonus} / ${newData.insight + rankBonus}`;
+                        newData.hp = String(calculatePokemonHP(pokemon.BaseHP, numericValue, currentRank));
+                        newData.defSDef = calculateDefSDef(numericValue, newData.insight, currentRank);
                         break;
                     case 'insight':
-                        newData.will = String(numericValue + 2 + rankBonus);
-                        const maxMoves = Math.max(0, numericValue + 2);
+                        newData.will = String(calculatePokemonWill(numericValue, currentRank));
+                        const maxMoves = calculateMaxMoves(numericValue);
                         if (prev.moves.length !== maxMoves) {
                             newData.moves = Array.from({ length: maxMoves }, (_, i) => prev.moves[i] || null);
                         }
-                        newData.defSDef = `${newData.vitality + rankBonus} / ${numericValue + rankBonus}`;
+                        newData.defSDef = calculateDefSDef(newData.vitality, numericValue, currentRank);
                         break;
                     case 'dexterity':
-                        newData.initiative = String(numericValue + newData.alert + rankBonus);
-                        newData.evasionValue = String(numericValue + newData.evasion);
+                        newData.initiative = String(calculateInitiative(numericValue, newData.alert, currentRank));
+                        newData.evasionValue = String(calculateEvasion(numericValue, newData.evasion));
                         break;
                     case 'strength':
                     case 'special':
-                    case 'clash': {
-                        const { strength, special, clash } = newData;
-                        if (clash > 0) {
-                            newData.clashValue = `${strength + clash} / ${special + clash}`;
-                        } else {
-                            newData.clashValue = `${strength} / ${special}`;
-                        }
+                    case 'clash':
+                        newData.clashValue = calculateClash(newData.strength, newData.special, newData.clash);
                         break;
-                    }
                     case 'alert':
-                        newData.initiative = String(newData.dexterity + numericValue + rankBonus);
+                        newData.initiative = String(calculateInitiative(newData.dexterity, numericValue, currentRank));
                         break;
                     case 'evasion':
-                        newData.evasionValue = String(newData.dexterity + numericValue);
+                        newData.evasionValue = String(calculateEvasion(newData.dexterity, numericValue));
                         break;
                 }
             }

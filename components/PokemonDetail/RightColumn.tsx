@@ -1,9 +1,10 @@
 
 
 import React, { useMemo } from 'react';
-import { Pokedex, PokemonData, Rank } from '../../types';
-import { LabeledInput } from './Shared';
-import { RANKS, RANK_ORDER } from '../../constants';
+import { Pokedex, PokemonData, Rank } from '../../types.js';
+import { LabeledInput } from './Shared.js';
+import { RANKS } from '../../constants.js';
+import { RANK_ORDER } from '../../corebook.js';
 
 interface RightColumnProps {
     pokemonData: PokemonData;
@@ -29,22 +30,22 @@ const RightColumn: React.FC<RightColumnProps> = ({ pokemonData, updateField, pok
         <div className="lg:col-span-2 space-y-2.5">
             <div className="bg-[#3A3A3A] rounded-2xl p-2 w-full flex items-center gap-2">
                 <label className="text-white font-bold text-sm w-14 flex-shrink-0 font-pixel">HP</label>
-                <div 
+                <div
                     id="hp"
-                    className="w-full bg-white rounded-lg px-2 py-1.5 text-black text-center text-xs border-2 border-[#3A3A3A]"
-                    aria-label={`HP calculation: ${pokemon.BaseHP} + ${pokemonData.vitality}`}
+                    className="w-full bg-white rounded-lg px-2 py-1.5 text-black text-center font-bold text-sm border-2 border-[#3A3A3A]"
+                    aria-label={`Current HP: ${pokemonData.hp}`}
                 >
-                    {pokemon.BaseHP}+{pokemonData.vitality}={pokemon.BaseHP + pokemonData.vitality}
+                    {pokemonData.hp}
                 </div>
             </div>
             <div className="bg-[#3A3A3A] rounded-2xl p-2 w-full flex items-center gap-2">
                 <label className="text-white font-bold text-sm w-14 flex-shrink-0 font-pixel">WILL</label>
-                <div 
+                <div
                     id="will"
-                    className="w-full bg-white rounded-lg px-2 py-1.5 text-black text-center text-xs border-2 border-[#3A3A3A]"
-                    aria-label={`Will calculation: ${pokemonData.insight} + 2`}
+                    className="w-full bg-white rounded-lg px-2 py-1.5 text-black text-center font-bold text-sm border-2 border-[#3A3A3A]"
+                    aria-label={`Current Will: ${pokemonData.will}`}
                 >
-                    2+{pokemonData.insight}={pokemonData.insight + 2}
+                    {pokemonData.will}
                 </div>
             </div>
 
