@@ -1,6 +1,20 @@
 
 import React from 'react';
 
+/**
+ * @interface StatBarProps
+ * @property {string} label - The label for the stat (e.g., "HP", "Strength").
+ * @property {number} value - The current value of the stat.
+ * @property {number} maxValue - The maximum possible value for the stat.
+ */
+
+/**
+ * StatBar component displays a visual progress bar for a given statistic.
+ * The bar's color changes based on the percentage of the current value relative to the maximum value.
+ * @param {StatBarProps} props - The props for the StatBar component.
+ * @returns {React.FC} The rendered StatBar component.
+ */
+
 interface StatBarProps {
   label: string;
   value: number;
@@ -8,6 +22,7 @@ interface StatBarProps {
 }
 
 const StatBar: React.FC<StatBarProps> = ({ label, value, maxValue }) => {
+
   const percentage = (value / maxValue) * 100;
   let barColor = 'bg-green-500';
   if (percentage < 33) barColor = 'bg-red-500';

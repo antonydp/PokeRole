@@ -1,7 +1,7 @@
 import React from 'react';
-import { Move, LearnableMove } from '../../types';
-import { CloseIcon, LockIcon } from '../Icons';
-import TypeBadge from '../TypeBadge';
+import { Move, LearnableMove } from '../../src/types/index.js';
+import { CloseIcon, LockIcon } from '../Icons.js';
+import TypeBadge from '../TypeBadge.js';
 
 interface MoveModalProps {
     isOpen: boolean;

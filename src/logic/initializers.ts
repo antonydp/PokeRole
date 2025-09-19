@@ -1,56 +1,29 @@
-import { Pokedex, PokemonData, TrainerData, ItemInstance, TeamMember, TeamTypeCoverageData, Rank } from './types.js';
-import { TYPE_CHART, RANKS } from './constants.js';
-import { calculateClash, calculateDefSDef, calculateEvasion, calculateInitiative, calculateMaxMoves, calculatePokemonHP, calculatePokemonWill, getRankBonus } from './corebook.js';
+/**
+ * @file This file contains functions for creating initial data structures for the application.
+ * These are used to generate fresh character sheets for Pokémon and Trainers.
+ */
 
+import { Pokedex, PokemonData, TrainerData, Rank } from '../types/index.js';
+import { calculateClash, calculateDefSDef, calculateEvasion, calculateInitiative, calculateMaxMoves, calculatePokemonHP, calculatePokemonWill } from './core.js';
+import { calculateWeaknesses } from './formulas.js';
+
+/**
+ * Defines the unit settings for height and weight measurements.
+ */
 type UnitSettings = {
     height: 'imperial' | 'metric';
     weight: 'imperial' | 'metric';
 };
 
-const getMultiplier = (attackingType: string, defendingType: string): number => {
-    const defenseData = TYPE_CHART[defendingType];
-    if (!defenseData) return 1;
-    if (defenseData.immunities.includes(attackingType)) return 0;
-    if (defenseData.resistances.includes(attackingType)) return 0.5;
-    if (defenseData.weaknesses.includes(attackingType)) return 2;
-    return 1;
-};
-
-export const calculateWeaknesses = (type1: string, type2?: string): string => {
-    const allTypes = Object.keys(TYPE_CHART);
-    const weaknesses: string[] = [];
-    const doubleWeaknesses: string[] = [];
-
-    for (const attackingType of allTypes) {
-        const multi1 = getMultiplier(attackingType, type1);
-        const multi2 = type2 && type1 !== type2 ? getMultiplier(attackingType, type2) : 1;
-        const totalMultiplier = multi1 * multi2;
-
-        if (totalMultiplier >= 4) {
-            doubleWeaknesses.push(attackingType);
-        } else if (totalMultiplier >= 2) {
-            weaknesses.push(attackingType);
-        }
-    }
-
-    const resultParts: string[] = [];
-    if (weaknesses.length > 0) {
-        resultParts.push(`${weaknesses.sort().join(', ')}`);
-    }
-    if (doubleWeaknesses.length > 0) {
-        resultParts.push(`Double Weakness: ${doubleWeaknesses.sort().join(', ')}`);
-    }
-    
-    if (resultParts.length === 0) {
-        return 'No weaknesses.';
-    }
-
-    return resultParts.join('. ');
-};
-
-
+/**
+ * Creates a default, empty character sheet for a given Pokémon.
+ * It populates the sheet with base stats, calculates derived values, and sets default values.
+ * @param pokemon The Pokedex data for the Pokémon.
+ * @param unitSettings The current user settings for measurement units.
+ * @param trainerRank The rank of the trainer, which can affect the Pokémon's initial stats.
+ * @returns A complete PokemonData object.
+ */
 export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSettings, trainerRank: Rank): PokemonData => {
-    // A Pokémon can learn a number of moves equal to its Insight score + 2.
     const emptyMoves = Array(calculateMaxMoves(pokemon.Insight)).fill(null);
     
     const availableAbilities = [
@@ -71,8 +44,6 @@ export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSetti
         : `${pokemon.Weight.Kilograms}kg`;
         
     const weaknessString = calculateWeaknesses(pokemon.Type1, pokemon.Type2);
-
-    const rankBonus = getRankBonus(trainerRank);
 
     return {
         pokemonNumber: String(pokemon.Number).padStart(4, '0'),
@@ -114,6 +85,11 @@ export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSetti
     };
 };
 
+/**
+ * Creates a default character sheet for a new Trainer.
+ * It provides placeholder data and a basic inventory to get the user started.
+ * @returns A complete TrainerData object.
+ */
 export const createInitialTrainerData = (): TrainerData => {
     const now = Date.now();
     return {
@@ -142,7 +118,6 @@ export const createInitialTrainerData = (): TrainerData => {
         
         // Skills - Survival
         alert: 0, athletic: 0, 
-        // FIX: Renamed 'nature' to 'natureSkill' to resolve duplicate key error.
         natureSkill: 0, stealth: 0,
         
         // Skills - Social
@@ -187,51 +162,4 @@ export const createInitialTrainerData = (): TrainerData => {
         mainPocket: [],
         badges: '', // Empty to start
     };
-};
-
-export const calculateTeamTypeCoverage = (team: TeamMember[]): TeamTypeCoverageData => {
-    const allTypes = Object.keys(TYPE_CHART);
-    const coverage: TeamTypeCoverageData = {
-        weaknesses: {},
-        resistances: {},
-        immunities: {},
-    };
-
-    allTypes.forEach(type => {
-        coverage.weaknesses[type] = 0;
-        coverage.resistances[type] = 0;
-        coverage.immunities[type] = 0;
-    });
-
-    if (team.length === 0) {
-        return coverage;
-    }
-
-    for (const member of team) {
-        const { Type1, Type2 } = member.pokedexData;
-        for (const attackingType of allTypes) {
-            const multi1 = getMultiplier(attackingType, Type1);
-            const multi2 = Type2 && Type1 !== Type2 ? getMultiplier(attackingType, Type2) : 1;
-            const totalMultiplier = multi1 * multi2;
-
-            if (totalMultiplier > 1) {
-                coverage.weaknesses[attackingType]++;
-            } else if (totalMultiplier < 1 && totalMultiplier > 0) {
-                coverage.resistances[attackingType]++;
-            } else if (totalMultiplier === 0) {
-                coverage.immunities[attackingType]++;
-            }
-        }
-    }
-
-    return coverage;
-};
-
-export const parseMoveRank = (learnString: string): Rank | null => {
-    // This function now handles both "Rank: Starter" and just "Starter" formats.
-    const rankStr = learnString.replace('Rank: ', '').trim();
-    if ((RANKS as readonly string[]).includes(rankStr)) {
-        return rankStr as Rank;
-    }
-    return null;
 };

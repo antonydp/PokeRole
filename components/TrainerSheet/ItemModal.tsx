@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { ItemsData, Item, HealingItemsSubCategory } from '../../types';
-import { CloseIcon } from '../Icons';
+import { ItemsData, Item, HealingItemsSubCategory } from '../../src/types/index.js';
+import { CloseIcon } from '../Icons.js';
 
 interface ItemModalProps {
     isOpen: boolean;

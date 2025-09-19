@@ -1,11 +1,12 @@
 /**
- * @file corebook.ts
- * This file contains all the core logic and calculations based on the Pokérole Corebook.
+ * @file This file contains all the core logic and calculations based on the Pokérole Corebook.
  * It centralizes rules for character stats, progression, and other game mechanics
  * to ensure consistency and ease of maintenance.
  */
 
-import { Rank } from './types.js';
+import type { Rank } from '../types/index.js';
+
+// --- RANK CONSTANTS ---
 
 /**
  * Defines the order and numerical value of each rank.
@@ -76,6 +77,9 @@ export const RANK_SKILL_POINTS: Record<Rank, number> = {
     Master: 15,
     Champion: 16,
 };
+
+
+// --- CALCULATION FUNCTIONS ---
 
 /**
  * Calculates the bonus applied to certain stats at Master and Champion ranks.

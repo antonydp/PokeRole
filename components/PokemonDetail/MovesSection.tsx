@@ -1,9 +1,9 @@
 
 
 import React from 'react';
-import { PokemonData, Move } from '../../types';
-import { PlusIcon } from '../Icons';
-import MoveCard from './MoveCard';
+import { PokemonData, Move } from '../../src/types/index.js';
+import { PlusIcon } from '../Icons.js';
+import MoveCard from './MoveCard.js';
 
 interface MovesSectionProps {
     pokemonData: PokemonData;

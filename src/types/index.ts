@@ -1,6 +1,16 @@
-import { RANKS } from './constants.js';
+/**
+ * @file This file defines all the core TypeScript types and interfaces for the application.
+ * Centralizing type definitions ensures consistency and improves maintainability.
+ */
+
+import { RANKS } from '../constants/gameConstants.js';
+
+/** Represents the possible ranks for a Trainer or Pokémon. */
 export type Rank = typeof RANKS[number];
 
+/**
+ * Interface for the raw data of a Pokémon as fetched from the Pokédex.
+ */
 export interface Pokedex {
   Number: number;
   DexID: string;
@@ -36,6 +46,9 @@ export interface Pokedex {
   Moves: Learnset[];
 }
 
+/**
+ * A simplified version of the Pokedex type, used for specific purposes like AI suggestions.
+ */
 export interface SimplifiedPokedex {
   Name: string;
   Type1: string;
@@ -47,6 +60,7 @@ export interface SimplifiedPokedex {
   Moves: string[];
 }
 
+/** Describes the evolution details for a Pokémon. */
 export interface Evolution {
   To?: string;
   From?: string;
@@ -58,11 +72,13 @@ export interface Evolution {
   Special?: string;
 }
 
+/** Represents a move that a Pokémon can learn. */
 export interface Learnset {
   Learned: string;
   Name: string;
 }
 
+/** Defines a change in stats caused by a move or ability. */
 export interface StatChange {
     Stats: string[];
     Stages: number;
@@ -70,6 +86,7 @@ export interface StatChange {
     Affects: 'User' | 'Foe';
 }
 
+/** Defines additional effects a move can have. */
 export interface AddedEffects {
     StatChanges?: StatChange[];
     TerrainEffect?: string;
@@ -80,7 +97,9 @@ export interface AddedEffects {
     }[];
 }
 
-
+/**
+ * Interface for a Pokémon move, containing all its battle properties.
+ */
 export interface Move {
   Name: string;
   Type: string;
@@ -98,6 +117,9 @@ export interface Move {
   Category: string;
 }
 
+/**
+ * Interface for a Pokémon ability.
+ */
 export interface Ability {
   _id: string;
   Name: string;
@@ -105,12 +127,18 @@ export interface Ability {
   Description: string;
 }
 
+/**
+ * Represents a Pokémon or Trainer's Nature.
+ */
 export interface Nature {
   name: string;
   keywords: string;
   confidence: number;
 }
 
+/**
+ * Represents the editable character sheet data for a Pokémon.
+ */
 export interface PokemonData {
     pokemonNumber: string;
     pokemonName: string;
@@ -164,17 +192,26 @@ export interface PokemonData {
     moves: (string | null)[];
 }
 
+/**
+ * Represents a move in the context of a Pokémon's learnset, including availability.
+ */
 export interface LearnableMove {
   move: Move;
   isAvailable: boolean;
   requiredRank: Rank | null;
 }
 
+/**
+ * Represents a member of the user's team, combining Pokédex data with sheet data.
+ */
 export interface TeamMember {
   pokedexData: Pokedex;
   sheetData: PokemonData;
 }
 
+/**
+ * Represents a bottle of potion in the trainer's inventory.
+ */
 export interface PotionBottle {
   id: string;
   type: 'potion' | 'superPotion' | 'hyperPotion';
@@ -182,6 +219,9 @@ export interface PotionBottle {
   currentUnits: number;
 }
 
+/**
+ * Represents an instance of an item in the trainer's inventory.
+ */
 export interface ItemInstance {
   id: string;
   name: string;
@@ -189,6 +229,9 @@ export interface ItemInstance {
   description?: string;
 }
 
+/**
+ * Represents the editable character sheet data for a Trainer.
+ */
 export interface TrainerData {
   // Trainer Card
   name: string;
@@ -216,8 +259,7 @@ export interface TrainerData {
   // Skills - Survival
   alert: number;
   athletic: number;
-  // FIX: Renamed 'nature' to 'natureSkill' to avoid conflict with trainer's personality nature.
-  natureSkill: number; // Skill
+  natureSkill: number; // Renamed from 'nature' to avoid conflicts
   stealth: number;
   
   // Skills - Social
@@ -254,6 +296,9 @@ export interface TrainerData {
   badges: string;
 }
 
+/**
+ * Represents a generic item that can be obtained in the game.
+ */
 export interface Item {
   name: string;
   description: string;
@@ -264,19 +309,31 @@ export interface Item {
   effect?: string;
 }
 
+/**
+ * Represents sub-categories within the "Healing Items" category.
+ */
 export interface HealingItemsSubCategory {
   potions: Item[];
   status_heals: Item[];
 }
 
+/**
+ * A union type for the content of an item category.
+ */
 export type ItemCategoryContent = Item[] | HealingItemsSubCategory;
 
+/**
+ * Represents the structure of the entire items data file.
+ */
 export interface ItemsData {
   items: {
     [key: string]: ItemCategoryContent;
   };
 }
 
+/**
+ * Represents the calculated type coverage for a Pokémon team.
+ */
 export interface TeamTypeCoverageData {
   weaknesses: { [type: string]: number };
   resistances: { [type: string]: number };

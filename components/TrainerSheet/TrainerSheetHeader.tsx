@@ -1,7 +1,7 @@
 import React from 'react';
-import { TrainerData, Rank } from '../../types';
-import { RANKS } from '../../constants';
-import { ChevronDownIcon } from '../Icons';
+import { TrainerData, Rank } from '../../src/types/index.js';
+import { RANKS } from '../../src/constants/gameConstants.js';
+import { ChevronDownIcon } from '../Icons.js'
 
 const DataField: React.FC<{ label: string; value: string; onChange: (value: string) => void; placeholder?: string }> = ({ label, value, onChange, placeholder }) => (
     <div>

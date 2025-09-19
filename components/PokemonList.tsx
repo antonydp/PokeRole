@@ -1,13 +1,25 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Pokedex } from '../types';
-import PokemonCard from './PokemonCard';
-import { TYPE_COLORS } from '../constants';
+import { Pokedex } from '../src/types/index.js';
+import PokemonCard from './PokemonCard.js';
+import { TYPE_COLORS } from '../src/constants/gameConstants.js';
 
-interface PokemonListProps {
-    allPokemon: Pokedex[];
-    onSelectPokemon: (pokemon: Pokedex) => void;
-}
+/**
+ * @interface PokemonListProps
+ * @property {Pokedex[]} allPokemon - An array of all available Pokémon data.
+ * @property {(pokemon: Pokedex) => void} onSelectPokemon - Callback function when a Pokémon is selected from the list.
+ */
 
+/**
+ * Defines the structure for initial stat filters.
+ * @typedef {object} StatFilter
+ * @property {string} min - Minimum value for the stat.
+ * @property {string} max - Maximum value for the stat.
+ */
+
+/**
+ * Initial state for the stat filters.
+ * @type {{ BaseHP: StatFilter; Strength: StatFilter; Dexterity: StatFilter; Vitality: StatFilter; Special: StatFilter; Insight: StatFilter; }}
+ */
 const initialStatFilters = {
     BaseHP: { min: '', max: '' },
     Strength: { min: '', max: '' },
@@ -17,8 +29,23 @@ const initialStatFilters = {
     Insight: { min: '', max: '' },
 };
 
+/**
+ * Array of keys for the base stat fields used in filtering.
+ * @type {(keyof typeof initialStatFilters)[]}
+ */
 const STAT_FIELDS: (keyof typeof initialStatFilters)[] = ['BaseHP', 'Strength', 'Dexterity', 'Vitality', 'Special', 'Insight'];
 
+/**
+ * The PokemonList component displays a filterable and searchable list of all Pokémon.
+ * It allows users to search by name, filter by type, legendary status, abilities, and base stats.
+ * @param {PokemonListProps} props - The props for the PokemonList component.
+ * @returns {React.FC} The rendered PokemonList component.
+ */
+
+interface PokemonListProps {
+    allPokemon: Pokedex[];
+    onSelectPokemon: (pokemon: Pokedex) => void;
+}
 
 const PokemonList: React.FC<PokemonListProps> = ({ allPokemon, onSelectPokemon }) => {
     const [searchTerm, setSearchTerm] = useState('');

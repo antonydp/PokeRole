@@ -1,4 +1,4 @@
-import { Pokedex, TeamMember, SimplifiedPokedex } from '../types.js';
+import { Pokedex, TeamMember, SimplifiedPokedex } from '../src/types/index.js';
 
 export async function suggestTeam(
     prompt: string,

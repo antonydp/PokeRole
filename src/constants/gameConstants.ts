@@ -1,8 +1,17 @@
+/**
+ * @file This file contains all the core constants related to the Pokérole game mechanics.
+ * It includes data for Pokémon types, ranks, natures, and the type effectiveness chart.
+ * Separating these constants ensures a single source of truth and makes them easily reusable
+ * across different parts of the application, from UI components to logic modules.
+ */
 
+import type { Rank } from '../types/index.js';
 
-
-export const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/Willowlark/Pokerole-Data/master/images/HomeSprites/';
-
+/**
+ * Defines the color scheme for each Pokémon type.
+ * Used for styling UI elements like TypeBadges consistently.
+ * @type {{ [key: string]: string }}
+ */
 export const TYPE_COLORS: { [key: string]: string } = {
     Normal: 'bg-gray-400 text-black',
     Fire: 'bg-orange-500 text-white',
@@ -24,11 +33,33 @@ export const TYPE_COLORS: { [key: string]: string } = {
     Fairy: 'bg-pink-300 text-black',
 };
 
+/**
+ * An ordered array of all possible Trainer and Pokémon ranks.
+ * The order represents the progression from lowest to highest.
+ * `as const` ensures that the array is read-only and its values are treated as literal types.
+ * @type {readonly string[]}
+ */
 export const RANKS = ['Starter', 'Beginner', 'Amateur', 'Ace', 'Pro', 'Master', 'Champion'] as const;
-export type Rank = typeof RANKS[number];
 
+/**
+ * Defines the social attributes, their names, corresponding data fields, and UI colors.
+ * This constant is used to dynamically generate UI elements for social stats in a consistent manner.
+ * @type {readonly { name: string; field: 'tough' | 'cool' | 'beauty' | 'cute' | 'clever'; color: string }[]}
+ */
+export const SOCIAL_ATTRIBUTES = [
+    { name: 'TOUGH', field: 'tough', color: 'bg-[#F7F0A0]' },
+    { name: 'COOL', field: 'cool', color: 'bg-[#F4A27A]' },
+    { name: 'BEAUTY', field: 'beauty', color: 'bg-[#A1C6F4]' },
+    { name: 'CUTE', field: 'cute', color: 'bg-[#F6B8D0]' },
+    { name: 'CLEVER', field: 'clever', color: 'bg-[#A8D79A]' },
+] as const;
 
-
+/**
+ * A comprehensive list of all available Natures for Pokémon and Trainers.
+ * Each nature includes a name, descriptive keywords, and a base confidence value.
+ * This data is used in character creation and for certain game mechanics.
+ * @type {{ name: string; keywords: string; confidence: number }[]}
+ */
 export const NATURES = [
     { name: 'Adamant', keywords: 'Powerful, Fierce, Relentless', confidence: 4 },
     { name: 'Bashful', keywords: 'Compassionate, Vulnerable, Family Oriented', confidence: 6 },
@@ -57,6 +88,12 @@ export const NATURES = [
     { name: 'Timid', keywords: 'Shy, Apprehensive, Sensible', confidence: 4 },
 ];
 
+/**
+ * The master type chart for Pokémon battles.
+ * It defines the weaknesses, resistances, and immunities for each Pokémon type.
+ * This is a critical data structure for calculating battle damage and type coverage.
+ * @type {{ [key: string]: { weaknesses: string[], resistances: string[], immunities: string[] } }}
+ */
 export const TYPE_CHART: { [key: string]: { weaknesses: string[], resistances: string[], immunities: string[] } } = {
   "Normal": { "weaknesses": ["Fighting"], "resistances": [], "immunities": ["Ghost"] },
   "Fire": { "weaknesses": ["Water", "Ground", "Rock"], "resistances": ["Fire", "Grass", "Ice", "Bug", "Steel", "Fairy"], "immunities": [] },
@@ -76,4 +113,57 @@ export const TYPE_CHART: { [key: string]: { weaknesses: string[], resistances: s
   "Dark": { "weaknesses": ["Fighting", "Bug", "Fairy"], "resistances": ["Ghost", "Dark"], "immunities": ["Psychic"] },
   "Steel": { "weaknesses": ["Fire", "Fighting", "Ground"], "resistances": ["Normal", "Grass", "Ice", "Flying", "Psychic", "Bug", "Rock", "Dragon", "Steel", "Fairy"], "immunities": ["Poison"] },
   "Fairy": { "weaknesses": ["Poison", "Steel"], "resistances": ["Fighting", "Bug", "Dark"], "immunities": ["Dragon"] }
+};
+
+/**
+ * Defines the skills available to Trainers and Pokémon.
+ * This structure is used to dynamically generate UI elements for skill ratings.
+ * @type {{ [key: string]: { name: string; field: string }[] }}
+ */
+export const SKILLS = {
+    FIGHT: [
+        { name: 'BRAWL', field: 'brawl' },
+        { name: 'THROW', field: 'throw' },
+        { name: 'EVASION', field: 'evasion' },
+        { name: 'WEAPONS', field: 'weapons' },
+    ],
+    SURVIVAL: [
+        { name: 'ALERT', field: 'alert' },
+        { name: 'ATHLETIC', field: 'athletic' },
+        { name: 'NATURE', field: 'natureSkill' },
+        { name: 'STEALTH', field: 'stealth' },
+    ],
+    SOCIAL: [
+        { name: 'ALLURE', field: 'allure' },
+        { name: 'ETIQUETTE', field: 'etiquette' },
+        { name: 'INTIMIDATE', field: 'intimidate' },
+        { name: 'PERFORM', field: 'perform' },
+    ],
+    KNOWLEDGE: [
+        { name: 'CRAFTS', field: 'crafts' },
+        { name: 'LORE', field: 'lore' },
+        { name: 'MEDICINE', field: 'medicine' },
+        { name: 'SCIENCE', field: 'science' },
+    ],
+};
+
+export const POKEMON_SKILLS = {
+    FIGHT: [
+        { name: 'BRAWL', field: 'brawl' },
+        { name: 'CHANNEL', field: 'channel' },
+        { name: 'CLASH', field: 'clash' },
+        { name: 'EVASION', field: 'evasion' },
+    ],
+    SURVIVAL: [
+        { name: 'ALERT', field: 'alert' },
+        { name: 'ATHLETIC', field: 'athletic' },
+        { name: 'NATURE', field: 'nature' },
+        { name: 'STEALTH', field: 'stealth' },
+    ],
+    SOCIAL: [
+        { name: 'ALLURE', field: 'allure' },
+        { name: 'ETIQUETTE', field: 'etiquette' },
+        { name: 'INTIMIDATE', field: 'intimidate' },
+        { name: 'PERFORM', field: 'perform' },
+    ],
 };

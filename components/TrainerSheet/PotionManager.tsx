@@ -1,5 +1,5 @@
 import React from 'react';
-import { PotionBottle } from '../../types';
+import { PotionBottle } from '../../src/types/index.js';
 
 interface PotionManagerProps {
     potions: PotionBottle[];

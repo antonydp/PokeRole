@@ -1,6 +1,6 @@
 import React from 'react';
-import { Item, ItemInstance } from '../../types';
-import { MinusIcon, PlusIcon, TrashIcon } from '../Icons';
+import { Item, ItemInstance } from '../../src/types/index.js';
+import { MinusIcon, PlusIcon, TrashIcon } from '../Icons.js';
 
 interface PocketItemProps {
     itemInstance: ItemInstance;

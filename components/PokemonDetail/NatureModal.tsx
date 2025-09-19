@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Nature } from '../../types';
-import { CloseIcon } from '../Icons';
+import { Nature } from '../../src/types/index.js';
+import { CloseIcon } from '../Icons.js';
 
 interface NatureModalProps {
     isOpen: boolean;

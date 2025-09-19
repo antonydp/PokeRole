@@ -1,6 +1,9 @@
 import React from 'react';
-import { TrainerData } from '../../types';
-import { CoreAttribute, SkillBlock, ExtraSkillBlock, AchievementsBlock, PointTracker } from './Shared';
+import { TrainerData } from '@/src/types/index.js';
+import { CoreAttribute, AchievementsBlock } from './Shared.js';
+import { CurvedSkillBlock, CurvedExtraSkillBlock } from '../shared/CurvedSkillBlock.js';
+import { SKILLS } from '../../src/constants/gameConstants.js';
+import { PointsDisplay } from '../shared/Points.js';
 
 interface TrainerSheetMainContentProps {
     trainerData: TrainerData;
@@ -37,30 +40,10 @@ const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({
     ];
     
     const skills = {
-        FIGHT: [
-            { name: 'BRAWL', value: trainerData.brawl, field: 'brawl' as const },
-            { name: 'THROW', value: trainerData.throw, field: 'throw' as const },
-            { name: 'EVASION', value: trainerData.evasion, field: 'evasion' as const },
-            { name: 'WEAPONS', value: trainerData.weapons, field: 'weapons' as const },
-        ],
-        SURVIVAL: [
-            { name: 'ALERT', value: trainerData.alert, field: 'alert' as const },
-            { name: 'ATHLETIC', value: trainerData.athletic, field: 'athletic' as const },
-            { name: 'NATURE', value: trainerData.natureSkill, field: 'natureSkill' as const },
-            { name: 'STEALTH', value: trainerData.stealth, field: 'stealth' as const },
-        ],
-        SOCIAL: [
-            { name: 'ALLURE', value: trainerData.allure, field: 'allure' as const },
-            { name: 'ETIQUETTE', value: trainerData.etiquette, field: 'etiquette' as const },
-            { name: 'INTIMIDATE', value: trainerData.intimidate, field: 'intimidate' as const },
-            { name: 'PERFORM', value: trainerData.perform, field: 'perform' as const },
-        ],
-        KNOWLEDGE: [
-            { name: 'CRAFTS', value: trainerData.crafts, field: 'crafts' as const },
-            { name: 'LORE', value: trainerData.lore, field: 'lore' as const },
-            { name: 'MEDICINE', value: trainerData.medicine, field: 'medicine' as const },
-            { name: 'SCIENCE', value: trainerData.science, field: 'science' as const },
-        ]
+        FIGHT: SKILLS.FIGHT.map(skill => ({ ...skill, value: trainerData[skill.field as keyof TrainerData] as number })),
+        SURVIVAL: SKILLS.SURVIVAL.map(skill => ({ ...skill, value: trainerData[skill.field as keyof TrainerData] as number })),
+        SOCIAL: SKILLS.SOCIAL.map(skill => ({ ...skill, value: trainerData[skill.field as keyof TrainerData] as number })),
+        KNOWLEDGE: SKILLS.KNOWLEDGE.map(skill => ({ ...skill, value: trainerData[skill.field as keyof TrainerData] as number })),
     };
 
     return (
@@ -68,7 +51,7 @@ const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({
              <div className="grid grid-cols-1 md:grid-cols-4 gap-4" style={{alignItems: 'start'}}>
                 {/* Col 1 & 2: Core Attributes & Achievements */}
                 <div className="md:col-span-2 space-y-4">
-                    <PointTracker label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
+                    <PointsDisplay label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
                     <div className="space-y-4">
                         {coreAttributes.map(attr => <CoreAttribute key={attr.name} name={attr.name} value={attr.value} onChange={v => onAttributeChange(attr.field, v)} isPoolExhausted={isAttributePoolExhausted} />)}
                     </div>
@@ -76,17 +59,21 @@ const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({
                 </div>
 
                 {/* Col 3: Fight & Survival */}
-                <div className="space-y-4">
-                    <PointTracker label="Skill Points" spent={points.skills.spent} total={points.skills.total} />
-                    <SkillBlock title="FIGHT" skills={skills.FIGHT} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} />
-                    <SkillBlock title="SURVIVAL" skills={skills.SURVIVAL} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} />
+                <div className="flex flex-col">
+                    <PointsDisplay label="Skill Points" spent={points.skills.spent} total={points.skills.total} />
+                    <div className="flex flex-col flex-grow">
+                        <CurvedSkillBlock<TrainerData> title="FIGHT" skills={skills.FIGHT} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="top" />
+                        <CurvedSkillBlock<TrainerData> title="SURVIVAL" skills={skills.SURVIVAL} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="bottom" />
+                    </div>
                 </div>
                 
                 {/* Col 4: Social, Knowledge, Extra */}
-                <div className="space-y-4">
-                    <SkillBlock title="SOCIAL" skills={skills.SOCIAL} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} />
-                    <SkillBlock title="KNOWLEDGE" skills={skills.KNOWLEDGE} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} />
-                    <ExtraSkillBlock title="EXTRA" extraSkills={trainerData.extraSkills} onSkillChange={onExtraSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} />
+                <div className="flex flex-col">
+                    <div className="flex flex-col flex-grow">
+                        <CurvedSkillBlock<TrainerData> title="SOCIAL" skills={skills.SOCIAL} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="top" />
+                        <CurvedSkillBlock<TrainerData> title="KNOWLEDGE" skills={skills.KNOWLEDGE} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="middle" />
+                        <CurvedExtraSkillBlock title="EXTRA" extraSkills={trainerData.extraSkills} onSkillChange={onExtraSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="bottom" />
+                    </div>
                 </div>
             </div>
         </div>

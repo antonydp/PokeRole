@@ -1,6 +1,6 @@
 import React from 'react';
-import { Item, ItemInstance } from '../../types';
-import PocketItem from './PocketItem';
+import { Item, ItemInstance } from '../../src/types/index.js';
+import PocketItem from './PocketItem.js';
 
 interface PocketProps {
     title: string;

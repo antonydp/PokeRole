@@ -1,12 +1,21 @@
 import React, { useCallback, useState, useMemo, useEffect } from 'react';
-import { TrainerData, Nature, ItemsData, Item, HealingItemsSubCategory, ItemInstance } from '../types.js';
+import { TrainerData, Nature, ItemsData, Item, HealingItemsSubCategory, ItemInstance } from '../src/types/index.js';
 import NatureModal from './PokemonDetail/NatureModal.js';
-import { NATURES } from '../constants.js';
-import { RANK_SKILL_LIMITS, RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../corebook.js';
+import { NATURES } from '../src/constants/gameConstants.js';
+import { RANK_SKILL_LIMITS, RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../src/logic/core.js';
 import TrainerSheetHeader from './TrainerSheet/TrainerSheetHeader.js';
 import TrainerSheetMainContent from './TrainerSheet/TrainerSheetMainContent.js';
 import TrainerSheetSidebar from './TrainerSheet/TrainerSheetSidebar.js';
 import ItemModal from './TrainerSheet/ItemModal.js';
+import { GlobalTooltip, TooltipData } from './shared/GlobalTooltip.js';
+
+/**
+ * The TrainerSheet component displays and allows editing of a Trainer's character sheet.
+ * It includes sections for core attributes, skills, social attributes, inventory, and achievements.
+ * It also integrates with modals for selecting natures and adding items.
+ * @param {TrainerSheetProps} props - The props for the TrainerSheet component.
+ * @returns {React.FC} The rendered TrainerSheet component.
+ */
 
 interface TrainerSheetProps {
     trainerData: TrainerData;
@@ -14,77 +23,8 @@ interface TrainerSheetProps {
     allItems: ItemsData | null;
 }
 
-interface TooltipData {
-    content: { name: string; description: string };
-    rect: DOMRect;
-}
-
-const GlobalTooltip: React.FC<{ tooltipData: TooltipData | null }> = ({ tooltipData }) => {
-    // This state will help manage the mounting/unmounting for transitions.
-    const [currentTooltipData, setCurrentTooltipData] = useState<TooltipData | null>(null);
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        let animationFrameId: number;
-        let timeoutId: ReturnType<typeof setTimeout>;
-
-        if (tooltipData) {
-            // If new data comes in, update it and start fade-in
-            setCurrentTooltipData(tooltipData);
-            // requestAnimationFrame ensures the element is mounted before we try to transition its opacity
-            animationFrameId = requestAnimationFrame(() => {
-                setIsVisible(true);
-            });
-        } else {
-            // If data is null, start fade-out
-            setIsVisible(false);
-            // Wait for transition to finish before unmounting
-            timeoutId = setTimeout(() => {
-                setCurrentTooltipData(null);
-            }, 150); // Should match transition duration
-        }
-
-        return () => {
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
-    }, [tooltipData]);
-    
-    if (!currentTooltipData) return null; // Only render if we have data
-
-    const { content, rect } = currentTooltipData;
-    
-    const style: React.CSSProperties = {
-        position: 'fixed',
-        top: rect.top - 8,
-        left: rect.left + rect.width / 2,
-        transform: 'translate(-50%, -100%)',
-        pointerEvents: 'none',
-        zIndex: 1000,
-    };
-
-    return (
-        <div 
-            style={style} 
-            className={`
-                w-60 bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-lg z-20 
-                transition-opacity duration-150 ease-in-out
-                ${isVisible ? 'opacity-100' : 'opacity-0'}
-            `}
-        >
-             <div className="absolute bottom-[-9px] left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-800 border-b border-r border-slate-600 transform rotate-45"></div>
-            <h4 className="font-bold text-poke-yellow mb-1 text-base font-pixel">{content.name}</h4>
-            <p className="text-sm text-gray-300 font-sans">{content.description}</p>
-        </div>
-    );
-};
-
-
 const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, allItems }) => {
+
     const [isNatureModalOpen, setIsNatureModalOpen] = useState(false);
     const [natureSearchTerm, setNatureSearchTerm] = useState('');
     const [isItemModalOpen, setIsItemModalOpen] = useState(false);

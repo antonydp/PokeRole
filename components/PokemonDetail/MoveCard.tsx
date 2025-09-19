@@ -1,9 +1,9 @@
 
 
 import React from 'react';
-import { Move, AddedEffects } from '../../types';
-import { CloseIcon, DiceIcon, ChevronDownIcon } from '../Icons';
-import TypeBadge from '../TypeBadge';
+import { Move, AddedEffects } from '../../src/types/index.js';
+import { CloseIcon, DiceIcon, ChevronDownIcon } from '../Icons.js';
+import TypeBadge from '../TypeBadge.js';
 
 interface MoveCardProps {
     move: Move;

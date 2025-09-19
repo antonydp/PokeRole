@@ -1,25 +1,40 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import { Pokedex, TeamMember, TeamTypeCoverageData } from '../types';
-import { IMAGE_BASE_URL, TYPE_CHART } from '../constants';
-import { PokeballIcon, SparklesIcon } from './Icons';
-import TypeBadge from './TypeBadge';
-import { calculateTeamTypeCoverage } from '../utils';
+import { Pokedex, TeamMember, TeamTypeCoverageData } from '../src/types/index.js';
+import { IMAGE_BASE_URL } from '../src/constants/config.js';
+import { TYPE_CHART } from '../src/constants/gameConstants.js';
+import { PokeballIcon, SparklesIcon } from './Icons.js';
+import TypeBadge from './TypeBadge.js';
+import { calculateTeamTypeCoverage } from '../src/logic/formulas.js';
 
-interface TeamBuilderProps {
-    team: TeamMember[];
-    onSelectPokemon: (pokemon: Pokedex) => void;
-    onRemoveFromTeam: (pokemon: Pokedex) => void;
-    onAddPokemonClick: () => void;
-    onOpenSuggestModal: () => void;
-}
+/**
+ * @interface TeamBuilderProps
+ * @property {TeamMember[]} team - The current Pokémon team.
+ * @property {(pokemon: Pokedex) => void} onSelectPokemon - Callback to select a Pokémon for detail view.
+ * @property {(pokemon: Pokedex) => void} onRemoveFromTeam - Callback to remove a Pokémon from the team.
+ * @property {() => void} onAddPokemonClick - Callback to open the Pokémon list for adding.
+ * @property {() => void} onOpenSuggestModal - Callback to open the AI team suggestion modal.
+ */
 
-// --- New Global Tooltip Component ---
+/**
+ * @interface TooltipData
+ * @property {TeamMember} content - The team member data to display in the tooltip.
+ * @property {DOMRect} rect - The bounding rectangle of the element that triggered the tooltip.
+ */
 
+/**
+ * TooltipData interface for tooltip content and position.
+ */
 interface TooltipData {
     content: TeamMember;
     rect: DOMRect;
 }
 
+/**
+ * PokemonTooltip component displays detailed information about a Pokémon in the team when hovered.
+ * @param {object} props - Component props.
+ * @param {TooltipData | null} props.tooltipData - Data for the tooltip, or null if no tooltip should be shown.
+ * @returns {React.FC} The rendered PokemonTooltip component.
+ */
 const PokemonTooltip: React.FC<{ tooltipData: TooltipData | null }> = ({ tooltipData }) => {
     const [currentTooltipData, setCurrentTooltipData] = useState<TooltipData | null>(null);
     const [isVisible, setIsVisible] = useState(false);
@@ -107,6 +122,18 @@ const PokemonTooltip: React.FC<{ tooltipData: TooltipData | null }> = ({ tooltip
 
 // --- Type Coverage Component ---
 
+/**
+ * @interface CoverageDisplayProps
+ * @property {string} title - The title for the coverage display (e.g., "Weaknesses", "Resistances").
+ * @property {string[]} types - An array of all Pokémon types.
+ * @property {{ [key: string]: number }} data - A map of type names to their counts (e.g., number of weaknesses).
+ * @property {string} colorClass - CSS class for styling the title and counts.
+ * @property {{ [key: string]: number }} [immunityData] - Optional map of type names to immunity counts.
+ */
+
+/**
+ * CoverageDisplayProps interface for the CoverageDisplay component.
+ */
 interface CoverageDisplayProps {
     title: string;
     types: string[];
@@ -115,6 +142,12 @@ interface CoverageDisplayProps {
     immunityData?: { [key: string]: number };
 }
 
+/**
+ * CoverageDisplay component renders a list of types with their corresponding counts,
+ * used to visualize team type weaknesses, resistances, or immunities.
+ * @param {CoverageDisplayProps} props - The props for the CoverageDisplay component.
+ * @returns {React.FC} The rendered CoverageDisplay component.
+ */
 const CoverageDisplay: React.FC<CoverageDisplayProps> = ({ title, types, data, colorClass, immunityData }) => {
     const relevantTypes = types.filter(type => {
         const count = data[type] || 0;
@@ -150,10 +183,20 @@ const CoverageDisplay: React.FC<CoverageDisplayProps> = ({ title, types, data, c
 };
 
 
+/**
+ * @interface TeamTypeCoverageProps
+ * @property {TeamTypeCoverageData} coverage - The calculated type coverage data for the team.
+ */
+
+/**
+ * TeamTypeCoverage component displays a summary of the team's collective type weaknesses, resistances, and immunities.
+ * It uses `CoverageDisplay` to render each category.
+ * @param {TeamTypeCoverageProps} props - The props for the TeamTypeCoverage component.
+ * @returns {React.FC} The rendered TeamTypeCoverage component.
+ */
 interface TeamTypeCoverageProps {
     coverage: TeamTypeCoverageData;
 }
-
 const TeamTypeCoverage: React.FC<TeamTypeCoverageProps> = ({ coverage }) => {
     const allTypes = Object.keys(TYPE_CHART).sort();
 
@@ -179,6 +222,27 @@ const TeamTypeCoverage: React.FC<TeamTypeCoverageProps> = ({ coverage }) => {
     );
 };
 
+/**
+ * @interface TeamSlotProps
+ * @property {TeamMember} [teamMember] - The Pokémon team member to display in the slot, if any.
+ * @property {(p: Pokedex) => void} onSelect - Callback to select the Pokémon for detail view.
+ * @property {(p: Pokedex) => void} onRemove - Callback to remove the Pokémon from the team.
+ * @property {() => void} onAddPokemonClick - Callback to trigger adding a new Pokémon to an empty slot.
+ * @property {(teamMember: TeamMember, element: HTMLElement) => void} onMouseEnter - Callback for mouse enter event to show tooltip.
+ * @property {() => void} onMouseLeave - Callback for mouse leave event to hide tooltip.
+ */
+
+/**
+ * TeamSlot component represents an individual slot in the Pokémon team builder.
+ * It can display an existing Pokémon or an "Add Pokémon" button if empty.
+ * It also handles hover events to show a tooltip with Pokémon details.
+ * @param {TeamSlotProps} props - The props for the TeamSlot component.
+ * @returns {React.FC} The rendered TeamSlot component.
+ */
+
+/**
+ * TeamSlotProps interface for the TeamSlot component.
+ */
 interface TeamSlotProps {
     teamMember?: TeamMember;
     onSelect: (p: Pokedex) => void;
@@ -187,7 +251,6 @@ interface TeamSlotProps {
     onMouseEnter: (teamMember: TeamMember, element: HTMLElement) => void;
     onMouseLeave: () => void;
 }
-
 
 const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onAddPokemonClick, onMouseEnter, onMouseLeave }) => {
     if (!teamMember) {
@@ -240,6 +303,24 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onA
     );
 };
 
+
+/**
+ * The TeamBuilder component allows users to assemble and manage their Pokémon team.
+ * It displays up to six Pokémon slots, provides type coverage analysis, and integrates with an AI team suggestion modal.
+ * @param {TeamBuilderProps} props - The props for the TeamBuilder component.
+ * @returns {React.FC} The rendered TeamBuilder component.
+ */
+
+/**
+ * TeamBuilderProps interface for the TeamBuilder component.
+ */
+interface TeamBuilderProps {
+    team: TeamMember[];
+    onSelectPokemon: (pokemon: Pokedex) => void;
+    onRemoveFromTeam: (pokemon: Pokedex) => void;
+    onAddPokemonClick: () => void;
+    onOpenSuggestModal: () => void;
+}
 
 const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemoveFromTeam, onAddPokemonClick, onOpenSuggestModal }) => {
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);

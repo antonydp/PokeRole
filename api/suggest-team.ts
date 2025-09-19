@@ -1,5 +1,11 @@
+/**
+ * @file This module provides a serverless function for generating Pokémon team suggestions using OpenAI's API.
+ * It acts as a backend endpoint to securely interact with the AI model, processing user prompts
+ * and returning a list of suggested Pokémon names based on available Pokémon and the current team.
+ */
+
 import OpenAI from 'openai';
-import { SimplifiedPokedex, TeamMember } from '../types.js';
+import { SimplifiedPokedex, TeamMember } from '../src/types/index.js';
 
 export const config = {
   runtime: 'edge',
@@ -10,6 +16,21 @@ export const config = {
   },
 };
 
+/**
+ * Configuration for the Vercel Edge runtime.
+ * @type {object}
+ * @property {string} runtime - The runtime environment.
+ * @property {object} api - API specific configurations.
+ * @property {object} api.bodyParser - Body parser options.
+ * @property {string} api.bodyParser.sizeLimit - Maximum request body size.
+ */
+
+/**
+ * Handles incoming API requests for team suggestions.
+ * This is the main entry point for the serverless function.
+ * @param {Request} req - The incoming HTTP request.
+ * @returns {Promise<Response>} A promise that resolves to an HTTP response.
+ */
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
@@ -72,6 +93,15 @@ export default async function handler(req: Request): Promise<Response> {
   }
 }
 
+/**
+ * Generates a team suggestion from the OpenAI API based on a prompt and available Pokémon.
+ * @param {OpenAI} openai - The OpenAI API client instance.
+ * @param {string} prompt - The user's request for a team.
+ * @param {SimplifiedPokedex[]} allPokemon - A list of all available Pokémon.
+ * @param {TeamMember[]} currentTeam - The Pokémon currently in the user's team.
+ * @returns {Promise<AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>>} An async iterable stream of AI suggestions.
+ * @throws {Error} If the AI service fails to return a suggestion.
+ */
 async function getTeamSuggestionStream(
     openai: OpenAI,
     prompt: string,

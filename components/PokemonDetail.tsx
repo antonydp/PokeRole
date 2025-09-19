@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Pokedex, PokemonData, Move, Nature, Rank, LearnableMove } from '../types.js';
+import type { Pokedex, PokemonData, Move, Nature, Rank, LearnableMove } from '../src/types/index.js';
 import { CloseIcon } from './Icons.js';
 
 import PokemonDetailHeader from './PokemonDetail/PokemonDetailHeader.js';
@@ -9,15 +9,15 @@ import RightColumn from './PokemonDetail/RightColumn.js';
 import MovesSection from './PokemonDetail/MovesSection.js';
 import MoveModal from './PokemonDetail/MoveModal.js';
 import NatureModal from './PokemonDetail/NatureModal.js';
-import { createInitialSheetData, parseMoveRank } from '../utils.js';
-import { NATURES } from '../constants.js';
+import { createInitialSheetData } from '../src/logic/initializers.js';
+import { parseMoveRank } from '../src/logic/formulas.js';
+import { NATURES } from '../src/constants/gameConstants.js';
 import {
     RANK_ORDER,
     RANK_SKILL_LIMITS,
     RANK_ATTRIBUTE_POINTS,
     RANK_SOCIAL_ATTRIBUTE_POINTS,
     RANK_SKILL_POINTS,
-    getRankBonus,
     calculatePokemonHP,
     calculatePokemonWill,
     calculateInitiative,
@@ -25,12 +25,34 @@ import {
     calculateEvasion,
     calculateClash,
     calculateMaxMoves
-} from '../corebook.js';
+} from '../src/logic/core.js';
 
 const ATTRIBUTE_FIELDS: (keyof PokemonData)[] = ['strength', 'dexterity', 'vitality', 'special', 'insight'];
 const SOCIAL_ATTRIBUTE_FIELDS: (keyof PokemonData)[] = ['tough', 'cool', 'beauty', 'cute', 'clever'];
 const SKILL_FIELDS: (keyof PokemonData)[] = ['brawl', 'channel', 'clash', 'evasion', 'alert', 'athletic', 'nature', 'stealth', 'allure', 'etiquette', 'intimidate', 'perform', 'extraSkillValue'];
 
+/**
+ * @interface PokemonDetailProps
+ * @property {Pokedex} pokemon - The base Pokedex data for the Pokémon.
+ * @property {Record<string, Move>} allMoves - A map of all available moves.
+ * @property {() => void} onClose - Callback to close the detail sheet.
+ * @property {(pokemon: Pokedex, sheetData: PokemonData) => void} onAddToTeam - Callback to add the Pokémon to the team.
+ * @property {(pokemon: Pokedex) => void} onRemoveFromTeam - Callback to remove the Pokémon from the team.
+ * @property {boolean} isInTeam - True if the Pokémon is currently in the team.
+ * @property {boolean} teamIsFull - True if the team has reached its maximum capacity.
+ * @property {PokemonData} [sheetData] - Optional existing sheet data for the Pokémon if it's already in the team.
+ * @property {(pokemonDexID: string, newSheetData: PokemonData) => void} onSheetDataChange - Callback to update the Pokémon's sheet data in the team.
+ * @property {{ height: 'imperial' | 'metric', weight: 'imperial' | 'metric' }} unitSettings - User's preferred unit settings.
+ * @property {Rank} trainerRank - The current rank of the trainer.
+ */
+
+/**
+ * The PokemonDetail component displays and allows editing of a Pokémon's full character sheet.
+ * It includes sections for attributes, skills, social stats, moves, and derived combat statistics.
+ * Users can customize their Pokémon's sheet, add it to their team, or remove it.
+ * @param {PokemonDetailProps} props - The props for the PokemonDetail component.
+ * @returns {React.FC} The rendered PokemonDetail component.
+ */
 interface PokemonDetailProps {
     pokemon: Pokedex;
     allMoves: Record<string, Move>;
@@ -44,8 +66,8 @@ interface PokemonDetailProps {
     unitSettings: { height: 'imperial' | 'metric', weight: 'imperial' | 'metric' };
     trainerRank: Rank;
 }
-
 const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, sheetData, onSheetDataChange, unitSettings, trainerRank }) => {
+
     const [pokemonData, setPokemonData] = useState<PokemonData>(() => sheetData || createInitialSheetData(pokemon, unitSettings, trainerRank));
     
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);

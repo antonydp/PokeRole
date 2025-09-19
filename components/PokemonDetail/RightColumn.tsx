@@ -1,10 +1,10 @@
 
 
 import React, { useMemo } from 'react';
-import { Pokedex, PokemonData, Rank } from '../../types.js';
-import { LabeledInput } from './Shared.js';
-import { RANKS } from '../../constants.js';
-import { RANK_ORDER } from '../../corebook.js';
+import { Pokedex, PokemonData, Rank } from '../../src/types/index.js';
+import { LabeledInput } from '../shared/LabeledInput.js';
+import { RANKS } from '../../src/constants/gameConstants.js';
+import { RANK_ORDER } from '../../src/logic/core.js';
 
 interface RightColumnProps {
     pokemonData: PokemonData;

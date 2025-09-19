@@ -1,6 +1,9 @@
 import React from 'react';
-import { PokemonData } from '../../types';
-import { CircleRating, LabeledInput, PointTracker } from './Shared';
+import { PokemonData } from '../../src/types/index.js';
+import { CircleRating } from '../shared/CircleRating.js';
+import { PointsDisplay } from '../shared/Points.js';
+import { SocialAttribute } from '../shared/SocialAttribute.js';
+import { SOCIAL_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 
 interface MiddleColumnProps {
     pokemonData: PokemonData;
@@ -13,25 +16,25 @@ interface MiddleColumnProps {
 }
 
 const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, onOpenNatureModal, points, isSocialAttributePoolExhausted }) => {
-    const contestStats = [
-        { name: 'TOUGH', value: pokemonData.tough, field: 'tough' as const, color: 'bg-[#F7F0A0]' },
-        { name: 'COOL', value: pokemonData.cool, field: 'cool' as const, color: 'bg-[#F4A27A]' },
-        { name: 'BEAUTY', value: pokemonData.beauty, field: 'beauty' as const, color: 'bg-[#A1C6F4]' },
-        { name: 'CUTE', value: pokemonData.cute, field: 'cute' as const, color: 'bg-[#F6B8D0]' },
-        { name: 'CLEVER', value: pokemonData.clever, field: 'clever' as const, color: 'bg-[#A8D79A]' },
-    ];
 
     return (
         <div className="lg:col-span-5 flex flex-col gap-3 h-full">
             <div className="flex gap-2 flex-grow">
-                <div className="w-1/4 flex-shrink-0 flex flex-col gap-1.5">
-                    <PointTracker label="Social Points" spent={points.social.spent} total={points.social.total} />
-                    {contestStats.map(attr => (
-                        <div key={attr.name} className={`${attr.color} rounded-2xl p-2 border-2 border-[#3A3A3A] flex-grow flex flex-col justify-center items-center`}>
-                            <span className="text-[#3A3A3A] font-bold text-xs tracking-wider">{attr.name}</span>
-                            <CircleRating value={attr.value} max={5} onChange={(value) => onDataChange(attr.field, value)} isPoolExhausted={isSocialAttributePoolExhausted} circleClassName="w-3.5 h-3.5" className="mt-1" />
-                        </div>
-                    ))}
+                <div className="flex flex-col gap-2">
+                    <PointsDisplay label="Social Points" spent={points.social.spent} total={points.social.total} />
+                    <div className="flex flex-col justify-around gap-2 flex-grow">
+                        {SOCIAL_ATTRIBUTES.map(attr => (
+                            <SocialAttribute
+                                key={attr.name}
+                                label={attr.name}
+                                value={pokemonData[attr.field]}
+                                max={5}
+                                min={1}
+                                color={attr.color}
+                                onChange={(newValue) => onDataChange(attr.field, newValue)}
+                            />
+                        ))}
+                    </div>
                 </div>
                 <div className="flex-grow flex flex-col">
                     {/* Nature & Confidence */}

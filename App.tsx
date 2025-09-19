@@ -1,20 +1,35 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Pokedex, Move, Ability, TeamMember, PokemonData, TrainerData, ItemsData, ItemInstance, Rank } from './types';
-import { fetchAllData } from './services/pokedexService';
-import PokemonList from './components/PokemonList';
-import PokemonDetail from './components/PokemonDetail';
-import Dashboard from './components/Dashboard';
-import { PokeballIcon, MenuIcon, SettingsIcon } from './components/Icons';
-import { createInitialSheetData, calculateWeaknesses, createInitialTrainerData } from './utils';
-import SuggestTeamModal from './components/SuggestTeamModal';
+import React from 'react';
+import PokemonList from './components/PokemonList.js';
+import PokemonDetail from './components/PokemonDetail.js';
+import Dashboard from './components/Dashboard.js';
+import { PokeballIcon, MenuIcon, SettingsIcon } from './components/Icons.js';
+import SuggestTeamModal from './components/SuggestTeamModal.js';
+import { useAppContext } from './src/hooks/useAppContext.js';
 
-type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
+/**
+ * @typedef {object} UnitSettings
+ * @property {'imperial' | 'metric'} height - The unit for height measurement.
+ * @property {'imperial' | 'metric'} weight - The unit for weight measurement.
+ */
 
+/**
+ * @interface SettingsModalProps
+ * @property {boolean} isOpen - Whether the settings modal is open.
+ * @property {() => void} onClose - Callback function to close the modal.
+ * @property {UnitSettings} settings - Current unit settings (height and weight).
+ * @property {(settings: UnitSettings) => void} onSettingsChange - Callback to update unit settings.
+ */
+
+/**
+ * SettingsModal component allows users to configure unit settings for height and weight.
+ * @param {SettingsModalProps} props - The props for the SettingsModal component.
+ * @returns {React.FC} The rendered SettingsModal component.
+ */
 const SettingsModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
-    settings: UnitSettings;
-    onSettingsChange: (settings: UnitSettings) => void;
+    settings: { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
+    onSettingsChange: (settings: { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' }) => void;
 }> = ({ isOpen, onClose, settings, onSettingsChange }) => {
     if (!isOpen) return null;
 
@@ -26,7 +41,7 @@ const SettingsModal: React.FC<{
                 <div className="mb-4">
                     <label className="block text-gray-300 font-bold mb-2">Height Unit</label>
                     <div className="flex bg-slate-700 rounded-lg p-1">
-                        <button 
+                        <button
                             onClick={() => onSettingsChange({ ...settings, height: 'imperial' })}
                             className={`w-1/2 p-2 text-sm rounded-md transition-colors ${settings.height === 'imperial' ? 'bg-poke-blue text-white' : 'text-gray-400 hover:bg-slate-600'}`}
                         >
@@ -59,8 +74,8 @@ const SettingsModal: React.FC<{
                     </div>
                 </div>
                 
-                <button 
-                    onClick={onClose} 
+                <button
+                    onClick={onClose}
                     className="w-full bg-poke-red text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors"
                 >
                     Close
@@ -70,276 +85,46 @@ const SettingsModal: React.FC<{
     );
 };
 
+/**
+ * The main application component for the Pokérole Team Builder.
+ * It orchestrates the entire application, managing global state, data loading,
+ * and rendering the main UI, including the Pokémon list, detail view, and dashboard.
+ * It leverages the `useAppContext` hook to centralize state management.
+ * @returns {React.FC} The root App component.
+ */
 const App: React.FC = () => {
-    const [allPokemon, setAllPokemon] = useState<Pokedex[]>([]);
-    const [allMoves, setAllMoves] = useState<Record<string, Move>>({});
-    const [allAbilities, setAllAbilities] = useState<Record<string, Ability>>({});
-    const [allItems, setAllItems] = useState<ItemsData | null>(null);
-    const [team, setTeam] = useState<TeamMember[]>([]);
-    const [trainerData, setTrainerData] = useState<TrainerData>(createInitialTrainerData());
-    const [selectedPokemon, setSelectedPokemon] = useState<Pokedex | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
-    
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    
-    const [unitSettings, setUnitSettings] = useState<UnitSettings>(() => {
-        try {
-            const saved = localStorage.getItem('pokerole-unit-settings');
-            return saved ? JSON.parse(saved) : { height: 'imperial', weight: 'imperial' };
-        } catch (e) {
-            console.error("Failed to parse unit settings from localStorage", e);
-            return { height: 'imperial', weight: 'imperial' };
-        }
-    });
-
-    useEffect(() => {
-        try {
-            localStorage.setItem('pokerole-unit-settings', JSON.stringify(unitSettings));
-        } catch (e) {
-            console.error("Failed to save unit settings to localStorage", e);
-        }
-    }, [unitSettings]);
-    
-    useEffect(() => {
-        setTeam(prevTeam =>
-            prevTeam.map(member => {
-                const { pokedexData } = member;
-                const feet = Math.floor(pokedexData.Height.Feet);
-                const inches = Math.round((pokedexData.Height.Feet % 1) * 12);
-                
-                const newSize = unitSettings.height === 'imperial'
-                    ? `${feet}'${inches}"`
-                    : `${pokedexData.Height.Meters}m`;
-                
-                const newWeight = unitSettings.weight === 'imperial'
-                    ? `${pokedexData.Weight.Pounds} lbs`
-                    : `${pokedexData.Weight.Kilograms}kg`;
-                
-                return {
-                    ...member,
-                    sheetData: {
-                        ...member.sheetData,
-                        size: newSize,
-                        weight: newWeight,
-                    }
-                };
-            })
-        );
-    }, [unitSettings]);
-
-
-    const loadData = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            setError(null);
-            const { pokemonData, movesData, abilitiesData, itemsData } = await fetchAllData();
-            
-            const movesMap = movesData.reduce((acc, move) => {
-                acc[move._id] = move;
-                return acc;
-            }, {} as Record<string, Move>);
-
-            const abilitiesMap = abilitiesData.reduce((acc, ability) => {
-                acc[ability._id] = ability;
-                return acc;
-            }, {} as Record<string, Ability>);
-
-            setAllPokemon(pokemonData);
-            setAllMoves(movesMap);
-            setAllAbilities(abilitiesMap);
-            setAllItems(itemsData);
-        } catch (err) {
-            setError('Failed to fetch Pokémon data. The servers might be down or your connection is unstable. Please try again.');
-            console.error(err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        loadData();
-    }, [loadData]);
-    
-    const handleSelectPokemon = useCallback((pokemon: Pokedex) => {
-        setSelectedPokemon(pokemon);
-        setIsSidebarOpen(false);
-    }, []);
-
-    const handleClearSelection = useCallback(() => {
-        setSelectedPokemon(null);
-    }, []);
-
-    const handleAddToTeam = useCallback((pokemon: Pokedex, sheetData: PokemonData) => {
-        if (team.length < 6 && !team.some(member => member.pokedexData.DexID === pokemon.DexID)) {
-            const newMember: TeamMember = {
-                pokedexData: pokemon,
-                sheetData: sheetData,
-            };
-            setTeam(prevTeam => [...prevTeam, newMember]);
-        }
-    }, [team]);
-
-    const handleRemoveFromTeam = useCallback((pokemon: Pokedex) => {
-        setTeam(prevTeam => prevTeam.filter(member => member.pokedexData.DexID !== pokemon.DexID));
-    }, []);
-    
-    const handleAddPokemonClick = useCallback(() => {
-        setIsSidebarOpen(true);
-    }, []);
-    
-    const handleSheetDataChange = useCallback((pokemonDexID: string, newSheetData: PokemonData) => {
-        setTeam(prevTeam =>
-            prevTeam.map(member =>
-                member.pokedexData.DexID === pokemonDexID
-                    ? { ...member, sheetData: newSheetData }
-                    : member
-            )
-        );
-    }, []);
-
-    const handleTrainerDataChange = useCallback((data: TrainerData) => {
-        setTrainerData(data);
-    }, []);
-
-    const handleExportTeam = useCallback(() => {
-        if (team.length === 0 && !trainerData.name) {
-            alert("Your team and trainer sheet are empty!");
-            return;
-        }
-        try {
-            const dataStr = JSON.stringify({ team, trainer: trainerData, unitSettings }, null, 2);
-            const dataBlob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'pokerole-session.json';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        } catch (err) {
-            setError('Failed to export data. Please try again.');
-            console.error('Export error:', err);
-        }
-    }, [team, trainerData, unitSettings]);
-    
-    const handleLoadClick = useCallback(() => {
-        fileInputRef.current?.click();
-    }, []);
-
-    const handleLoadTeam = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const content = e.target?.result;
-                if (typeof content !== 'string') {
-                    throw new Error("File content could not be read as text.");
-                }
-                const loadedData = JSON.parse(content);
-                const loadedTeam: TeamMember[] = loadedData.team || []; 
-                const loadedSettings: UnitSettings | undefined = loadedData.unitSettings;
-                const loadedTrainer: TrainerData | undefined = loadedData.trainer;
-
-                if (!Array.isArray(loadedTeam)) {
-                     throw new Error("Invalid team data format.");
-                }
-
-                if (loadedTeam.some(m => !m.pokedexData || !m.sheetData)) {
-                     throw new Error("Invalid Pokémon data within the team file.");
-                }
-                
-                if (loadedSettings) {
-                    setUnitSettings(loadedSettings);
-                }
-
-                if (loadedTrainer) {
-                    // Backwards compatibility migration for pockets
-                    const parsePocketString = (pocketString: string): ItemInstance[] => {
-                        if (!pocketString || typeof pocketString !== 'string') return [];
-                        const itemMap = new Map<string, number>();
-                        const itemLines = pocketString.split('\n');
-                        
-                        itemLines.forEach(line => {
-                            if (!line.trim()) return;
-                            const match = line.match(/^(.*)\s+x(\d+)$/i);
-                            let name = line.trim();
-                            let quantity = 1;
-                            if (match) {
-                                name = match[1].trim();
-                                quantity = parseInt(match[2], 10);
-                            }
-                            itemMap.set(name, (itemMap.get(name) || 0) + quantity);
-                        });
-                        
-                        return Array.from(itemMap.entries()).map(([name, quantity], index) => ({
-                            id: `${name.replace(/\s+/g, '-')}-${index}`,
-                            name,
-                            quantity,
-                        }));
-                    };
-
-                    if (typeof (loadedTrainer.smallPocket as any) === 'string') {
-                        loadedTrainer.smallPocket = parsePocketString(loadedTrainer.smallPocket as any);
-                    }
-                    if (typeof (loadedTrainer.mainPocket as any) === 'string') {
-                         loadedTrainer.mainPocket = parsePocketString(loadedTrainer.mainPocket as any);
-                    }
-                    setTrainerData(loadedTrainer);
-                } else {
-                    setTrainerData(createInitialTrainerData());
-                }
-
-                const teamWithUpdatedWeaknesses = loadedTeam.map(member => {
-                    if (!member.pokedexData) return member;
-                    const weakness = calculateWeaknesses(member.pokedexData.Type1, member.pokedexData.Type2);
-                    return {
-                        ...member,
-                        sheetData: {
-                            ...member.sheetData,
-                            weakness,
-                        }
-                    };
-                });
-
-
-                setTeam(teamWithUpdatedWeaknesses.slice(0, 6)); 
-                setError(null);
-                setSelectedPokemon(null);
-            } catch (err) {
-                console.error("Failed to load data:", err);
-                setError("Failed to load data. The file might be corrupted or in an incorrect format.");
-            }
-        };
-        reader.onerror = () => {
-             setError("Failed to read the selected file.");
-        };
-        reader.readAsText(file);
-        
-        event.target.value = '';
-    }, []);
-
-    const isPokemonInTeam = useMemo(() => {
-        if (!selectedPokemon) return false;
-        return team.some(member => member.pokedexData.DexID === selectedPokemon.DexID);
-    }, [selectedPokemon, team]);
-    
-     const handleAddSuggestionToTeam = useCallback((pokemon: Pokedex) => {
-        if (team.length < 6 && !team.some(member => member.pokedexData.DexID === pokemon.DexID)) {
-            const sheetData = createInitialSheetData(pokemon, unitSettings, trainerData.trainerRank);
-            const newMember: TeamMember = {
-                pokedexData: pokemon,
-                sheetData: sheetData,
-            };
-            setTeam(prevTeam => [...prevTeam, newMember]);
-        }
-    }, [team.length, unitSettings, trainerData.trainerRank]);
+    const {
+        allPokemon,
+        allMoves,
+        allItems,
+        team,
+        trainerData,
+        selectedPokemon,
+        isLoading,
+        error,
+        isSidebarOpen,
+        isSettingsOpen,
+        isSuggestModalOpen,
+        fileInputRef,
+        unitSettings,
+        loadData,
+        setIsSidebarOpen,
+        setIsSettingsOpen,
+        setUnitSettings,
+        setIsSuggestModalOpen,
+        handleSelectPokemon,
+        handleClearSelection,
+        handleAddToTeam,
+        handleRemoveFromTeam,
+        handleAddPokemonClick,
+        handleSheetDataChange,
+        handleTrainerDataChange,
+        handleExportTeam,
+        handleLoadClick,
+        handleLoadTeam,
+        isPokemonInTeam,
+        handleAddSuggestionToTeam,
+    } = useAppContext();
 
     if (isLoading) {
         return (
@@ -356,7 +141,7 @@ const App: React.FC = () => {
                 <PokeballIcon className="w-24 h-24 mb-4 text-poke-red opacity-70 animate-pulse-slow" />
                 <h1 className="text-3xl font-bold text-poke-yellow font-pixel">Oops! Something went wrong.</h1>
                 <p className="mt-2 max-w-md text-gray-300">{error}</p>
-                <button 
+                <button
                     onClick={loadData}
                     className="mt-6 px-6 py-2 bg-poke-blue text-white font-bold rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-poke-yellow"
                 >
@@ -375,7 +160,7 @@ const App: React.FC = () => {
                 team={team}
                 onAddSuggestionToTeam={handleAddSuggestionToTeam}
             />
-             <SettingsModal 
+             <SettingsModal
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
                 settings={unitSettings}
@@ -440,7 +225,7 @@ const App: React.FC = () => {
                     onClick={() => setIsSidebarOpen(false)}
                 ></div>
                 <aside className={`
-                    flex-shrink-0 bg-slate-800/80 backdrop-blur-sm 
+                    flex-shrink-0 bg-slate-800/80 backdrop-blur-sm
                     transform transition-transform duration-300 ease-in-out
                     fixed top-16 left-0 h-[calc(100vh-64px)] w-80 z-40
                     ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
@@ -455,7 +240,7 @@ const App: React.FC = () => {
                 <main className="flex-1 p-4 w-full">
                     <div className="bg-slate-800/50 rounded-lg p-4 h-full overflow-y-auto">
                         {selectedPokemon ? (
-                            <PokemonDetail 
+                            <PokemonDetail
                                 pokemon={selectedPokemon}
                                 allMoves={allMoves}
                                 onClose={handleClearSelection}
@@ -469,9 +254,9 @@ const App: React.FC = () => {
                                 trainerRank={trainerData.trainerRank}
                             />
                         ) : (
-                            <Dashboard 
-                                team={team} 
-                                onSelectPokemon={handleSelectPokemon} 
+                            <Dashboard
+                                team={team}
+                                onSelectPokemon={handleSelectPokemon}
                                 onRemoveFromTeam={handleRemoveFromTeam}
                                 onAddPokemonClick={handleAddPokemonClick}
                                 trainerData={trainerData}

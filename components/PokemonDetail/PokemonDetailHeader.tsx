@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Pokedex, PokemonData } from '../../types';
-import { MinusIcon, PlusIcon } from '../Icons';
+import { Pokedex, PokemonData } from '../../src/types/index.js';
+import { MinusIcon, PlusIcon } from '../Icons.js';
 
 interface PokemonDetailHeaderProps {
     pokemonData: PokemonData;
