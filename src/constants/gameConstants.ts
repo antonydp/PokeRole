@@ -147,6 +147,27 @@ export const SKILLS = {
     ],
 };
 
+/**
+ * Defines the core attributes for Trainers.
+ */
+export const TRAINER_ATTRIBUTES = [
+    { name: 'STRENGTH', field: 'strength' },
+    { name: 'DEXTERITY', field: 'dexterity' },
+    { name: 'VITALITY', field: 'vitality' },
+    { name: 'INSIGHT', field: 'insight' },
+];
+
+/**
+ * Defines the core attributes for Pokémon.
+ */
+export const POKEMON_ATTRIBUTES = [
+    { name: 'STRENGTH', field: 'strength' },
+    { name: 'DEXTERITY', field: 'dexterity' },
+    { name: 'VITALITY', field: 'vitality' },
+    { name: 'SPECIAL', field: 'special' },
+    { name: 'INSIGHT', field: 'insight' },
+];
+
 export const POKEMON_SKILLS = {
     FIGHT: [
         { name: 'BRAWL', field: 'brawl' },

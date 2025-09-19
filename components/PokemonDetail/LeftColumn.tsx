@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { Pokedex, PokemonData } from '../../src/types/index.js';
 import { CurvedSkillBlock, CurvedExtraSkillBlock } from '../shared/CurvedSkillBlock.js';
-import { POKEMON_SKILLS } from '../../src/constants/gameConstants.js';
+import { AttributeBlock } from '../shared/AttributeBlock.js';
+import { POKEMON_SKILLS, POKEMON_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 import { LabeledInput } from '../shared/LabeledInput.js';
 import { PointsDisplay } from '../shared/Points.js';
 import { StatInput } from '../shared/StatInput.js';
@@ -22,13 +23,11 @@ interface LeftColumnProps {
 const LeftColumn: React.FC<LeftColumnProps> = ({ pokemon, pokemonData, onDataChange, skillLimit, points, isAttributePoolExhausted, isSkillPoolExhausted }) => {
     const championBonus = useMemo(() => pokemonData.rank === 'Champion' ? 2 : 0, [pokemonData.rank]);
 
-    const attributes = [
-        { name: 'STRENGTH', value: pokemonData.strength, field: 'strength' as const, max: pokemon.MaxStrength + championBonus },
-        { name: 'DEXTERITY', value: pokemonData.dexterity, field: 'dexterity' as const, max: pokemon.MaxDexterity + championBonus },
-        { name: 'VITALITY', value: pokemonData.vitality, field: 'vitality' as const, max: pokemon.MaxVitality + championBonus },
-        { name: 'SPECIAL', value: pokemonData.special, field: 'special' as const, max: pokemon.MaxSpecial + championBonus },
-        { name: 'INSIGHT', value: pokemonData.insight, field: 'insight' as const, max: pokemon.MaxInsight + championBonus },
-    ];
+    const attributes = POKEMON_ATTRIBUTES.map(attr => ({
+        ...attr,
+        value: pokemonData[attr.field as keyof PokemonData] as number,
+        max: pokemon[`Max${attr.name.charAt(0) + attr.name.slice(1).toLowerCase()}` as keyof Pokedex] as number + championBonus
+    }));
 
     const skills = {
         FIGHT: POKEMON_SKILLS.FIGHT.map(skill => ({ ...skill, value: pokemonData[skill.field as keyof PokemonData] as number })),
@@ -42,16 +41,15 @@ const LeftColumn: React.FC<LeftColumnProps> = ({ pokemon, pokemonData, onDataCha
             <div className="flex-grow flex flex-col justify-between">
                 <PointsDisplay label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
                 {attributes.map(attr => (
-                    <div key={attr.name} className="bg-slate-700/60 rounded-lg p-2">
-                        <StatInput
-                            label={attr.name}
-                            value={attr.value}
-                            onIncrement={() => onDataChange(attr.field, attr.value + 1)}
-                            onDecrement={() => onDataChange(attr.field, attr.value - 1)}
-                            isPoolExhausted={isAttributePoolExhausted}
-                            minValue={pokemon[attr.field as keyof Pokedex] as number}
-                        />
-                    </div>
+                    <AttributeBlock<PokemonData>
+                        name={attr.name}
+                        value={attr.value}
+                        onChange={v => onDataChange(attr.field as keyof PokemonData, v)}
+                        isPoolExhausted={isAttributePoolExhausted}
+                        max={attr.max}
+                        minValue={pokemon[attr.field as keyof Pokedex] as number}
+                        key={attr.name}
+                    />
                 ))}
                 <div className="flex gap-3 pt-1">
                     <LabeledInput id="size" label="SIZE:" value={pokemonData.size} onChange={v => onDataChange('size', v)} isReadOnly={true} />

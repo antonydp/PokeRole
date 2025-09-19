@@ -1,8 +1,9 @@
 import React from 'react';
 import { TrainerData } from '@/src/types/index.js';
-import { CoreAttribute, AchievementsBlock } from './Shared.js';
+import { AchievementsBlock } from './Shared.js';
 import { CurvedSkillBlock, CurvedExtraSkillBlock } from '../shared/CurvedSkillBlock.js';
-import { SKILLS } from '../../src/constants/gameConstants.js';
+import { AttributeBlock } from '../shared/AttributeBlock.js';
+import { SKILLS, TRAINER_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 import { PointsDisplay } from '../shared/Points.js';
 
 interface TrainerSheetMainContentProps {
@@ -32,12 +33,7 @@ const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({
     isSkillPoolExhausted
 }) => {
     
-    const coreAttributes = [
-        { name: 'STRENGTH', value: trainerData.strength, field: 'strength' as const },
-        { name: 'DEXTERITY', value: trainerData.dexterity, field: 'dexterity' as const },
-        { name: 'VITALITY', value: trainerData.vitality, field: 'vitality' as const },
-        { name: 'INSIGHT', value: trainerData.insight, field: 'insight' as const },
-    ];
+    const coreAttributes = TRAINER_ATTRIBUTES.map(attr => ({ ...attr, value: trainerData[attr.field as keyof TrainerData] as number }));
     
     const skills = {
         FIGHT: SKILLS.FIGHT.map(skill => ({ ...skill, value: trainerData[skill.field as keyof TrainerData] as number })),
@@ -53,7 +49,16 @@ const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({
                 <div className="md:col-span-2 space-y-4">
                     <PointsDisplay label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
                     <div className="space-y-4">
-                        {coreAttributes.map(attr => <CoreAttribute key={attr.name} name={attr.name} value={attr.value} onChange={v => onAttributeChange(attr.field, v)} isPoolExhausted={isAttributePoolExhausted} />)}
+                        {coreAttributes.map(attr => (
+                            <AttributeBlock<TrainerData>
+                                key={attr.name}
+                                name={attr.name}
+                                value={attr.value}
+                                onChange={v => onAttributeChange(attr.field as keyof TrainerData, v)}
+                                isPoolExhausted={isAttributePoolExhausted}
+                                max={5} // Trainer attributes max at 5
+                            />
+                        ))}
                     </div>
                      <AchievementsBlock achievements={trainerData.achievements} onAchievementChange={onAchievementChange} />
                 </div>
