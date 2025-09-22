@@ -71,9 +71,9 @@ export function usePointCalculations(data: SheetData, basePokemon?: Pokedex) {
     }, [data, rank, isTrainer, basePokemon]);
 
     const points = {
-        attributes: { spent: Math.max(0, spentAttributePoints), total: totalAttributePoints },
-        social: { spent: Math.max(0, spentSocialAttributePoints), total: totalSocialAttributePoints },
-        skills: { spent: Math.max(0, spentSkillPoints), total: totalSkillPoints },
+        attributes: { spent: spentAttributePoints, total: totalAttributePoints },
+        social: { spent: spentSocialAttributePoints, total: totalSocialAttributePoints },
+        skills: { spent: spentSkillPoints, total: totalSkillPoints },
     };
 
     const isAttributePoolExhausted = spentAttributePoints >= totalAttributePoints;
