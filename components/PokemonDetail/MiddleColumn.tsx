@@ -3,6 +3,7 @@ import { PokemonData } from '../../src/types/index.js';
 import { CircleRating } from '../shared/CircleRating.js';
 import { PointsDisplay } from '../shared/Points.js';
 import { SocialAttribute } from '../shared/SocialAttribute.js';
+import NatureDisplay from '../shared/NatureDisplay.js';
 import { SOCIAL_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 
 interface MiddleColumnProps {
@@ -38,32 +39,11 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, 
                 </div>
                 <div className="flex-grow flex flex-col">
                     {/* Nature & Confidence */}
-                    <div className="bg-[#3A3A3A] rounded-2xl p-2 font-pixel space-y-2">
-                        <div className="bg-white rounded-xl flex items-center px-3 py-1.5">
-                            <label htmlFor="pokemonNature" className="text-[#3A3A3A] font-bold text-sm uppercase mr-2 flex-shrink-0">
-                                NATURE:
-                            </label>
-                            <button
-                                id="pokemonNature"
-                                onClick={onOpenNatureModal}
-                                className="w-full bg-transparent focus:outline-none font-sans text-sm text-black p-0 text-left hover:opacity-70 transition-opacity"
-                            >
-                                {pokemonData.pokemonNature || 'Select Nature...'}
-                            </button>
-                        </div>
-                        <div className="flex items-stretch gap-2">
-                            <label htmlFor="confidence" className="text-white font-bold text-sm uppercase flex items-center justify-start px-1 flex-shrink-0">
-                                CONFIDENCE
-                            </label>
-                            <input
-                                id="confidence"
-                                type="text"
-                                value={pokemonData.confidence}
-                                readOnly
-                                className="w-full bg-white rounded-xl px-2 py-1.5 text-black text-sm font-sans focus:outline-none border-2 border-[#3A3A3A] cursor-default"
-                            />
-                        </div>
-                    </div>
+                    <NatureDisplay
+                        nature={pokemonData.pokemonNature}
+                        confidence={pokemonData.confidence}
+                        onOpenNatureModal={onOpenNatureModal}
+                    />
                     
                     {/* Growable Middle Section */}
                     <div className="flex gap-2 flex-grow my-2.5">

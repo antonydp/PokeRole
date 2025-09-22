@@ -22,7 +22,7 @@ export const SocialAttribute: React.FC<SocialAttributeProps> = ({ label, value, 
     };
 
     return (
-        <div className={`${color} rounded-lg p-2 text-black shadow-inner flex flex-col items-center`}>
+        <div className={`${color} rounded-lg py-4 text-black shadow-inner flex flex-col items-center`}>
             <span className="font-bold text-xs uppercase tracking-wider mb-1">{label}</span>
             <CircleRating
                 value={value}

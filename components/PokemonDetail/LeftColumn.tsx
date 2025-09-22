@@ -5,7 +5,6 @@ import { AttributeBlock } from '../shared/AttributeBlock.js';
 import { POKEMON_SKILLS, POKEMON_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 import { LabeledInput } from '../shared/LabeledInput.js';
 import { PointsDisplay } from '../shared/Points.js';
-import { StatInput } from '../shared/StatInput.js';
 
 interface LeftColumnProps {
     pokemon: Pokedex;
@@ -58,7 +57,7 @@ const LeftColumn: React.FC<LeftColumnProps> = ({ pokemon, pokemonData, onDataCha
             </div>
 
             {/* Skills */}
-            <div className="flex flex-col w-48 flex-shrink-0">
+            <div className="flex flex-col w-48 flex-shrink-0 gap-3">
                 <PointsDisplay label="Skill Points" spent={points.skills.spent} total={points.skills.total} />
                 <div className="flex flex-col flex-grow">
                     <CurvedSkillBlock<PokemonData> title="FIGHT" skills={skills.FIGHT} onSkillChange={onDataChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="top" />

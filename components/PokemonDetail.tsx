@@ -8,7 +8,7 @@ import MiddleColumn from './PokemonDetail/MiddleColumn.js';
 import RightColumn from './PokemonDetail/RightColumn.js';
 import MovesSection from './PokemonDetail/MovesSection.js';
 import MoveModal from './PokemonDetail/MoveModal.js';
-import NatureModal from './PokemonDetail/NatureModal.js';
+import NatureModal from '../components/shared/NatureModal.js';
 import { createInitialSheetData } from '../src/logic/initializers.js';
 import { parseMoveRank } from '../src/logic/formulas.js';
 import { NATURES } from '../src/constants/gameConstants.js';
@@ -263,7 +263,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
                         isAvailable = false;
                     }
                 }
-                 // If not a Rank move (e.g., Level up, Tutor), it's available by default in this implementation
+                 // If not a Rank move, it's available by default in this implementation
                 return { move, isAvailable, requiredRank };
             })
             .filter((item): item is { move: Move; isAvailable: boolean; requiredRank: Rank | null } => !!item.move) // Type guard

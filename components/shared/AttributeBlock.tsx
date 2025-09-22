@@ -13,29 +13,11 @@ interface AttributeBlockProps<T extends Record<string, any>> {
 }
 
 export const AttributeBlock = <T extends Record<string, any>>({ name, value, onChange, isPoolExhausted, max, minValue = 0, className }: AttributeBlockProps<T>) => {
-    const handleDecrement = () => {
-        if (value > minValue) {
-            onChange(value - 1);
-        }
-    };
-
-    const handleIncrement = () => {
-        if (value < max) {
-            onChange(value + 1);
-        }
-    };
 
     return (
-        <div className={`flex flex-col items-center bg-blue-700/60 p-2 rounded-lg ${className}`}>
+        <div className={`flex flex-col items-center py-5 px-2 rounded-lg ${className}`} style={{ backgroundColor: '#00a6ff99' }}>
             <span className="font-bold text-white uppercase text-sm mb-1">{name}</span>
-            <div className="flex items-center justify-between w-full">
-                <button
-                    onClick={handleDecrement}
-                    disabled={value <= minValue}
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded disabled:opacity-50"
-                >
-                    -
-                </button>
+            <div className="flex items-center justify-center w-full">
                 <CircleRating
                     value={value}
                     max={max}
@@ -48,13 +30,6 @@ export const AttributeBlock = <T extends Record<string, any>>({ name, value, onC
                     circleClassName="w-4 h-4"
                     className="gap-1.5"
                 />
-                <button
-                    onClick={handleIncrement}
-                    disabled={isPoolExhausted || value >= max}
-                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded disabled:opacity-50"
-                >
-                    +
-                </button>
             </div>
         </div>
     );

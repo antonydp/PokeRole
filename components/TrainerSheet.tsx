@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import { TrainerData, Nature, ItemsData, Item, HealingItemsSubCategory, ItemInstance } from '../src/types/index.js';
-import NatureModal from './PokemonDetail/NatureModal.js';
+import NatureModal from '../components/shared/NatureModal.js';
 import { NATURES } from '../src/constants/gameConstants.js';
 import { RANK_SKILL_LIMITS, RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../src/logic/core.js';
 import TrainerSheetHeader from './TrainerSheet/TrainerSheetHeader.js';
@@ -109,6 +109,20 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
         handleFieldChange('achievements', newAchievements);
     }, [trainerData.achievements, handleFieldChange]);
 
+    const handleAddAchievement = useCallback(() => {
+        updateData(prev => ({
+            ...prev,
+            achievements: [...prev.achievements, { text: '', completed: false }]
+        }));
+    }, [updateData]);
+
+    const handleRemoveAchievement = useCallback((index: number) => {
+        updateData(prev => {
+            const newAchievements = prev.achievements.filter((_, i) => i !== index);
+            return { ...prev, achievements: newAchievements };
+        });
+    }, [updateData]);
+
     const handleSelectNature = useCallback((nature: Nature) => {
         updateData(prev => ({
             ...prev,
@@ -207,6 +221,8 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
                         onSkillChange={(field, value) => handlePointFieldChange(field, value, { spent: spentSkillPoints, total: totalSkillPoints })}
                         onAchievementChange={handleAchievementChange}
                         onExtraSkillChange={handleExtraSkillChange}
+                        onAddAchievement={handleAddAchievement}
+                        onRemoveAchievement={handleRemoveAchievement}
                         skillLimit={skillLimit}
                         points={{
                             attributes: { spent: spentAttributePoints, total: totalAttributePoints },

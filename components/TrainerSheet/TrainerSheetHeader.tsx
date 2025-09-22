@@ -1,7 +1,8 @@
 import React from 'react';
 import { TrainerData, Rank } from '../../src/types/index.js';
 import { RANKS } from '../../src/constants/gameConstants.js';
-import { ChevronDownIcon } from '../Icons.js'
+import { ChevronDownIcon } from '../Icons.js';
+import NatureDisplay from '../shared/NatureDisplay.js';
 
 const DataField: React.FC<{ label: string; value: string; onChange: (value: string) => void; placeholder?: string }> = ({ label, value, onChange, placeholder }) => (
     <div>
@@ -113,19 +114,11 @@ const TrainerSheetHeader: React.FC<{
                             <MoneyDisplay value={trainerData.money} onChange={v => onUpdateField('money', v)} />
                         </div>
                     </div>
-                    <div className="flex items-stretch gap-2">
-                        <button
-                            onClick={onOpenNatureModal}
-                            className="flex-grow bg-stone-700/80 rounded-md p-2 text-left hover:bg-stone-600 transition-colors focus:outline-none focus:ring-2 focus:ring-poke-yellow flex flex-col justify-center"
-                        >
-                            <label className="text-white/70 text-[9px] font-bold uppercase tracking-widest">Nature</label>
-                            <p className="text-white text-sm truncate">{trainerData.nature || 'Select...'}</p>
-                        </button>
-                        <div className="w-2/5 bg-stone-900/50 rounded-md p-2 text-center flex flex-col justify-center border-2 border-stone-700">
-                             <label className="text-poke-yellow/80 text-[10px] font-bold uppercase tracking-widest">Confidence</label>
-                             <p className="text-white text-3xl font-bold font-sans leading-tight">{trainerData.confidence || '—'}</p>
-                        </div>
-                    </div>
+                    <NatureDisplay
+                        nature={trainerData.nature}
+                        confidence={trainerData.confidence}
+                        onOpenNatureModal={onOpenNatureModal}
+                    />
                 </div>
                 
                 {/* Column 3: Live Stats Screen */}
