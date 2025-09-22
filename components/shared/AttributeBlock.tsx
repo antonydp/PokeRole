@@ -10,9 +10,10 @@ interface AttributeBlockProps<T extends Record<string, any>> {
     minValue?: number;
     className?: string;
     key?: React.Key;
+    baseValue?: number;
 }
 
-export const AttributeBlock = <T extends Record<string, any>>({ name, value, onChange, isPoolExhausted, max, minValue = 0, className }: AttributeBlockProps<T>) => {
+export const AttributeBlock = <T extends Record<string, any>>({ name, value, onChange, isPoolExhausted, max, minValue = 0, className, baseValue }: AttributeBlockProps<T>) => {
 
     return (
         <div className={`flex flex-col items-center py-5 px-2 rounded-lg ${className}`} style={{ backgroundColor: '#00a6ff99' }}>
@@ -29,6 +30,7 @@ export const AttributeBlock = <T extends Record<string, any>>({ name, value, onC
                     isPoolExhausted={isPoolExhausted}
                     circleClassName="w-4 h-4"
                     className="gap-1.5"
+                    baseValue={baseValue}
                 />
             </div>
         </div>

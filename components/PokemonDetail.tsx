@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Pokedex, PokemonData, Move, Nature, Rank, LearnableMove } from '../src/types/index.js';
+import React, { useMemo } from 'react';
+import type { Pokedex, PokemonData, Move, Nature, Rank } from '../src/types/index.js';
 import { CloseIcon } from './Icons.js';
 
 import PokemonDetailHeader from './PokemonDetail/PokemonDetailHeader.js';
@@ -9,27 +9,10 @@ import RightColumn from './PokemonDetail/RightColumn.js';
 import MovesSection from './PokemonDetail/MovesSection.js';
 import MoveModal from './PokemonDetail/MoveModal.js';
 import NatureModal from '../components/shared/NatureModal.js';
-import { createInitialSheetData } from '../src/logic/initializers.js';
-import { parseMoveRank } from '../src/logic/formulas.js';
-import { NATURES } from '../src/constants/gameConstants.js';
-import {
-    RANK_ORDER,
-    RANK_SKILL_LIMITS,
-    RANK_ATTRIBUTE_POINTS,
-    RANK_SOCIAL_ATTRIBUTE_POINTS,
-    RANK_SKILL_POINTS,
-    calculatePokemonHP,
-    calculatePokemonWill,
-    calculateInitiative,
-    calculateDefSDef,
-    calculateEvasion,
-    calculateClash,
-    calculateMaxMoves
-} from '../src/logic/core.js';
-
-const ATTRIBUTE_FIELDS: (keyof PokemonData)[] = ['strength', 'dexterity', 'vitality', 'special', 'insight'];
-const SOCIAL_ATTRIBUTE_FIELDS: (keyof PokemonData)[] = ['tough', 'cool', 'beauty', 'cute', 'clever'];
-const SKILL_FIELDS: (keyof PokemonData)[] = ['brawl', 'channel', 'clash', 'evasion', 'alert', 'athletic', 'nature', 'stealth', 'allure', 'etiquette', 'intimidate', 'perform', 'extraSkillValue'];
+import { RANK_SKILL_LIMITS } from '../src/logic/core.js';
+import { usePokemonSheet } from '../src/hooks/usePokemonSheet.js';
+import { useNatureModal } from '../src/hooks/useNatureModal.js';
+import { usePointCalculations } from '../src/hooks/usePointCalculations.js';
 
 /**
  * @interface PokemonDetailProps
@@ -68,231 +51,47 @@ interface PokemonDetailProps {
 }
 const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, sheetData, onSheetDataChange, unitSettings, trainerRank }) => {
 
-    const [pokemonData, setPokemonData] = useState<PokemonData>(() => sheetData || createInitialSheetData(pokemon, unitSettings, trainerRank));
-    
-    const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
-    const [moveSlotIndex, setMoveSlotIndex] = useState<number | null>(null);
-    const [moveSearchTerm, setMoveSearchTerm] = useState('');
+    const {
+        pokemonData,
+        setPokemonData,
+        handleDataChange,
+        isMoveModalOpen,
+        openMoveModal,
+        closeMoveModal,
+        handleSelectMove,
+        moveSearchTerm,
+        setMoveSearchTerm,
+        learnableMoves,
+        handleClearMove,
+        expandedMoves,
+        handleToggleMoveExpand,
+        availableAbilities
+    } = usePokemonSheet(pokemon, sheetData, unitSettings, trainerRank, isInTeam, onSheetDataChange, allMoves);
 
-    const [isNatureModalOpen, setIsNatureModalOpen] = useState(false);
-    const [natureSearchTerm, setNatureSearchTerm] = useState('');
+    const {
+        isNatureModalOpen,
+        closeNatureModal,
+        openNatureModal,
+        natureSearchTerm,
+        setNatureSearchTerm,
+        filteredNatures,
+    } = useNatureModal();
 
-    const [expandedMoves, setExpandedMoves] = useState<Set<number>>(new Set());
+    const {
+        points,
+        isAttributePoolExhausted,
+        isSocialAttributePoolExhausted,
+        isSkillPoolExhausted
+    } = usePointCalculations(pokemonData, pokemon);
 
-    useEffect(() => {
-        setPokemonData(sheetData || createInitialSheetData(pokemon, unitSettings, trainerRank));
-        setExpandedMoves(new Set());
-    }, [pokemon, sheetData, unitSettings, trainerRank]);
-
-    useEffect(() => {
-        if (isInTeam) {
-            onSheetDataChange(pokemon.DexID, pokemonData);
-        }
-    }, [pokemonData, onSheetDataChange, isInTeam, pokemon.DexID]);
-    
-    const points = useMemo(() => {
-        const currentRank = pokemonData.rank as Rank;
-        const totalAttributePoints = RANK_ATTRIBUTE_POINTS[currentRank];
-        const totalSocialAttributePoints = RANK_SOCIAL_ATTRIBUTE_POINTS[currentRank];
-        const totalSkillPoints = RANK_SKILL_POINTS[currentRank];
-
-        const spentAttributePoints = 
-            (pokemonData.strength - pokemon.Strength) +
-            (pokemonData.dexterity - pokemon.Dexterity) +
-            (pokemonData.vitality - pokemon.Vitality) +
-            (pokemonData.special - pokemon.Special) +
-            (pokemonData.insight - pokemon.Insight);
-        
-        const spentSocialAttributePoints =
-            (pokemonData.tough - 1) +
-            (pokemonData.cool - 1) +
-            (pokemonData.beauty - 1) +
-            (pokemonData.cute - 1) +
-            (pokemonData.clever - 1);
-
-        const spentSkillPoints = 
-            pokemonData.brawl + pokemonData.channel + pokemonData.clash + pokemonData.evasion +
-            pokemonData.alert + pokemonData.athletic + pokemonData.nature + pokemonData.stealth +
-            pokemonData.allure + pokemonData.etiquette + pokemonData.intimidate + pokemonData.perform +
-            pokemonData.extraSkillValue;
-        
-        return {
-            attributes: { spent: Math.max(0, spentAttributePoints), total: totalAttributePoints },
-            social: { spent: Math.max(0, spentSocialAttributePoints), total: totalSocialAttributePoints },
-            skills: { spent: Math.max(0, spentSkillPoints), total: totalSkillPoints },
-        };
-    }, [pokemonData, pokemon]);
-
-    const isAttributePoolExhausted = points.attributes.spent >= points.attributes.total;
-    const isSocialAttributePoolExhausted = points.social.spent >= points.social.total;
-    const isSkillPoolExhausted = points.skills.spent >= points.skills.total;
-
-    const handleDataChange = useCallback((field: keyof PokemonData, value: any) => {
-        setPokemonData(prev => {
-            const oldValue = (prev[field] as number) || 0;
-            const isIncreasing = Number(value) > oldValue;
-
-            if (isIncreasing) {
-                 const currentSpentAttributes = (prev.strength - pokemon.Strength) + (prev.dexterity - pokemon.Dexterity) + (prev.vitality - pokemon.Vitality) + (prev.special - pokemon.Special) + (prev.insight - pokemon.Insight);
-                 if (ATTRIBUTE_FIELDS.includes(field as any) && currentSpentAttributes >= points.attributes.total) return prev;
-
-                 const currentSpentSocial = (prev.tough - 1) + (prev.cool - 1) + (prev.beauty - 1) + (prev.cute - 1) + (prev.clever - 1);
-                 if (SOCIAL_ATTRIBUTE_FIELDS.includes(field as any) && currentSpentSocial >= points.social.total) return prev;
-                 
-                 const currentSpentSkills =
-                    prev.brawl + prev.channel + prev.clash + prev.evasion +
-                    prev.alert + prev.athletic + prev.nature + prev.stealth +
-                    prev.allure + prev.etiquette + prev.intimidate + prev.perform +
-                    prev.extraSkillValue;
-                 if (SKILL_FIELDS.includes(field as any) && currentSpentSkills >= points.skills.total) return prev;
-            }
-
-            const newData = { ...prev, [field]: value };
-            const numericValue = Number(value) || 0;
-            
-            if (field === 'rank') {
-                const newRank = value as Rank;
-                newData.hp = String(calculatePokemonHP(pokemon.BaseHP, newData.vitality, newRank));
-                newData.will = String(calculatePokemonWill(newData.insight, newRank));
-                newData.initiative = String(calculateInitiative(newData.dexterity, newData.alert, newRank));
-                newData.defSDef = calculateDefSDef(newData.vitality, newData.insight, newRank);
-            } else {
-                const currentRank = newData.rank as Rank;
-                switch (field) {
-                    case 'vitality':
-                        newData.hp = String(calculatePokemonHP(pokemon.BaseHP, numericValue, currentRank));
-                        newData.defSDef = calculateDefSDef(numericValue, newData.insight, currentRank);
-                        break;
-                    case 'insight':
-                        newData.will = String(calculatePokemonWill(numericValue, currentRank));
-                        const maxMoves = calculateMaxMoves(numericValue);
-                        if (prev.moves.length !== maxMoves) {
-                            newData.moves = Array.from({ length: maxMoves }, (_, i) => prev.moves[i] || null);
-                        }
-                        newData.defSDef = calculateDefSDef(newData.vitality, numericValue, currentRank);
-                        break;
-                    case 'dexterity':
-                        newData.initiative = String(calculateInitiative(numericValue, newData.alert, currentRank));
-                        newData.evasionValue = String(calculateEvasion(numericValue, newData.evasion));
-                        break;
-                    case 'strength':
-                    case 'special':
-                    case 'clash':
-                        newData.clashValue = calculateClash(newData.strength, newData.special, newData.clash);
-                        break;
-                    case 'alert':
-                        newData.initiative = String(calculateInitiative(newData.dexterity, numericValue, currentRank));
-                        break;
-                    case 'evasion':
-                        newData.evasionValue = String(calculateEvasion(newData.dexterity, numericValue));
-                        break;
-                }
-            }
-            
-            return newData;
-        });
-    }, [points, pokemon]);
-
-    const openMoveModal = useCallback((index: number) => {
-        setMoveSlotIndex(index);
-        setMoveSearchTerm('');
-        setIsMoveModalOpen(true);
-    }, []);
-
-    const closeMoveModal = () => {
-        setIsMoveModalOpen(false);
-        setMoveSlotIndex(null);
-    };
-
-    const handleSelectMove = (move: Move) => {
-        if (moveSlotIndex === null) return;
-
-        setPokemonData(prev => {
-            const newMoves = [...prev.moves];
-            newMoves[moveSlotIndex] = move._id;
-            return { ...prev, moves: newMoves };
-        });
-        closeMoveModal();
-    };
-    
-    const handleSelectNature = useCallback((nature: Nature) => {
+    const handleSelectNature = (nature: Nature) => {
         setPokemonData(prev => ({
             ...prev,
             pokemonNature: nature.name,
             confidence: String(nature.confidence),
         }));
-        setIsNatureModalOpen(false);
-    }, []);
-
-    const handleClearMove = useCallback((index: number) => {
-        setPokemonData(prev => {
-            const newMoves = [...prev.moves];
-            newMoves[index] = null;
-            return { ...prev, moves: newMoves };
-        });
-    }, []);
-
-    const handleToggleMoveExpand = useCallback((index: number) => {
-        setExpandedMoves(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(index)) {
-                newSet.delete(index);
-            } else {
-                newSet.add(index);
-            }
-            return newSet;
-        });
-    }, []);
-
-    const learnableMoves = useMemo((): LearnableMove[] => {
-        const trainerRankOrder = RANK_ORDER[trainerRank];
-        
-        return pokemon.Moves
-            .map(learnset => ({
-                move: allMoves[learnset.Name.toLowerCase().replace(/'/g, "").replace(/ /g, "-")],
-                learnset
-            }))
-            .filter(({ move }) => !!move)
-            .map(({ move, learnset }) => {
-                const requiredRank = parseMoveRank(learnset.Learned);
-                let isAvailable = true;
-
-                if (requiredRank) {
-                    const moveRankOrder = RANK_ORDER[requiredRank];
-                    if (moveRankOrder > trainerRankOrder) {
-                        isAvailable = false;
-                    }
-                }
-                 // If not a Rank move, it's available by default in this implementation
-                return { move, isAvailable, requiredRank };
-            })
-            .filter((item): item is { move: Move; isAvailable: boolean; requiredRank: Rank | null } => !!item.move) // Type guard
-            .filter(({ move }) => move.Name.toLowerCase().includes(moveSearchTerm.toLowerCase()))
-            .sort((a, b) => {
-                // Sort by availability first, then alphabetically
-                if (a.isAvailable && !b.isAvailable) return -1;
-                if (!a.isAvailable && b.isAvailable) return 1;
-                return a.move.Name.localeCompare(b.move.Name);
-            });
-    }, [pokemon.Moves, allMoves, moveSearchTerm, trainerRank]);
-    
-    const filteredNatures = useMemo(() => {
-        const term = natureSearchTerm.toLowerCase();
-        if (!term) return NATURES;
-        return NATURES.filter(nature => 
-            nature.name.toLowerCase().includes(term) ||
-            nature.keywords.toLowerCase().includes(term)
-        );
-    }, [natureSearchTerm]);
-
-    const availableAbilities = useMemo(() => {
-        return [
-            pokemon.Ability1,
-            pokemon.Ability2,
-            pokemon.HiddenAbility,
-            ...(pokemon.EventAbilities?.split(',').map(a => a.trim()) || [])
-        ].filter((a): a is string => !!a && a.trim() !== '');
-    }, [pokemon]);
+        closeNatureModal();
+    };
     
     const skillLimit = useMemo(() => RANK_SKILL_LIMITS[pokemonData.rank as Rank], [pokemonData.rank]);
 
@@ -308,7 +107,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
             />
             <NatureModal
                 isOpen={isNatureModalOpen}
-                onClose={() => setIsNatureModalOpen(false)}
+                onClose={closeNatureModal}
                 natures={filteredNatures}
                 onSelectNature={handleSelectNature}
                 searchTerm={natureSearchTerm}
@@ -343,10 +142,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
                 <MiddleColumn 
                     pokemonData={pokemonData} 
                     onDataChange={handleDataChange} 
-                    onOpenNatureModal={() => {
-                        setNatureSearchTerm('');
-                        setIsNatureModalOpen(true);
-                    }}
+                    onOpenNatureModal={openNatureModal}
                     points={points}
                     isSocialAttributePoolExhausted={isSocialAttributePoolExhausted}
                 />
