@@ -3,11 +3,6 @@ import { Pokedex } from '../src/types/index.js';
 import PokemonCard from './PokemonCard.js';
 import { TYPE_COLORS } from '../src/constants/gameConstants.js';
 
-/**
- * @interface PokemonListProps
- * @property {Pokedex[]} allPokemon - An array of all available Pokémon data.
- * @property {(pokemon: Pokedex) => void} onSelectPokemon - Callback function when a Pokémon is selected from the list.
- */
 
 /**
  * Defines the structure for initial stat filters.
@@ -42,10 +37,7 @@ const STAT_FIELDS: (keyof typeof initialStatFilters)[] = ['BaseHP', 'Strength', 
  * @returns {React.FC} The rendered PokemonList component.
  */
 
-interface PokemonListProps {
-    allPokemon: Pokedex[];
-    onSelectPokemon: (pokemon: Pokedex) => void;
-}
+import { PokemonListProps } from './types.js';
 
 const PokemonList: React.FC<PokemonListProps> = ({ allPokemon, onSelectPokemon }) => {
     const [searchTerm, setSearchTerm] = useState('');

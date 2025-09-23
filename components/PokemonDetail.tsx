@@ -14,20 +14,8 @@ import { usePokemonSheet } from '../src/hooks/usePokemonSheet.js';
 import { useNatureModal } from '../src/hooks/useNatureModal.js';
 import { usePointCalculations } from '../src/hooks/usePointCalculations.js';
 
-/**
- * @interface PokemonDetailProps
- * @property {Pokedex} pokemon - The base Pokedex data for the Pokémon.
- * @property {Record<string, Move>} allMoves - A map of all available moves.
- * @property {() => void} onClose - Callback to close the detail sheet.
- * @property {(pokemon: Pokedex, sheetData: PokemonData) => void} onAddToTeam - Callback to add the Pokémon to the team.
- * @property {(pokemon: Pokedex) => void} onRemoveFromTeam - Callback to remove the Pokémon from the team.
- * @property {boolean} isInTeam - True if the Pokémon is currently in the team.
- * @property {boolean} teamIsFull - True if the team has reached its maximum capacity.
- * @property {PokemonData} [sheetData] - Optional existing sheet data for the Pokémon if it's already in the team.
- * @property {(pokemonDexID: string, newSheetData: PokemonData) => void} onSheetDataChange - Callback to update the Pokémon's sheet data in the team.
- * @property {{ height: 'imperial' | 'metric', weight: 'imperial' | 'metric' }} unitSettings - User's preferred unit settings.
- * @property {Rank} trainerRank - The current rank of the trainer.
- */
+import { PokemonDetailProps } from './types.js';
+
 
 /**
  * The PokemonDetail component displays and allows editing of a Pokémon's full character sheet.
@@ -36,19 +24,6 @@ import { usePointCalculations } from '../src/hooks/usePointCalculations.js';
  * @param {PokemonDetailProps} props - The props for the PokemonDetail component.
  * @returns {React.FC} The rendered PokemonDetail component.
  */
-interface PokemonDetailProps {
-    pokemon: Pokedex;
-    allMoves: Record<string, Move>;
-    onClose: () => void;
-    onAddToTeam: (pokemon: Pokedex, sheetData: PokemonData) => void;
-    onRemoveFromTeam: (pokemon: Pokedex) => void;
-    isInTeam: boolean;
-    teamIsFull: boolean;
-    sheetData?: PokemonData;
-    onSheetDataChange: (pokemonDexID: string, newSheetData: PokemonData) => void;
-    unitSettings: { height: 'imperial' | 'metric', weight: 'imperial' | 'metric' };
-    trainerRank: Rank;
-}
 const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, sheetData, onSheetDataChange, unitSettings, trainerRank }) => {
 
     const {

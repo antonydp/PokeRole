@@ -5,22 +5,6 @@ import { PokeballIcon, CloseIcon, SparklesIcon, PlusIcon } from './Icons.js';
 import TypeBadge from './TypeBadge.js';
 import { IMAGE_BASE_URL } from '../src/constants/config.js';
 
-/**
- * @interface SuggestTeamModalProps
- * @property {boolean} isOpen - Whether the modal is open.
- * @property {() => void} onClose - Callback to close the modal.
- * @property {Pokedex[]} allPokemon - All available Pokémon data for suggestions.
- * @property {TeamMember[]} team - The current Pokémon team.
- * @property {(pokemon: Pokedex) => void} onAddSuggestionToTeam - Callback to add a suggested Pokémon to the team.
- */
-
-/**
- * @interface SuggestionCardProps
- * @property {Pokedex} pokemon - The Pokémon data for the suggestion card.
- * @property {() => void} onAdd - Callback to add the Pokémon to the team.
- * @property {boolean} isAdded - True if the Pokémon is already in the team.
- * @property {boolean} teamIsFull - True if the team is full.
- */
 
 /**
  * SuggestionCard component displays a single Pokémon suggestion within the modal.
@@ -29,12 +13,9 @@ import { IMAGE_BASE_URL } from '../src/constants/config.js';
  * @param {SuggestionCardProps} props - The props for the SuggestionCard component.
  * @returns {React.FC} The rendered SuggestionCard component.
  */
-const SuggestionCard: React.FC<{
-    pokemon: Pokedex;
-    onAdd: () => void;
-    isAdded: boolean;
-    teamIsFull: boolean;
-}> = ({ pokemon, onAdd, isAdded, teamIsFull }) => {
+import { SuggestionCardProps, SuggestTeamModalProps } from './types.js';
+
+const SuggestionCard: React.FC<SuggestionCardProps> = ({ pokemon, onAdd, isAdded, teamIsFull }) => {
     const imageUrl = `${IMAGE_BASE_URL}${pokemon.Image}`;
     const isDisabled = isAdded || teamIsFull;
     
@@ -72,13 +53,6 @@ const SuggestionCard: React.FC<{
  * @param {SuggestTeamModalProps} props - The props for the SuggestTeamModal component.
  * @returns {React.FC} The rendered SuggestTeamModal component.
  */
-interface SuggestTeamModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    allPokemon: Pokedex[];
-    team: TeamMember[];
-    onAddSuggestionToTeam: (pokemon: Pokedex) => void;
-}
 const SuggestTeamModal: React.FC<SuggestTeamModalProps> = ({ isOpen, onClose, allPokemon, team, onAddSuggestionToTeam }) => {
     const [prompt, setPrompt] = useState('');
     const [isLoading, setIsLoading] = useState(false);

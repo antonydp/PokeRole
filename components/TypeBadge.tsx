@@ -2,14 +2,8 @@
 import React from 'react';
 import { TYPE_COLORS } from '../src/constants/gameConstants.js';
 
-/**
- * @interface TypeBadgeProps
- * @property {string} type - The Pokémon type to display (e.g., "Fire", "Water").
- */
 
-interface TypeBadgeProps {
-    type: string;
-}
+import { TypeBadgeProps } from './types.js';
 
 const TypeBadge: React.FC<TypeBadgeProps> = ({ type }) => {
     const colorClass = TYPE_COLORS[type] || 'bg-gray-500 text-white';

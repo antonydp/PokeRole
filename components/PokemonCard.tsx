@@ -1,13 +1,9 @@
 import React from 'react';
-import type { Pokedex } from '../src/types/index.js'; 
+import type { Pokedex } from '../src/types/index.js';
 import { IMAGE_BASE_URL } from '../src/constants/config.js';
 import TypeBadge from './TypeBadge.js';
+import { PokemonCardProps } from './types.js';
 
-/**
- * @interface PokemonCardProps
- * @property {Pokedex} pokemon - The Pokémon data to display.
- * @property {(pokemon: Pokedex) => void} onSelect - Callback function when the card is selected.
- */
 
 /**
  * PokemonCard component displays a summary of a single Pokémon.
@@ -16,12 +12,6 @@ import TypeBadge from './TypeBadge.js';
  * @param {PokemonCardProps} props - The props for the PokemonCard component.
  * @returns {React.FC} The rendered PokemonCard component.
  */
-
-// Define the PokemonCardProps interface
-interface PokemonCardProps {
-    pokemon: Pokedex;
-    onSelect: (pokemon: Pokedex) => void;
-}
 
 const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onSelect }) => {
     const imageUrl = `${IMAGE_BASE_URL}${pokemon.Image}`;

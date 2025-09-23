@@ -19,11 +19,7 @@ import { usePointCalculations } from '../src/hooks/usePointCalculations.js';
  * @returns {React.FC} The rendered TrainerSheet component.
  */
 
-interface TrainerSheetProps {
-    trainerData: TrainerData;
-    onDataChange: (updaterOrData: ((prev: TrainerData) => TrainerData) | TrainerData) => void;
-    allItems: ItemsData | null;
-}
+import { TrainerSheetProps } from './types.js';
 
 const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, allItems }) => {
 
