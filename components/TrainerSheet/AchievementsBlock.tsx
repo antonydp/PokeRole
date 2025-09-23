@@ -16,12 +16,11 @@ export const AchievementsBlock: React.FC<AchievementsBlockProps> = ({ achievemen
             <button
                 onClick={onAddAchievement}
                 className="bg-yellow-400 hover:bg-yellow-300 text-red-900 font-extrabold py-1 px-3 rounded-full text-sm shadow-md transition duration-300 ease-in-out transform hover:scale-110 flex items-center justify-center space-x-1"
-                aria-label="Aggiungi nuovo achievement"
+                aria-label="Add new achievement"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                 </svg>
-                <span>Aggiungi</span>
             </button>
         </div>
         <div className="space-y-3">
@@ -40,7 +39,7 @@ export const AchievementsBlock: React.FC<AchievementsBlockProps> = ({ achievemen
                             checked={achievement.completed}
                             onChange={(e) => onAchievementChange(index, 'completed', e.target.checked)}
                             className="opacity-0 absolute w-full h-full cursor-pointer"
-                            aria-label={achievement.completed ? "Deseleziona achievement" : "Seleziona achievement"}
+                            aria-label={achievement.completed ? "Deselect achievement" : "Select achievement"}
                         />
                         <div
                             className={`absolute inset-0 flex items-center justify-center rounded-full cursor-pointer transition-all duration-300 ${
@@ -71,7 +70,7 @@ export const AchievementsBlock: React.FC<AchievementsBlockProps> = ({ achievemen
                         type="text"
                         containerClassName={`flex-grow border-0 focus:border-yellow-400 rounded px-3 py-2 text-base font-extrabold ${
                             achievement.completed
-                                ? 'bg-green-800 text-yellow-100 line-through'
+                                ? 'bg-green-800 text-yellow-100 line-through decoration-yellow-300/70'
                                 : 'bg-red-700 text-white'
                         }`}
                         inputClassName="text-center w-full normal-case"
