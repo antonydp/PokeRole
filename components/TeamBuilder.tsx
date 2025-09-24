@@ -140,7 +140,7 @@ const CoverageDisplay: React.FC<CoverageDisplayProps> = ({ title, types, data, c
 
     return (
         <div className="bg-slate-800/50 p-4 rounded-lg">
-            <h3 className={`text-xl font-bold font-pixel text-center mb-4 ${colorClass}`}>{title}</h3>
+            <h3 className={`text-xl font-bold font-primary text-center mb-4 ${colorClass}`}>{title}</h3>
             {relevantTypes.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
                     {relevantTypes.map(type => {
@@ -185,7 +185,7 @@ const TeamTypeCoverage: React.FC<TeamTypeCoverageProps> = ({ coverage }) => {
 
     return (
         <div className="mt-8 w-full max-w-4xl mx-auto animate-fade-in">
-            <h2 className="text-2xl font-bold font-pixel text-poke-yellow mb-4 text-center">Team Type Coverage</h2>
+            <h2 className="text-2xl font-bold font-primary text-poke-yellow mb-4 text-center">Team Type Coverage</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <CoverageDisplay
                     title="Weaknesses"
@@ -300,7 +300,7 @@ const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemo
                 <h2 className="text-3xl font-bold text-poke-yellow">Your Team</h2>
                  <button
                     onClick={onOpenSuggestModal}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white font-pixel text-xs rounded-md border-b-2 border-purple-800 hover:bg-purple-500 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white font-primary text-xs rounded-md border-b-2 border-purple-800 hover:bg-purple-500 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
                     title="Get an AI-powered team suggestion!"
                 >
                     <SparklesIcon className="h-4 w-4" />

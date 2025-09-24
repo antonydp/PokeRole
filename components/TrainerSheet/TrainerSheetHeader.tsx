@@ -80,7 +80,7 @@ const TrainerSheetHeader: React.FC<{
     onOpenNatureModal: () => void;
 }> = ({ trainerData, onUpdateField, onOpenNatureModal }) => {
     return (
-        <div className="bg-gradient-to-b from-stone-800 to-stone-900 p-1.5 rounded-xl border-2 border-stone-900 shadow-2xl font-pixel relative mb-4">
+        <div className="bg-gradient-to-b from-stone-800 to-stone-900 p-1.5 rounded-xl border-2 border-stone-900 shadow-2xl font-primary relative mb-4">
             <div className="absolute top-2 left-3 w-12 h-12 bg-cyan-400 rounded-full border-4 border-white shadow-lg flex items-center justify-center z-10">
                 <div className="w-8 h-8 bg-cyan-200 rounded-full shadow-inner"></div>
             </div>
@@ -91,7 +91,7 @@ const TrainerSheetHeader: React.FC<{
                      <input
                         type="text" value={trainerData.name} onChange={e => onUpdateField('name', e.target.value)}
                         placeholder="Trainer Name"
-                        className="w-full bg-transparent p-0 pb-1 text-3xl font-pixel text-white border-b-2 border-white/30 focus:ring-0 focus:outline-none focus:border-poke-yellow placeholder:text-white/50"
+                        className="w-full bg-transparent p-0 pb-1 text-3xl font-primary text-white border-b-2 border-white/30 focus:ring-0 focus:outline-none focus:border-poke-yellow placeholder:text-white/50"
                         aria-label="Trainer Name"
                     />
                     <div className="grid grid-cols-2 gap-x-4 mt-2">

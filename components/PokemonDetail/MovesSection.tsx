@@ -31,7 +31,7 @@ const MemoizedEmptyMoveSlot = React.memo(EmptyMoveSlot);
 const MovesSection: React.FC<MovesSectionProps> = ({ pokemonData, allMoves, openMoveModal, handleClearMove, expandedMoves, onToggleMoveExpand }) => {
     return (
         <div className="mt-4 bg-[#2DB3B3]/90 rounded-xl p-3 border-4 border-[#3A3A3A]">
-            <h2 className="text-center text-lg text-white font-bold mb-3 tracking-wider font-pixel">MOVES</h2>
+            <h2 className="text-center text-lg text-white font-bold mb-3 tracking-wider font-primary">MOVES</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {pokemonData.moves.map((moveId, index) => {
                     const move = moveId ? allMoves[moveId] : null;

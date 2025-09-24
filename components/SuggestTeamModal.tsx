@@ -37,7 +37,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({ pokemon, onAdd, isAdded
             <button 
                 onClick={onAdd}
                 disabled={isDisabled}
-                className="flex items-center justify-center px-3 py-1.5 bg-green-600 text-white font-pixel text-xs rounded-md border-b-2 border-green-800 hover:bg-green-500 active:translate-y-px active:border-b-0 transition-all duration-150 disabled:bg-slate-500 disabled:border-slate-600 disabled:cursor-not-allowed"
+                className="flex items-center justify-center px-3 py-1.5 bg-green-600 text-white font-primary text-xs rounded-md border-b-2 border-green-800 hover:bg-green-500 active:translate-y-px active:border-b-0 transition-all duration-150 disabled:bg-slate-500 disabled:border-slate-600 disabled:cursor-not-allowed"
             >
                 <PlusIcon className="w-4 h-4" />
                 <span className="ml-1">{isAdded ? 'Added' : 'Add'}</span>
@@ -96,7 +96,7 @@ const SuggestTeamModal: React.FC<SuggestTeamModalProps> = ({ isOpen, onClose, al
                 <div className="p-4 border-b border-slate-700 flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <SparklesIcon className="w-8 h-8 text-purple-400" />
-                        <h2 className="text-2xl font-pixel text-poke-yellow">AI Team Suggester</h2>
+                        <h2 className="text-2xl font-primary text-poke-yellow">AI Team Suggester</h2>
                     </div>
                     <button onClick={onClose} className="p-1.5 rounded-full bg-slate-700 hover:bg-red-500 transition-colors">
                         <CloseIcon className="w-5 h-5" />
@@ -119,7 +119,7 @@ const SuggestTeamModal: React.FC<SuggestTeamModalProps> = ({ isOpen, onClose, al
                      <button
                         onClick={handleGenerate}
                         disabled={isLoading}
-                        className="w-full flex items-center justify-center px-4 py-2 bg-poke-blue text-white font-pixel text-base rounded-md border-b-4 border-blue-800 hover:bg-blue-600 active:translate-y-px active:border-b-2 transition-all duration-150 disabled:bg-slate-600 disabled:border-slate-700 disabled:cursor-not-allowed"
+                        className="w-full flex items-center justify-center px-4 py-2 bg-poke-blue text-white font-primary text-base rounded-md border-b-4 border-blue-800 hover:bg-blue-600 active:translate-y-px active:border-b-2 transition-all duration-150 disabled:bg-slate-600 disabled:border-slate-700 disabled:cursor-not-allowed"
                     >
                         {isLoading ? (
                             <>
@@ -138,7 +138,7 @@ const SuggestTeamModal: React.FC<SuggestTeamModalProps> = ({ isOpen, onClose, al
                     
                     {suggestions.length > 0 && !isLoading && (
                         <div className="pt-4 border-t border-slate-700/50 animate-fade-in">
-                            <h3 className="text-xl font-bold text-poke-yellow mb-3 font-pixel">Suggested Team:</h3>
+                            <h3 className="text-xl font-bold text-poke-yellow mb-3 font-primary">Suggested Team:</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 {suggestions.map(pokemon => (
                                     <SuggestionCard

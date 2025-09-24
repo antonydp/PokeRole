@@ -8,7 +8,7 @@ interface NatureDisplayProps {
 
 const NatureDisplay: React.FC<NatureDisplayProps> = ({ nature, confidence, onOpenNatureModal }) => {
     return (
-        <div className="bg-[#3A3A3A] rounded-2xl p-2 font-pixel space-y-2">
+        <div className="bg-[#3A3A3A] rounded-2xl p-2 font-primary space-y-2">
             <div className="bg-white rounded-xl flex items-center px-3 py-1.5">
                 <label htmlFor="pokemonNature" className="text-[#3A3A3A] font-bold text-sm uppercase mr-2 flex-shrink-0">
                     NATURE:

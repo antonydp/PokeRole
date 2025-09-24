@@ -24,7 +24,7 @@ export const CurvedSkillBlock = <T extends Record<string, any>>({ title, skills,
         <div className={`bg-[#C95649]/90 p-2 flex-grow flex flex-col justify-center gap-y-2 ${positionClasses[position]}`}>
             {skills.map(skill => (
                 <div key={skill.name} className="flex flex-col items-center">
-                    <span className="text-white text-[10px] uppercase font-bold">{skill.name}</span>
+                    <span className="text-white uppercase font-bold">{skill.name}</span>
                     <CircleRating 
                         value={skill.value} 
                         max={skillLimit} 
@@ -36,7 +36,7 @@ export const CurvedSkillBlock = <T extends Record<string, any>>({ title, skills,
                 </div>
             ))}
         </div>
-        <div className="bg-[#B2483D] rounded-r-2xl w-6 flex items-center justify-center text-[#3A3A3A] font-bold font-pixel text-xs">
+        <div className="bg-[#B2483D] rounded-r-2xl w-6 flex items-center justify-center text-[#3A3A3A] font-bold font-primary text-xs">
             <span className="transform rotate-90 block whitespace-nowrap tracking-tighter">{title}</span>
         </div>
     </div>
@@ -76,7 +76,7 @@ export const CurvedExtraSkillBlock: React.FC<CurvedExtraSkillBlockProps> = ({ ti
                 </div>
             ))}
         </div>
-        <div className="bg-[#B2483D] rounded-r-2xl w-6 flex items-center justify-center text-[#3A3A3A] font-bold font-pixel text-xs">
+        <div className="bg-[#B2483D] rounded-r-2xl w-6 flex items-center justify-center text-[#3A3A3A] font-bold font-primary text-xs">
             <span className="transform rotate-90 block whitespace-nowrap tracking-tighter">{title}</span>
         </div>
     </div>

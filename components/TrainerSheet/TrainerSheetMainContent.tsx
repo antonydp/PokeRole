@@ -47,7 +47,7 @@ const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({
     };
 
     return (
-            <div className="lg:col-span-7 grid grid-cols-1 lg:grid-cols-12 gap-4 h-full">
+            <div className="lg:col-span-7 grid grid-cols-1 lg:grid-cols-12 gap-4">
                 {/* Points Display Section */}
                 <div className="lg:col-span-12 grid grid-cols-12 gap-4">
                     <div className="lg:col-span-4">

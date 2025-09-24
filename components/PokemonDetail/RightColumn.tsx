@@ -29,7 +29,7 @@ const RightColumn: React.FC<RightColumnProps> = ({ pokemonData, updateField, pok
     return (
         <div className="lg:col-span-2 space-y-2.5">
             <div className="bg-[#3A3A3A] rounded-2xl p-2 w-full flex items-center gap-2">
-                <label className="text-white font-bold text-sm w-14 flex-shrink-0 font-pixel">HP</label>
+                <label className="text-white font-bold text-sm w-14 flex-shrink-0 font-primary">HP</label>
                 <div
                     id="hp"
                     className="w-full bg-white rounded-lg px-2 py-1.5 text-black text-center font-bold text-sm border-2 border-[#3A3A3A]"
@@ -39,7 +39,7 @@ const RightColumn: React.FC<RightColumnProps> = ({ pokemonData, updateField, pok
                 </div>
             </div>
             <div className="bg-[#3A3A3A] rounded-2xl p-2 w-full flex items-center gap-2">
-                <label className="text-white font-bold text-sm w-14 flex-shrink-0 font-pixel">WILL</label>
+                <label className="text-white font-bold text-sm w-14 flex-shrink-0 font-primary">WILL</label>
                 <div
                     id="will"
                     className="w-full bg-white rounded-lg px-2 py-1.5 text-black text-center font-bold text-sm border-2 border-[#3A3A3A]"
@@ -65,7 +65,7 @@ const RightColumn: React.FC<RightColumnProps> = ({ pokemonData, updateField, pok
                 ))}
             </div>
 
-            <div className={`bg-[#3A3A3A] rounded-2xl p-2 font-pixel flex items-stretch gap-2 mt-2 transition-all ${isOverleveled ? 'ring-2 ring-yellow-400' : ''}`}>
+            <div className={`bg-[#3A3A3A] rounded-2xl p-2 font-primary flex items-stretch gap-2 mt-2 transition-all ${isOverleveled ? 'ring-2 ring-yellow-400' : ''}`}>
                 <label htmlFor="rank" className="text-white font-bold text-sm uppercase flex items-center justify-start px-1 flex-shrink-0">
                     RANK
                 </label>

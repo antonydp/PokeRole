@@ -24,7 +24,7 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
     availableAbilities,
 }) => {
     return (
-        <div className="flex justify-between items-center mb-4 flex-wrap gap-4 font-pixel">
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-4 font-primary">
             {/* Left side: Name and Pokedex # */}
             <div className="flex-grow min-w-[250px]">
                 <input 
@@ -32,11 +32,11 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
                     type="text"
                     value={pokemonData.pokemonName}
                     onChange={e => updateField('pokemonName', e.target.value)}
-                    className="w-full bg-transparent p-0 text-4xl font-pixel text-white border-none focus:ring-0 focus:outline-none placeholder:text-white/50"
+                    className="w-full bg-transparent p-0 text-4xl font-primary text-white border-none focus:ring-0 focus:outline-none placeholder:text-white/50"
                     placeholder="Pokémon Name"
                     aria-label="Pokémon Name"
                 />
-                <p className="mt-1 font-pixel text-sm text-white/80 tracking-wider">
+                <p className="mt-1 font-primary text-sm text-white/80 tracking-wider">
                     POKÉDEX #: {pokemonData.pokemonNumber}
                 </p>
             </div>
@@ -44,7 +44,7 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
             {/* Right side: Ability and Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 items-stretch flex-shrink-0 w-full sm:w-auto">
                 <div className="relative w-full sm:w-48 bg-[#B2483D] rounded-xl px-2 pt-1 pb-1.5 border-2 border-[#3A3A3A] flex flex-col justify-center">
-                    <label htmlFor="ability" className="font-pixel text-[10px] tracking-wider uppercase text-white/90 font-bold">
+                    <label htmlFor="ability" className="font-primary text-[10px] tracking-wider uppercase text-white/90 font-bold">
                         ABILITY
                     </label>
                     <select

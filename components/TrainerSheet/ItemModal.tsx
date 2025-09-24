@@ -147,8 +147,8 @@ const ItemModal: React.FC<ItemModalProps> = ({ isOpen, onClose, itemsData, onSel
         if (!searchTerm) return items;
         const term = searchTerm.toLowerCase();
         return items.filter(item =>
-            item.name.toLowerCase().includes(term) ||
-            item.description.toLowerCase().includes(term)
+            (item.name || '').toLowerCase().includes(term) ||
+            (item.description || '').toLowerCase().includes(term)
         );
     };
 
@@ -196,7 +196,7 @@ const ItemModal: React.FC<ItemModalProps> = ({ isOpen, onClose, itemsData, onSel
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-fade-in" onClick={handleClose}>
             <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col font-sans" onClick={e => e.stopPropagation()}>
                 <div className="p-4 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
-                    <h3 className="text-xl font-bold text-poke-yellow text-center font-pixel">
+                    <h3 className="text-xl font-bold text-poke-yellow text-center font-primary">
                         {view === 'list' ? 'Add Item to Pockets' : 'Create Custom Item'}
                     </h3>
                     {view === 'list' && (

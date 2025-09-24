@@ -49,18 +49,18 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, 
                     <div className="flex gap-2 flex-grow my-2.5">
                         <div className="bg-[#2DB3B3] rounded-2xl p-2 w-1/2 border-4 border-[#3A3A3A] flex flex-col justify-around">
                             <div className="flex flex-col items-center">
-                                <label className="text-white text-[10px] font-bold">HAPPINESS</label>
+                                <label className="text-white font-bold">HAPPINESS</label>
                                 <CircleRating value={pokemonData.happiness} max={5} onChange={(v) => onDataChange('happiness', v)} circleClassName="w-3 h-3" className="mt-0.5"/>
                             </div>
                             <div className="flex flex-col items-center">
-                                <label className="text-white text-[10px] font-bold">LOYALTY</label>
+                                <label className="text-white font-bold">LOYALTY</label>
                                 <CircleRating value={pokemonData.loyalty} max={5} onChange={(v) => onDataChange('loyalty', v)} circleClassName="w-3 h-3" className="mt-0.5" />
                             </div>
                         </div>
-                        <div className="w-1/2 flex flex-col justify-center">
-                            <div className="bg-[#C95649] rounded-2xl p-3 border-4 border-[#3A3A3A] space-y-2">
+                        <div className="w-1/2 flex flex-col justify-around">
+                            <div className="bg-[#C95649] rounded-2xl p-2 border-4 border-[#3A3A3A] space-y-2 flex-grow flex flex-col justify-center">
                                 <div className="text-center">
-                                    <label htmlFor="battles" className="font-pixel uppercase text-white text-sm font-bold tracking-wider">
+                                    <label htmlFor="battles" className="font-primary uppercase text-white text-sm font-bold tracking-wider">
                                         Nº OF BATTLES:
                                     </label>
                                     <input
@@ -72,8 +72,8 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, 
                                     />
                                 </div>
                                 <div className="text-center">
-                                    <label htmlFor="victories" className="font-pixel uppercase text-white text-sm font-bold tracking-wider">
-                                        VICTORIES
+                                    <label htmlFor="victories" className="font-primary uppercase text-white text-sm font-bold tracking-wider">
+                                        VICTORIES:
                                     </label>
                                     <input
                                         id="victories"
@@ -90,7 +90,7 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, 
                     {/* Accessory Section */}
                     <div>
                         <div className="relative w-full bg-white rounded-xl px-2 pt-1.5 pb-1 border-2 border-[#3A3A3A] flex flex-col items-start">
-                            <label htmlFor="accessory" className="font-pixel text-[10px] tracking-wider uppercase text-[#3A3A3A] font-bold mb-1">
+                            <label htmlFor="accessory" className="font-primary text-[10px] tracking-wider uppercase text-[#3A3A3A] font-bold mb-1">
                                 ACCESORY:
                             </label>
                             <textarea
@@ -112,7 +112,7 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, 
             </div>
             <div className="flex gap-3">
                  <div className="relative w-full bg-white rounded-xl px-2 pt-1.5 pb-1 border-2 border-[#3A3A3A] flex flex-col items-start">
-                    <label htmlFor="type" className="font-pixel text-[10px] tracking-wider uppercase text-[#3A3A3A] font-bold mb-1">
+                    <label htmlFor="type" className="font-primary text-[10px] tracking-wider uppercase text-[#3A3A3A] font-bold mb-1">
                         TYPE:
                     </label>
                     <textarea
@@ -124,7 +124,7 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, 
                     />
                 </div>
                 <div className="relative w-full bg-white rounded-xl px-2 pt-1.5 pb-1 border-2 border-[#3A3A3A] flex flex-col items-start">
-                    <label htmlFor="weakness" className="font-pixel text-[10px] tracking-wider uppercase text-[#3A3A3A] font-bold mb-1">
+                    <label htmlFor="weakness" className="font-primary text-[10px] tracking-wider uppercase text-[#3A3A3A] font-bold mb-1">
                         WEAKNESS:
                     </label>
                     <textarea

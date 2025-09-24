@@ -18,6 +18,8 @@ import { useAppContext } from './src/hooks/useAppContext.js';
  * @property {() => void} onClose - Callback function to close the modal.
  * @property {UnitSettings} settings - Current unit settings (height and weight).
  * @property {(settings: UnitSettings) => void} onSettingsChange - Callback to update unit settings.
+ * @property {string} currentFont - The currently selected font.
+ * @property {(font: string) => void} onFontChange - Callback to update the selected font.
  */
 
 /**
@@ -36,7 +38,7 @@ const SettingsModal: React.FC<{
     return (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-fade-in" onClick={onClose}>
             <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-sm p-6 font-sans" onClick={e => e.stopPropagation()}>
-                <h2 className="text-2xl font-pixel text-poke-yellow mb-6 text-center">Settings</h2>
+                <h2 className="text-2xl font-primary text-poke-yellow mb-6 text-center">Settings</h2>
                 
                 <div className="mb-4">
                     <label className="block text-gray-300 font-bold mb-2">Height Unit</label>
@@ -130,7 +132,7 @@ const App: React.FC = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white">
                 <PokeballIcon className="w-24 h-24 text-poke-yellow animate-spin" />
-                <p className="mt-4 text-xl font-pixel">Loading Pokédex...</p>
+                <p className="mt-4 text-xl font-primary">Loading Pokédex...</p>
             </div>
         );
     }
@@ -139,7 +141,7 @@ const App: React.FC = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-center p-4">
                 <PokeballIcon className="w-24 h-24 mb-4 text-poke-red opacity-70 animate-pulse-slow" />
-                <h1 className="text-3xl font-bold text-poke-yellow font-pixel">Oops! Something went wrong.</h1>
+                <h1 className="text-3xl font-bold text-poke-yellow font-primary">Oops! Something went wrong.</h1>
                 <p className="mt-2 max-w-md text-gray-300">{error}</p>
                 <button
                     onClick={loadData}
@@ -176,12 +178,12 @@ const App: React.FC = () => {
                 </button>
                 <div className="flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                     <PokeballIcon className="w-8 h-8 md:w-10 md:h-10 mr-3 text-poke-red" />
-                    <h1 className="text-2xl md:text-3xl font-bold text-poke-yellow tracking-wider font-pixel">Pokérole Team Builder</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-poke-yellow tracking-wider font-primary">Pokérole Team Builder</h1>
                 </div>
                  <div className="flex items-center gap-2">
                      <button
                         onClick={handleExportTeam}
-                        className="flex items-center justify-center px-3 py-1.5 bg-green-600 text-white font-pixel text-xs rounded-md border-b-2 border-green-800 hover:bg-green-500 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
+                        className="flex items-center justify-center px-3 py-1.5 bg-green-600 text-white font-primary text-xs rounded-md border-b-2 border-green-800 hover:bg-green-500 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
                         aria-label="Export Session Data"
                         title="Export Session Data"
                     >
@@ -192,7 +194,7 @@ const App: React.FC = () => {
                     </button>
                     <button
                         onClick={handleLoadClick}
-                        className="flex items-center justify-center px-3 py-1.5 bg-poke-yellow text-slate-900 font-pixel text-xs rounded-md border-b-2 border-yellow-600 hover:bg-yellow-400 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
+                        className="flex items-center justify-center px-3 py-1.5 bg-poke-yellow text-slate-900 font-primary text-xs rounded-md border-b-2 border-yellow-600 hover:bg-yellow-400 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
                         aria-label="Load Session Data"
                         title="Load Session Data"
                     >

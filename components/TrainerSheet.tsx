@@ -70,7 +70,7 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
     return (
         <>
             <GlobalTooltip tooltipData={tooltipData} />
-            <div className="relative w-full max-w-7xl mx-auto p-4 rounded-xl font-pixel animate-fade-in-scale" style={{ backgroundColor: '#E46243' }}>
+            <div className="relative w-full max-w-7xl mx-auto p-4 rounded-xl font-primary animate-fade-in-scale" style={{ backgroundColor: '#E46243' }}>
                 <NatureModal
                     isOpen={isNatureModalOpen}
                     onClose={closeNatureModal}

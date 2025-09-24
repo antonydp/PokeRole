@@ -7,6 +7,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --font-primary: "Oxanium", cursive;
+      }
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -18,7 +24,7 @@
               'poke-red': '#CC0000',
             },
             fontFamily: {
-              'pixel': ['"Press Start 2P"', 'cursive'],
+              'primary': ['var(--font-primary)'],
             },
             animation: {
               'fade-in': 'fadeIn 0.5s ease-in-out',

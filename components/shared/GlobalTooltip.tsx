@@ -58,7 +58,7 @@ export const GlobalTooltip: React.FC<{ tooltipData: TooltipData | null }> = ({ t
             `}
         >
              <div className="absolute bottom-[-9px] left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-800 border-b border-r border-slate-600 transform rotate-45"></div>
-            <h4 className="font-bold text-poke-yellow mb-1 text-base font-pixel">{content.name}</h4>
+            <h4 className="font-bold text-poke-yellow mb-1 text-base font-primary">{content.name}</h4>
             <p className="text-sm text-gray-300 font-sans">{content.description}</p>
         </div>
     );

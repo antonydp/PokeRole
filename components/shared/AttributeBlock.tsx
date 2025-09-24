@@ -17,7 +17,7 @@ export const AttributeBlock = <T extends Record<string, any>>({ name, value, onC
 
     return (
         <div className={`flex flex-col items-center py-5 px-2 rounded-lg ${className}`} style={{ backgroundColor: '#00a6ff99' }}>
-            <span className="font-bold text-white uppercase text-sm mb-1">{name}</span>
+            <span className="font-bold text-white uppercase mb-1">{name}</span>
             <div className="flex items-center justify-center w-full">
                 <CircleRating
                     value={value}

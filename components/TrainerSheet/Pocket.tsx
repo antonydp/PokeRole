@@ -31,7 +31,7 @@ const Pocket: React.FC<PocketProps> = ({ title, items, itemMap, onUpdate, onItem
 
     return (
         <div className="bg-white rounded-lg p-2 border-2 border-[#3A3A3A] space-y-1">
-            <h3 className="font-pixel text-[12px] tracking-wider uppercase text-[#3A3A3A] font-bold text-center border-b-2 border-[#3A3A3A]/50 pb-1 mb-2">
+            <h3 className="font-primary text-[12px] tracking-wider uppercase text-[#3A3A3A] font-bold text-center border-b-2 border-[#3A3A3A]/50 pb-1 mb-2">
                 {title}
             </h3>
             <div className="space-y-1 max-h-48 overflow-y-auto pr-1">

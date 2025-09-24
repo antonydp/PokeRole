@@ -97,7 +97,7 @@ const PotionManager: React.FC<PotionManagerProps> = ({ potions, onUpdate }) => {
 
     return (
         <div 
-            className="bg-[#6b645d] rounded-lg p-3 border-4 border-[#3a3a3a] font-pixel text-white shadow-inner" 
+            className="bg-[#6b645d] rounded-lg p-3 border-4 border-[#3a3a3a] font-primary text-white shadow-inner" 
             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E")` }}
         >
             <div className="flex justify-between items-center mb-3">

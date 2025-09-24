@@ -17,7 +17,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
 
 
     const getTabClassName = (view: 'team' | 'trainer') => {
-        const base = "px-6 py-3 font-pixel text-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-poke-yellow focus:z-10";
+        const base = "px-6 py-3 font-primary text-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-poke-yellow focus:z-10";
         if (activeView === view) {
             return `${base} bg-slate-700/80 text-poke-yellow border-b-4 border-poke-yellow`;
         }

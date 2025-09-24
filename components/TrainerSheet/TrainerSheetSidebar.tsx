@@ -62,7 +62,7 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
                 <button
                     onClick={onOpenItemModal}
                     disabled={!canAddItem}
-                    className="w-full bg-poke-blue text-white font-pixel text-sm rounded-md py-2 border-b-4 border-blue-900 hover:bg-blue-600 active:translate-y-0.5 active:border-b-2 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow disabled:bg-slate-600 disabled:border-slate-700 disabled:cursor-not-allowed disabled:transform-none"
+                    className="w-full bg-poke-blue text-white font-primary text-sm rounded-md py-2 border-b-4 border-blue-900 hover:bg-blue-600 active:translate-y-0.5 active:border-b-2 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow disabled:bg-slate-600 disabled:border-slate-700 disabled:cursor-not-allowed disabled:transform-none"
                 >
                     Add Item to Pockets
                 </button>

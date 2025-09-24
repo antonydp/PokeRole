@@ -26,7 +26,7 @@ const NatureModal: React.FC<NatureModalProps> = ({
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
             <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[80vh] flex flex-col font-sans animate-fade-in-scale" onClick={e => e.stopPropagation()}>
                 <div className="p-4 border-b border-slate-700 sticky top-0 bg-slate-800">
-                    <h3 className="text-xl font-bold text-poke-yellow text-center font-pixel">Select a Nature</h3>
+                    <h3 className="text-xl font-bold text-poke-yellow text-center font-primary">Select a Nature</h3>
                     <input
                         type="text"
                         placeholder="Search natures or keywords..."
