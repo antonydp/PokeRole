@@ -1,4 +1,4 @@
-import type { Pokedex, TeamMember, TrainerData, ItemsData, PokemonData, Move, Nature, Rank, Ribbon } from '../src/types/index.js';
+import type { Pokedex, TeamMember, TrainerData, ItemsData, PokemonData, Move, Nature, Rank, Ribbon, Badge } from '../src/types/index.js';
 
 export interface DashboardProps {
     team: TeamMember[];
@@ -9,6 +9,7 @@ export interface DashboardProps {
     onTrainerDataChange: ((updaterOrData: ((prev: TrainerData) => TrainerData) | TrainerData) => void);
     allItems: ItemsData | null;
     onOpenSuggestModal: () => void;
+    allBadges: Badge[];
 }
 
 export interface PokemonCardProps {
@@ -77,6 +78,7 @@ export interface TrainerSheetProps {
     trainerData: TrainerData;
     onDataChange: (updaterOrData: ((prev: TrainerData) => TrainerData) | TrainerData) => void;
     allItems: ItemsData | null;
+    allBadges: Badge[];
 }
 
 export interface TypeBadgeProps {

@@ -57,6 +57,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                         trainerData={props.trainerData}
                         onDataChange={props.onTrainerDataChange}
                         allItems={props.allItems}
+                        allBadges={props.allBadges}
                     />
                 )}
             </div>

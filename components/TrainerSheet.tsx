@@ -21,7 +21,7 @@ import { usePointCalculations } from '../src/hooks/usePointCalculations.js';
 
 import { TrainerSheetProps } from './types.js';
 
-const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, allItems }) => {
+const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, allItems, allBadges }) => {
 
     const {
         isNatureModalOpen,
@@ -121,6 +121,7 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
                         onItemMouseLeave={onItemMouseLeave}
                         points={points}
                         isSocialAttributePoolExhausted={isSocialAttributePoolExhausted}
+                        allBadges={allBadges}
                     />
                 </div>
             </div>

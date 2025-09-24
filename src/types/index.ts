@@ -320,6 +320,15 @@ export interface Ribbon {
 }
 
 /**
+ * Represents a gym badge that a Trainer can earn.
+ */
+export interface Badge {
+  name: string;
+  image_url: string;
+  description: string;
+}
+
+/**
  * Represents sub-categories within the "Healing Items" category.
  */
 export interface HealingItemsSubCategory {

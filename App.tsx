@@ -100,6 +100,7 @@ const App: React.FC = () => {
         allMoves,
         allItems,
         ribbonsData,
+        allBadges,
         team,
         trainerData,
         selectedPokemon,
@@ -267,6 +268,7 @@ const App: React.FC = () => {
                                 onTrainerDataChange={handleTrainerDataChange}
                                 allItems={allItems}
                                 onOpenSuggestModal={() => setIsSuggestModalOpen(true)}
+                                allBadges={allBadges}
                             />
                         )}
                     </div>

@@ -1,5 +1,6 @@
-import React from 'react';
-import { TrainerData, PotionBottle, Item, ItemInstance } from '../../src/types/index.js';
+import React, { useState } from 'react';
+import { TrainerData, PotionBottle, Item, ItemInstance, Badge } from '../../src/types/index.js';
+import BadgeModal from './BadgeModal.js';
 import PotionManager from './PotionManager.js';
 import Pocket from './Pocket.js';
 import { PointsDisplay } from '../shared/Points.js';
@@ -18,6 +19,7 @@ interface TrainerSheetSidebarProps {
     onItemMouseLeave: () => void;
     points: { social: { spent: number; total: number; } };
     isSocialAttributePoolExhausted: boolean;
+    allBadges: Badge[];
 }
 
 const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({ 
@@ -31,11 +33,23 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
     onItemMouseEnter, 
     onItemMouseLeave,
     points,
-    isSocialAttributePoolExhausted
+    isSocialAttributePoolExhausted,
+    allBadges
 }) => {
+    const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
 
     const handlePotionsChange = (newPotions: PotionBottle[]) => {
         onUpdateField('potions', newPotions);
+    };
+
+    const handleSelectBadge = (badge: Badge) => {
+        // Assuming badges are stored as a comma-separated string of names
+        const currentBadges = trainerData.badges ? trainerData.badges.split(',') : [];
+        if (!currentBadges.includes(badge.name)) {
+            const newBadges = [...currentBadges, badge.name].join(',');
+            onUpdateField('badges', newBadges);
+        }
+        setIsBadgeModalOpen(false);
     };
     
     return (
@@ -104,11 +118,30 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
         <div className="flex flex-col gap-2">
             <h3 className="text-center text-white/80 font-bold text-xs">GYM BADGES</h3>
             <div className="grid grid-cols-8 gap-2">
-                {Array.from({length: 8}).map((_, i) => (
-                    <div key={i} className="w-full aspect-square bg-black/10 border-2 border-dashed border-black/40 rounded-full" aria-label={`Badge Slot ${i + 1}`}></div>
-                ))}
+                {Array.from({ length: 8 }).map((_, i) => {
+                    const badgeName = trainerData.badges?.split(',')[i];
+                    const badge = badgeName ? allBadges.find(b => b.name === badgeName.trim()) : null;
+                    return (
+                        <div
+                            key={i}
+                            className="w-full aspect-square bg-black/10 border-2 border-dashed border-black/40 rounded-full cursor-pointer"
+                            aria-label={`Badge Slot ${i + 1}`}
+                            onClick={() => setIsBadgeModalOpen(true)}
+                        >
+                            {badge && (
+                                <img src={badge.image_url} alt={badge.name} title={badge.name} className="w-full h-full object-contain p-1" />
+                            )}
+                        </div>
+                    );
+                })}
             </div>
         </div>
+        <BadgeModal
+            isOpen={isBadgeModalOpen}
+            onClose={() => setIsBadgeModalOpen(false)}
+            allBadges={allBadges}
+            onSelectBadge={handleSelectBadge}
+        />
     </div>
 );
 };
