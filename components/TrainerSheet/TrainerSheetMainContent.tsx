@@ -47,57 +47,56 @@ const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({
     };
 
     return (
-            <div className="lg:col-span-7 grid grid-cols-1 lg:grid-cols-12 gap-4">
-                {/* Points Display Section */}
-                <div className="lg:col-span-12 grid grid-cols-12 gap-4">
-                    <div className="lg:col-span-4">
-                        <PointsDisplay label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
-                    </div>
-                    <div className="lg:col-span-8">
-                        <PointsDisplay label="Skill Points" spent={points.skills.spent} total={points.skills.total} />
-                    </div>
-                </div>
+    // The main container is now a simple vertical stack. 
+    // It's responsible for the vertical space between the Points Header and the content below.
+    <div className="lg:col-span-7 flex flex-col gap-4">
 
-                {/* Col 1 & 2 & Achievements: Attributes, Fight & Survival, Achievements */}
-                <div className="lg:col-span-8 flex flex-col gap-4 h-full">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
-                        {/* Col 1: Core Attributes */}
-                        <div className="space-y-4">
-                            {coreAttributes.map(attr => (
-                                <AttributeBlock<TrainerData>
-                                    key={attr.name}
-                                    name={attr.name}
-                                    value={attr.value}
-                                    onChange={v => onAttributeChange(attr.field as keyof TrainerData, v)}
-                                    isPoolExhausted={isAttributePoolExhausted}
-                                    max={5} // Trainer attributes max at 5
-                                />
-                            ))}
-                        </div>
-
-                        {/* Col 2: Fight & Survival */}
-                        <div className="flex flex-col flex-grow">
-                            <CurvedSkillBlock<TrainerData> title="FIGHT" skills={skills.FIGHT} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="top" />
-                            <CurvedSkillBlock<TrainerData> title="SURVIVAL" skills={skills.SURVIVAL} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="bottom" />
-                        </div>
-                    </div>
-                    {/* Achievements Block */}
-                    <AchievementsBlock
-                        achievements={trainerData.achievements}
-                        onAchievementChange={onAchievementChange}
-                        onAddAchievement={onAddAchievement}
-                        onRemoveAchievement={onRemoveAchievement}
-                    />
-                </div>
-                
-                {/* Col 4: Social, Knowledge, Extra */}
-                <div className="lg:col-span-4 flex flex-col h-full">
-                    <CurvedSkillBlock<TrainerData> title="SOCIAL" skills={skills.SOCIAL} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="top" />
-                    <CurvedSkillBlock<TrainerData> title="KNOWLEDGE" skills={skills.KNOWLEDGE} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="middle" />
-                    <CurvedExtraSkillBlock title="EXTRA" extraSkills={trainerData.extraSkills} onSkillChange={onExtraSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="bottom" />
-                </div>
+        {/* ================================================================== */}
+        {/* == Section 1: Points Header ====================================== */}
+        {/* ================================================================== */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div className="md:col-span-4">
+                <PointsDisplay label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
             </div>
-    );
+            <div className="md:col-span-8">
+                <PointsDisplay label="Skill Points" spent={points.skills.spent} total={points.skills.total} />
+            </div>
+        </div>
+
+        {/* ================================================================== */}
+        {/* == Section 2: Main Content (now wrapped in a grid container) ===== */}
+        {/* ================================================================== */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            
+            {/* -- Left Column (8/12 width) -- */}
+            <div className="lg:col-span-8 flex flex-col gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Attributes */}
+                    <div className="flex flex-col gap-4">
+                        {coreAttributes.map(attr => (
+                            <AttributeBlock<TrainerData> key={attr.name} name={attr.name} value={attr.value} onChange={v => onAttributeChange(attr.field as keyof TrainerData, v)} isPoolExhausted={isAttributePoolExhausted} max={5} />
+                        ))}
+                    </div>
+                    {/* Fight & Survival */}
+                    <div className="flex flex-col">
+                        <CurvedSkillBlock<TrainerData> title="FIGHT" skills={skills.FIGHT} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="top" />
+                        <CurvedSkillBlock<TrainerData> title="SURVIVAL" skills={skills.SURVIVAL} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="bottom" />
+                    </div>
+                </div>
+                {/* Achievements */}
+                <AchievementsBlock achievements={trainerData.achievements} onAchievementChange={onAchievementChange} onAddAchievement={onAddAchievement} onRemoveAchievement={onRemoveAchievement} />
+            </div>
+            
+            {/* -- Right Column (4/12 width) -- */}
+            <div className="lg:col-span-4 flex flex-col">
+                <CurvedSkillBlock<TrainerData> title="SOCIAL" skills={skills.SOCIAL} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="top" />
+                <CurvedSkillBlock<TrainerData> title="KNOWLEDGE" skills={skills.KNOWLEDGE} onSkillChange={onSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="middle" />
+                <CurvedExtraSkillBlock title="EXTRA" extraSkills={trainerData.extraSkills} onSkillChange={onExtraSkillChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="bottom" />
+            </div>
+
+        </div>
+    </div>
+);
 }
 
 export default TrainerSheetMainContent;
