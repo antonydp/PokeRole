@@ -39,21 +39,24 @@ const LeftColumn: React.FC<LeftColumnProps> = ({ pokemon, pokemonData, onDataCha
             {/* Attributes */}
             <div className="flex-grow flex flex-col justify-between">
                 <PointsDisplay label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
-                {attributes.map(attr => {
-                    const baseStatKey = (attr.name.charAt(0) + attr.name.slice(1).toLowerCase()) as keyof Pokedex;
-                    const baseValue = pokemon[baseStatKey] as number;
-                    return (
-                        <AttributeBlock<PokemonData>
-                            name={attr.name}
-                            value={attr.value}
-                            onChange={v => onDataChange(attr.field as keyof PokemonData, v)}
-                            isPoolExhausted={isAttributePoolExhausted}
-                            max={attr.max}
-                            baseValue={baseValue}
-                            key={attr.name}
-                        />
-                    );
-                })}
+                <div className="flex flex-wrap gap-2 justify-center">
+                    {attributes.map(attr => {
+                        const baseStatKey = (attr.name.charAt(0) + attr.name.slice(1).toLowerCase()) as keyof Pokedex;
+                        const baseValue = pokemon[baseStatKey] as number;
+                        return (
+                            <AttributeBlock<PokemonData>
+                                name={attr.name}
+                                value={attr.value}
+                                onChange={v => onDataChange(attr.field as keyof PokemonData, v)}
+                                isPoolExhausted={isAttributePoolExhausted}
+                                max={attr.max}
+                                baseValue={baseValue}
+                                key={attr.name}
+                                className="flex-grow"
+                            />
+                        );
+                    })}
+                </div>
                 <div className="flex gap-3 pt-1">
                     <LabeledInput id="size" label="SIZE:" value={pokemonData.size} onChange={v => onDataChange('size', v)} isReadOnly={true} />
                     <LabeledInput id="weight" label="WEIGHT:" value={pokemonData.weight} onChange={v => onDataChange('weight', v)} isReadOnly={true} />

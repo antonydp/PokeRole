@@ -9,7 +9,7 @@ export const CircleRating: React.FC<{
   limit?: number;
   isPoolExhausted?: boolean;
   baseValue?: number;
-}> = ({ value, max, onChange, className = '', circleClassName = 'w-4 h-4', limit, isPoolExhausted = false, baseValue }) => {
+}> = ({ value, max, onChange, className = '', circleClassName, limit, isPoolExhausted = false, baseValue }) => {
   return (
     <div className={`flex flex-row flex-nowrap gap-1 items-center ${className}`}>
       {Array.from({ length: max }, (_, i) => {
