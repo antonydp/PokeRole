@@ -82,6 +82,7 @@ export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSetti
         size: sizeString,
         weight: weightString,
         moves: emptyMoves,
+        ribbons: [null, null, null, null],
     };
 };
 

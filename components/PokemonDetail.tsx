@@ -24,7 +24,7 @@ import { PokemonDetailProps } from './types.js';
  * @param {PokemonDetailProps} props - The props for the PokemonDetail component.
  * @returns {React.FC} The rendered PokemonDetail component.
  */
-const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, sheetData, onSheetDataChange, unitSettings, trainerRank }) => {
+const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, sheetData, onSheetDataChange, unitSettings, trainerRank, ribbonsData }) => {
 
     const {
         pokemonData,
@@ -120,6 +120,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
                     onOpenNatureModal={openNatureModal}
                     points={points}
                     isSocialAttributePoolExhausted={isSocialAttributePoolExhausted}
+                    ribbonsData={ribbonsData}
                 />
                 <RightColumn pokemonData={pokemonData} updateField={handleDataChange} pokemon={pokemon} trainerRank={trainerRank} />
             </div>

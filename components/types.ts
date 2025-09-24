@@ -1,4 +1,4 @@
-import type { Pokedex, TeamMember, TrainerData, ItemsData, PokemonData, Move, Nature, Rank } from '../src/types/index.js';
+import type { Pokedex, TeamMember, TrainerData, ItemsData, PokemonData, Move, Nature, Rank, Ribbon } from '../src/types/index.js';
 
 export interface DashboardProps {
     team: TeamMember[];
@@ -28,6 +28,7 @@ export interface PokemonDetailProps {
     onSheetDataChange: (pokemonDexID: string, newSheetData: PokemonData) => void;
     unitSettings: { height: 'imperial' | 'metric', weight: 'imperial' | 'metric' };
     trainerRank: Rank;
+    ribbonsData: Ribbon[];
 }
 
 export interface PokemonListProps {

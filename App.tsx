@@ -99,6 +99,7 @@ const App: React.FC = () => {
         allPokemon,
         allMoves,
         allItems,
+        ribbonsData,
         team,
         trainerData,
         selectedPokemon,
@@ -254,6 +255,7 @@ const App: React.FC = () => {
                                 onSheetDataChange={handleSheetDataChange}
                                 unitSettings={unitSettings}
                                 trainerRank={trainerData.trainerRank}
+                                ribbonsData={ribbonsData}
                             />
                         ) : (
                             <Dashboard

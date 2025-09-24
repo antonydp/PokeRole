@@ -190,6 +190,7 @@ export interface PokemonData {
     size: string;
     weight: string;
     moves: (string | null)[];
+    ribbons: (string | null)[];
 }
 
 /**
@@ -307,6 +308,15 @@ export interface Item {
   price?: number;
   rarity?: string;
   effect?: string;
+}
+
+/**
+ * Represents a ribbon that a Pokémon can earn.
+ */
+export interface Ribbon {
+  name: string;
+  image_url: string;
+  description: string;
 }
 
 /**

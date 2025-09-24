@@ -1,10 +1,11 @@
 import React from 'react';
-import { PokemonData } from '../../src/types/index.js';
+import { PokemonData, Ribbon } from '../../src/types/index.js';
 import { CircleRating } from '../shared/CircleRating.js';
 import { PointsDisplay } from '../shared/Points.js';
 import { SocialAttribute } from '../shared/SocialAttribute.js';
 import NatureDisplay from '../shared/NatureDisplay.js';
 import { SOCIAL_ATTRIBUTES } from '../../src/constants/gameConstants.js';
+import { RibbonSelector } from './RibbonSelector.js';
 
 interface MiddleColumnProps {
     pokemonData: PokemonData;
@@ -14,9 +15,10 @@ interface MiddleColumnProps {
         social: { spent: number; total: number; };
     };
     isSocialAttributePoolExhausted: boolean;
+    ribbonsData: Ribbon[];
 }
 
-const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, onOpenNatureModal, points, isSocialAttributePoolExhausted }) => {
+const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, onOpenNatureModal, points, isSocialAttributePoolExhausted, ribbonsData }) => {
 
     return (
         <div className="lg:col-span-5 flex flex-col gap-3 h-full">
@@ -101,12 +103,15 @@ const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, 
                                 rows={4}
                             />
                         </div>
-                        <div className="grid grid-cols-4 gap-2 mt-1">
-                            <div className="bg-white rounded-xl w-full aspect-square border-2 border-[#3A3A3A]" aria-label="Accessory slot 1"></div>
-                            <div className="bg-white rounded-xl w-full aspect-square border-2 border-[#3A3A3A]" aria-label="Accessory slot 2"></div>
-                            <div className="bg-white rounded-xl w-full aspect-square border-2 border-[#3A3A3A]" aria-label="Accessory slot 3"></div>
-                            <div className="bg-white rounded-xl w-full aspect-square border-2 border-[#3A3A3A]" aria-label="Accessory slot 4"></div>
-                        </div>
+                        <RibbonSelector
+                            ribbons={pokemonData.ribbons}
+                            allRibbons={ribbonsData}
+                            onRibbonChange={(index, ribbonName) => {
+                                const newRibbons = [...pokemonData.ribbons];
+                                newRibbons[index] = ribbonName;
+                                onDataChange('ribbons', newRibbons);
+                            }}
+                        />
                     </div>
                 </div>
             </div>

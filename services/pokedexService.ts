@@ -1,10 +1,11 @@
-import { Pokedex, Move, Ability, ItemsData } from '../types';
+import { Pokedex, Move, Ability, ItemsData, Ribbon } from '../src/types/index.js';
 
 interface FetchAllDataResponse {
   pokemonData: Pokedex[];
   movesData: Move[];
   abilitiesData: Ability[];
   itemsData: ItemsData;
+  ribbonsData: Ribbon[];
 }
 
 const DATA_REPO_BASE_URL = 'https://raw.githubusercontent.com/antonydp/PokeRole-data/main/public/data';
@@ -13,31 +14,33 @@ export const fetchAllData = async (): Promise<FetchAllDataResponse> => {
   try {
     // Fetch the three pre-processed files from the user's dedicated data repository.
     // This is significantly faster and more reliable than fetching hundreds of individual files.
-    const [pokemonRes, movesRes, abilitiesRes, itemsRes] = await Promise.all([
+    const [pokemonRes, movesRes, abilitiesRes, itemsRes, ribbonsRes] = await Promise.all([
       fetch(`${DATA_REPO_BASE_URL}/all_pokemon.json`),
       fetch(`${DATA_REPO_BASE_URL}/all_moves.json`),
       fetch(`${DATA_REPO_BASE_URL}/all_abilities.json`),
       fetch(`${DATA_REPO_BASE_URL}/all_items.json`),
+      fetch(`${DATA_REPO_BASE_URL}/ribbons.json`),
     ]);
 
     // Check if all requests were successful
-    if (!pokemonRes.ok || !movesRes.ok || !abilitiesRes.ok || !itemsRes.ok) {
-        throw new Error(`Failed to fetch pre-processed data files. Statuses: P(${pokemonRes.status}), M(${movesRes.status}), A(${abilitiesRes.status}), I(${itemsRes.status})`);
+    if (!pokemonRes.ok || !movesRes.ok || !abilitiesRes.ok || !itemsRes.ok || !ribbonsRes.ok) {
+        throw new Error(`Failed to fetch pre-processed data files. Statuses: P(${pokemonRes.status}), M(${movesRes.status}), A(${abilitiesRes.status}), I(${itemsRes.status}), R(${ribbonsRes.status})`);
     }
 
-    const [pokemonData, movesData, abilitiesData, itemsData] = await Promise.all([
+    const [pokemonData, movesData, abilitiesData, itemsData, ribbonsData] = await Promise.all([
       pokemonRes.json(),
       movesRes.json(),
       abilitiesRes.json(),
       itemsRes.json(),
+      ribbonsRes.json(),
     ]);
 
     // Basic validation to ensure we received arrays of data.
-    if (!Array.isArray(pokemonData) || !Array.isArray(movesData) || !Array.isArray(abilitiesData) || typeof itemsData !== 'object' || itemsData === null) {
+    if (!Array.isArray(pokemonData) || !Array.isArray(movesData) || !Array.isArray(abilitiesData) || typeof itemsData !== 'object' || itemsData === null || !Array.isArray(ribbonsData)) {
         throw new Error("Fetched data is not in the expected array format.");
     }
 
-    return { pokemonData, movesData, abilitiesData, itemsData };
+    return { pokemonData, movesData, abilitiesData, itemsData, ribbonsData };
 
   } catch (error) {
     console.error('Failed to fetch or parse pre-processed data:', error);

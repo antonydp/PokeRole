@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Pokedex, Move, Ability, TeamMember, PokemonData, TrainerData, ItemsData, ItemInstance } from '../types/index.js';
+import { Pokedex, Move, Ability, TeamMember, PokemonData, TrainerData, ItemsData, ItemInstance, Ribbon } from '../types/index.js';
 import { fetchAllData } from '../../services/pokedexService.js';
 import { createInitialSheetData, createInitialTrainerData } from '../logic/initializers.js';
 import { calculateWeaknesses } from '../logic/formulas.js';
@@ -17,6 +17,7 @@ export const useAppContext = () => {
     const [allMoves, setAllMoves] = useState<Record<string, Move>>({});
     const [allAbilities, setAllAbilities] = useState<Record<string, Ability>>({});
     const [allItems, setAllItems] = useState<ItemsData | null>(null);
+    const [ribbonsData, setRibbonsData] = useState<Ribbon[]>([]);
     const [team, setTeam] = useState<TeamMember[]>([]);
     const [trainerData, setTrainerData] = useState<TrainerData>(createInitialTrainerData());
     const [selectedPokemon, setSelectedPokemon] = useState<Pokedex | null>(null);
@@ -78,7 +79,7 @@ export const useAppContext = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const { pokemonData, movesData, abilitiesData, itemsData } = await fetchAllData();
+            const { pokemonData, movesData, abilitiesData, itemsData, ribbonsData } = await fetchAllData();
             
             const movesMap = movesData.reduce((acc, move) => {
                 acc[move._id] = move;
@@ -94,6 +95,7 @@ export const useAppContext = () => {
             setAllMoves(movesMap);
             setAllAbilities(abilitiesMap);
             setAllItems(itemsData);
+            setRibbonsData(ribbonsData);
         } catch (err) {
             setError('Failed to fetch Pokémon data. The servers might be down or your connection is unstable. Please try again.');
             console.error(err);
@@ -288,6 +290,7 @@ export const useAppContext = () => {
         allMoves,
         allAbilities,
         allItems,
+        ribbonsData,
         team,
         trainerData,
         selectedPokemon,
