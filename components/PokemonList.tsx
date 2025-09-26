@@ -210,7 +210,7 @@ const PokemonList: React.FC<PokemonListProps> = ({ allPokemon, onSelectPokemon }
             <div className="flex-grow overflow-y-auto p-2 space-y-2">
                 {filteredPokemon.length > 0 ? (
                     filteredPokemon.map(pokemon => (
-                        <PokemonCard key={pokemon.DexID} pokemon={pokemon} onSelect={onSelectPokemon} />
+                        <PokemonCard key={pokemon.DexID} pokemon={pokemon} onSelect={() => onSelectPokemon(pokemon.DexID)} />
                     ))
                 ) : (
                     <p className="text-center text-gray-400 mt-8">No Pokémon found.</p>

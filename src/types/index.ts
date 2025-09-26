@@ -206,6 +206,7 @@ export interface LearnableMove {
  * Represents a member of the user's team, combining Pokédex data with sheet data.
  */
 export interface TeamMember {
+  instanceID: string;
   pokedexData: Pokedex;
   sheetData: PokemonData;
 }

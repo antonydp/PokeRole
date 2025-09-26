@@ -24,7 +24,7 @@ import { PokemonDetailProps } from './types.js';
  * @param {PokemonDetailProps} props - The props for the PokemonDetail component.
  * @returns {React.FC} The rendered PokemonDetail component.
  */
-const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, sheetData, onSheetDataChange, unitSettings, trainerRank, ribbonsData }) => {
+const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, onSheetDataChange, unitSettings, trainerRank, ribbonsData }) => {
 
     const {
         pokemonData,
@@ -41,8 +41,8 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
         expandedMoves,
         handleToggleMoveExpand,
         availableAbilities
-    } = usePokemonSheet(pokemon, sheetData, unitSettings, trainerRank, isInTeam, onSheetDataChange, allMoves);
-
+    } = usePokemonSheet(pokemon, teamMember?.sheetData, unitSettings, trainerRank, isInTeam, onSheetDataChange, allMoves, teamMember?.instanceID);
+ 
     const {
         isNatureModalOpen,
         closeNatureModal,
@@ -99,7 +99,11 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, allMoves, onClos
                 isInTeam={isInTeam}
                 teamIsFull={teamIsFull}
                 onAddToTeam={() => onAddToTeam(pokemon, pokemonData)}
-                onRemoveFromTeam={() => onRemoveFromTeam(pokemon)}
+                onRemoveFromTeam={() => {
+                    if (teamMember) {
+                        onRemoveFromTeam(teamMember.instanceID);
+                    }
+                }}
                 pokemon={pokemon}
                 availableAbilities={availableAbilities}
             />

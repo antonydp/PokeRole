@@ -17,8 +17,8 @@ const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onSelect }) => {
     const imageUrl = `${IMAGE_BASE_URL}${pokemon.Image}`;
     
     return (
-        <div 
-            onClick={() => onSelect(pokemon)}
+        <div
+            onClick={() => onSelect(pokemon.DexID)}
             className={`group relative flex items-center p-2 bg-slate-700/60 rounded-lg cursor-pointer hover:bg-slate-600/80 transition-colors duration-200 shadow-md ${pokemon.Legendary ? 'border border-poke-yellow/50' : ''}`}
         >
             {pokemon.Legendary && (

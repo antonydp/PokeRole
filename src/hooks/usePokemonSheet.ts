@@ -19,8 +19,9 @@ export function usePokemonSheet(
     unitSettings: { height: 'imperial' | 'metric', weight: 'imperial' | 'metric' },
     trainerRank: Rank,
     isInTeam: boolean,
-    onSheetDataChange: (pokemonDexID: string, newSheetData: PokemonData) => void,
-    allMoves: Record<string, Move>
+    onSheetDataChange: (instanceID: string, newSheetData: PokemonData) => void,
+    allMoves: Record<string, Move>,
+    instanceID: string | undefined
 ) {
     const [pokemonData, setPokemonData] = useState<PokemonData>(() => sheetData || createInitialSheetData(pokemon, unitSettings, trainerRank));
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
@@ -34,10 +35,10 @@ export function usePokemonSheet(
     }, [pokemon, sheetData, unitSettings, trainerRank]);
 
     useEffect(() => {
-        if (isInTeam) {
-            onSheetDataChange(pokemon.DexID, pokemonData);
+        if (isInTeam && instanceID) {
+            onSheetDataChange(instanceID, pokemonData);
         }
-    }, [pokemonData, onSheetDataChange, isInTeam, pokemon.DexID]);
+    }, [pokemonData, onSheetDataChange, isInTeam, instanceID]);
 
     const handleDataChange = useCallback((field: keyof PokemonData, value: any) => {
         setPokemonData(prev => {

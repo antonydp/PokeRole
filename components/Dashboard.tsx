@@ -50,6 +50,8 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                         onRemoveFromTeam={props.onRemoveFromTeam}
                         onAddPokemonClick={props.onAddPokemonClick}
                         onOpenSuggestModal={props.onOpenSuggestModal}
+                        onQuickImport={props.onQuickImport}
+                        onQuickExport={props.onQuickExport}
                     />
                 )}
                 {activeView === 'trainer' && (

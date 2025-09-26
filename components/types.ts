@@ -2,31 +2,33 @@ import type { Pokedex, TeamMember, TrainerData, ItemsData, PokemonData, Move, Na
 
 export interface DashboardProps {
     team: TeamMember[];
-    onSelectPokemon: (pokemon: Pokedex) => void;
-    onRemoveFromTeam: (pokemon: Pokedex) => void;
+    onSelectPokemon: (dexID: string, instanceID?: string) => void;
+    onRemoveFromTeam: (instanceId: string) => void;
     onAddPokemonClick: () => void;
     trainerData: TrainerData;
     onTrainerDataChange: ((updaterOrData: ((prev: TrainerData) => TrainerData) | TrainerData) => void);
     allItems: ItemsData | null;
     onOpenSuggestModal: () => void;
     allBadges: Badge[];
+    onQuickImport: (importString: string, slotIndex: number) => void;
+    onQuickExport: (teamMember: TeamMember) => void;
 }
 
 export interface PokemonCardProps {
     pokemon: Pokedex;
-    onSelect: (pokemon: Pokedex) => void;
+    onSelect: (dexID: string) => void;
 }
 
 export interface PokemonDetailProps {
     pokemon: Pokedex;
+    teamMember: TeamMember | null;
     allMoves: Record<string, Move>;
     onClose: () => void;
     onAddToTeam: (pokemon: Pokedex, sheetData: PokemonData) => void;
-    onRemoveFromTeam: (pokemon: Pokedex) => void;
+    onRemoveFromTeam: (instanceId: string) => void;
     isInTeam: boolean;
     teamIsFull: boolean;
-    sheetData?: PokemonData;
-    onSheetDataChange: (pokemonDexID: string, newSheetData: PokemonData) => void;
+    onSheetDataChange: (instanceId: string, newSheetData: PokemonData) => void;
     unitSettings: { height: 'imperial' | 'metric', weight: 'imperial' | 'metric' };
     trainerRank: Rank;
     ribbonsData: Ribbon[];
@@ -34,7 +36,7 @@ export interface PokemonDetailProps {
 
 export interface PokemonListProps {
     allPokemon: Pokedex[];
-    onSelectPokemon: (pokemon: Pokedex) => void;
+    onSelectPokemon: (dexID: string) => void;
 }
 
 export interface SuggestTeamModalProps {
@@ -54,18 +56,22 @@ export interface SuggestionCardProps {
 
 export interface TeamBuilderProps {
     team: TeamMember[];
-    onSelectPokemon: (pokemon: Pokedex) => void;
-    onRemoveFromTeam: (pokemon: Pokedex) => void;
+    onSelectPokemon: (dexID: string, instanceID?: string) => void;
+    onRemoveFromTeam: (instanceId: string) => void;
     onAddPokemonClick: () => void;
     onOpenSuggestModal: () => void;
+    onQuickImport: (importString: string, slotIndex: number) => void;
+    onQuickExport: (teamMember: TeamMember) => void;
 }
 export interface TeamSlotProps {
     teamMember?: TeamMember;
-    onSelect: (p: Pokedex) => void;
-    onRemove: (p: Pokedex) => void;
+    onSelect: (dexID: string, instanceID?: string) => void;
+    onRemove: (instanceId: string) => void;
     onAddPokemonClick: () => void;
     onMouseEnter: (teamMember: TeamMember, element: HTMLElement) => void;
     onMouseLeave: () => void;
+    onQuickImport: () => void;
+    onQuickExport: (teamMember: TeamMember) => void;
 }
 
 

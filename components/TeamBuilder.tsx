@@ -218,17 +218,33 @@ const TeamTypeCoverage: React.FC<TeamTypeCoverageProps> = ({ coverage }) => {
  * TeamSlotProps interface for the TeamSlot component.
  */
 
-const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onAddPokemonClick, onMouseEnter, onMouseLeave }) => {
+const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onAddPokemonClick, onMouseEnter, onMouseLeave, onQuickImport, onQuickExport }) => {
     if (!teamMember) {
         return (
-            <button
-                onClick={onAddPokemonClick}
-                className="w-full h-40 bg-slate-700/50 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center group hover:bg-slate-700 hover:border-poke-yellow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-poke-yellow focus:ring-offset-2 focus:ring-offset-slate-900"
-                aria-label="Add Pokémon to team"
-            >
-                <PokeballIcon className="w-16 h-16 text-slate-600 transition-colors group-hover:text-poke-yellow" />
-                <span className="mt-1 font-semibold text-slate-500 transition-colors group-hover:text-poke-yellow">Add Pokémon</span>
-            </button>
+            <div className="w-full h-40 bg-slate-700/50 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center group transition-colors duration-200 focus-within:border-poke-yellow focus-within:bg-slate-700 overflow-hidden">
+                {/* Add Pokémon (80% Height: h-32) */}
+                <button
+                    onClick={onAddPokemonClick}
+                    // Changed from flex-1 to h-32 (128px, 80% of h-40)
+                    className="w-full h-32 flex flex-col items-center justify-center hover:bg-slate-700/50 transition-colors"
+                    aria-label="Add Pokémon to team"
+                >
+                    <PokeballIcon className="w-12 h-12 text-slate-600 group-hover:text-poke-yellow transition-colors" />
+                    <span className="mt-1 font-semibold text-slate-500 group-hover:text-poke-yellow transition-colors">Add Pokémon</span>
+                </button>
+                
+                <div className="w-full border-t border-dashed border-slate-600"></div>
+                
+                {/* Quick Import (20% Height: h-8) */}
+                <button
+                    onClick={onQuickImport}
+                    // Changed from flex-1 to h-8 (32px, 20% of h-40)
+                    className="w-full h-8 flex flex-col items-center justify-center hover:bg-slate-700/50 transition-colors text-sm"
+                    aria-label="Quick import Pokémon"
+                >
+                    <span className="font-semibold text-slate-500 group-hover:text-poke-yellow transition-colors">Quick Import</span>
+                </button>
+            </div>
         );
     }
 
@@ -241,20 +257,31 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onA
     
     return (
         <div 
-            onClick={() => onSelect(pokemon)}
+            onClick={() => onSelect(pokemon.DexID, teamMember.instanceID)}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={onMouseLeave}
             className="relative w-full h-40 bg-slate-700/80 rounded-lg group animate-fade-in shadow-lg cursor-pointer hover:bg-slate-700 transition-colors flex flex-col items-center justify-center p-2"
         >
-            <button 
-                onClick={(e) => { e.stopPropagation(); onRemove(pokemon); }}
-                className="absolute top-1 right-1 z-10 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 text-xs opacity-50 group-hover:opacity-100 transition-opacity"
-                title="Remove from team"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+            <div className="absolute top-1 right-1 z-10 flex flex-col gap-1">
+                <button
+                    onClick={(e) => { e.stopPropagation(); onRemove(teamMember.instanceID); }}
+                    className="p-1 bg-red-600 text-white rounded-full hover:bg-red-700 text-xs opacity-50 group-hover:opacity-100 transition-opacity"
+                    title="Remove from team"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                <button
+                    onClick={(e) => { e.stopPropagation(); onQuickExport(teamMember); }}
+                    className="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 text-xs opacity-50 group-hover:opacity-100 transition-opacity"
+                    title="Quick Export"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                </button>
+            </div>
 
             <img src={imageUrl} alt={pokemon.Name} className="h-24 w-24 object-contain" />
             
@@ -281,7 +308,7 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onA
  * TeamBuilderProps interface for the TeamBuilder component.
  */
 
-const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemoveFromTeam, onAddPokemonClick, onOpenSuggestModal }) => {
+const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemoveFromTeam, onAddPokemonClick, onOpenSuggestModal, onQuickImport, onQuickExport }) => {
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const teamCoverage = useMemo(() => calculateTeamTypeCoverage(team), [team]);
     
@@ -292,6 +319,17 @@ const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemo
     const handleMouseLeave = useCallback(() => {
         setTooltipData(null);
     }, []);
+
+    const handleQuickImport = (index: number) => {
+        if (team.length >= 6) {
+            alert("Your team is full!");
+            return;
+        }
+        const importString = prompt(`Quick Import for Slot ${index + 1}\n\nPaste a Pokémon Showdown export string for a single Pokémon.`);
+        if (importString) {
+            onQuickImport(importString, index);
+        }
+    };
 
     return (
         <div className="flex flex-col items-center justify-center h-full animate-fade-in-scale">
@@ -311,17 +349,21 @@ const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemo
             <p className="text-gray-400 mb-6 text-center">Select Pokémon from the list or manage your team below.</p>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl">
-                {Array.from({ length: 6 }).map((_, index) => (
-                    <TeamSlot 
-                        key={index} 
-                        teamMember={team[index]} 
+                {Array.from({ length: 6 }).map((_, index) => {
+                    const teamMember = team[index];
+                    return (
+                    <TeamSlot
+                        key={teamMember ? teamMember.instanceID : index}
+                        teamMember={teamMember}
                         onSelect={onSelectPokemon}
                         onRemove={onRemoveFromTeam}
                         onAddPokemonClick={onAddPokemonClick}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
+                        onQuickImport={() => handleQuickImport(index)}
+                        onQuickExport={onQuickExport}
                     />
-                ))}
+                )})}
             </div>
              {team.length >= 6 && (
                 <p className="mt-6 text-lg font-semibold text-poke-red animate-pulse-slow">Your team is full!</p>

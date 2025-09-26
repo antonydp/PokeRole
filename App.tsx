@@ -104,6 +104,7 @@ const App: React.FC = () => {
         team,
         trainerData,
         selectedPokemon,
+        selectedTeamMember,
         isLoading,
         error,
         isSidebarOpen,
@@ -128,6 +129,8 @@ const App: React.FC = () => {
         handleLoadTeam,
         isPokemonInTeam,
         handleAddSuggestionToTeam,
+        handleQuickImport,
+        handleQuickExport,
     } = useAppContext();
 
     if (isLoading) {
@@ -252,7 +255,7 @@ const App: React.FC = () => {
                                 onRemoveFromTeam={handleRemoveFromTeam}
                                 isInTeam={isPokemonInTeam}
                                 teamIsFull={team.length >= 6}
-                                sheetData={team.find(member => member.pokedexData.DexID === selectedPokemon.DexID)?.sheetData}
+                                teamMember={selectedTeamMember}
                                 onSheetDataChange={handleSheetDataChange}
                                 unitSettings={unitSettings}
                                 trainerRank={trainerData.trainerRank}
@@ -269,6 +272,8 @@ const App: React.FC = () => {
                                 allItems={allItems}
                                 onOpenSuggestModal={() => setIsSuggestModalOpen(true)}
                                 allBadges={allBadges}
+                                onQuickImport={handleQuickImport}
+                                onQuickExport={handleQuickExport}
                             />
                         )}
                     </div>

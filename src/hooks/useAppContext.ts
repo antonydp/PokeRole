@@ -9,8 +9,10 @@ import { Pokedex, Move, Ability, TeamMember, PokemonData, TrainerData, ItemsData
 import { fetchAllData } from '../../services/pokedexService.js';
 import { createInitialSheetData, createInitialTrainerData } from '../logic/initializers.js';
 import { calculateWeaknesses } from '../logic/formulas.js';
+import pako from 'pako';
 
 type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
+type SelectedPokemon = { dexID: string; instanceID?: string };
 
 export const useAppContext = () => {
     const [allPokemon, setAllPokemon] = useState<Pokedex[]>([]);
@@ -21,7 +23,7 @@ export const useAppContext = () => {
     const [allBadges, setAllBadges] = useState<Badge[]>([]);
     const [team, setTeam] = useState<TeamMember[]>([]);
     const [trainerData, setTrainerData] = useState<TrainerData>(createInitialTrainerData());
-    const [selectedPokemon, setSelectedPokemon] = useState<Pokedex | null>(null);
+    const [selectedPokemonId, setSelectedPokemonId] = useState<SelectedPokemon | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -39,6 +41,16 @@ export const useAppContext = () => {
             return { height: 'imperial', weight: 'imperial' };
         }
     });
+
+    const selectedPokemon = useMemo(() => {
+        if (!selectedPokemonId) return null;
+        return allPokemon.find(p => p.DexID === selectedPokemonId.dexID) || null;
+    }, [selectedPokemonId, allPokemon]);
+
+    const selectedTeamMember = useMemo(() => {
+        if (!selectedPokemonId?.instanceID) return null;
+        return team.find(m => m.instanceID === selectedPokemonId.instanceID) || null;
+    }, [selectedPokemonId, team]);
 
     useEffect(() => {
         try {
@@ -110,37 +122,39 @@ export const useAppContext = () => {
         loadData();
     }, [loadData]);
     
-    const handleSelectPokemon = useCallback((pokemon: Pokedex) => {
-        setSelectedPokemon(pokemon);
+    const handleSelectPokemon = useCallback((dexID: string, instanceID?: string) => {
+        setSelectedPokemonId({ dexID, instanceID });
         setIsSidebarOpen(false);
     }, []);
 
     const handleClearSelection = useCallback(() => {
-        setSelectedPokemon(null);
+        setSelectedPokemonId(null);
     }, []);
 
     const handleAddToTeam = useCallback((pokemon: Pokedex, sheetData: PokemonData) => {
-        if (team.length < 6 && !team.some(member => member.pokedexData.DexID === pokemon.DexID)) {
+        if (team.length < 6) {
             const newMember: TeamMember = {
+                instanceID: crypto.randomUUID(),
                 pokedexData: pokemon,
                 sheetData: sheetData,
             };
             setTeam(prevTeam => [...prevTeam, newMember]);
         }
-    }, [team]);
+    }, [team.length]);
 
-    const handleRemoveFromTeam = useCallback((pokemon: Pokedex) => {
-        setTeam(prevTeam => prevTeam.filter(member => member.pokedexData.DexID !== pokemon.DexID));
+    const handleRemoveFromTeam = useCallback((instanceID: string) => {
+        setTeam(prevTeam => prevTeam.filter(member => member.instanceID !== instanceID));
+        setSelectedPokemonId(null);
     }, []);
     
     const handleAddPokemonClick = useCallback(() => {
         setIsSidebarOpen(true);
     }, []);
     
-    const handleSheetDataChange = useCallback((pokemonDexID: string, newSheetData: PokemonData) => {
+    const handleSheetDataChange = useCallback((instanceID: string, newSheetData: PokemonData) => {
         setTeam(prevTeam =>
             prevTeam.map(member =>
-                member.pokedexData.DexID === pokemonDexID
+                member.instanceID === instanceID
                     ? { ...member, sheetData: newSheetData }
                     : member
             )
@@ -245,6 +259,10 @@ export const useAppContext = () => {
                 const teamWithUpdatedWeaknesses = loadedTeam.map(member => {
                     if (!member.pokedexData) return member;
                     const weakness = calculateWeaknesses(member.pokedexData.Type1, member.pokedexData.Type2);
+                    // Add instanceID to loaded team members if they don't have one
+                    if (!member.instanceID) {
+                        member.instanceID = crypto.randomUUID();
+                    }
                     return {
                         ...member,
                         sheetData: {
@@ -257,7 +275,7 @@ export const useAppContext = () => {
 
                 setTeam(teamWithUpdatedWeaknesses.slice(0, 6)); 
                 setError(null);
-                setSelectedPokemon(null);
+                setSelectedPokemonId(null);
             } catch (err) {
                 console.error("Failed to load data:", err);
                 setError("Failed to load data. The file might be corrupted or in an incorrect format.");
@@ -277,15 +295,67 @@ export const useAppContext = () => {
     }, [selectedPokemon, team]);
     
      const handleAddSuggestionToTeam = useCallback((pokemon: Pokedex) => {
-        if (team.length < 6 && !team.some(member => member.pokedexData.DexID === pokemon.DexID)) {
+        if (team.length < 6) {
             const sheetData = createInitialSheetData(pokemon, unitSettings, trainerData.trainerRank);
             const newMember: TeamMember = {
+                instanceID: crypto.randomUUID(),
                 pokedexData: pokemon,
                 sheetData: sheetData,
             };
             setTeam(prevTeam => [...prevTeam, newMember]);
         }
     }, [team.length, unitSettings, trainerData.trainerRank]);
+
+    const handleQuickImport = useCallback((importString: string, slotIndex: number) => {
+        try {
+            const binaryString = atob(importString);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            const decompressed = pako.inflate(bytes, { to: 'string' });
+            const importedMember: Omit<TeamMember, 'instanceID'> = JSON.parse(decompressed);
+
+            if (importedMember.pokedexData && importedMember.sheetData) {
+                const pokemonExists = allPokemon.some(p => p.DexID === importedMember.pokedexData.DexID);
+                if (!pokemonExists) {
+                    alert(`Imported Pokémon with DexID ${importedMember.pokedexData.DexID} does not exist in the Pokédex.`);
+                    return;
+                }
+
+                const newMember: TeamMember = {
+                    ...importedMember,
+                    instanceID: crypto.randomUUID(),
+                };
+
+                setTeam(prevTeam => {
+                    const newTeam = [...prevTeam];
+                    newTeam[slotIndex] = newMember;
+                    return newTeam.slice(0, 6);
+                });
+            } else {
+                throw new Error("Invalid imported data structure.");
+            }
+        } catch (e) {
+            alert("Invalid import string. It might be corrupted or from an incompatible version.");
+            console.error("Quick import error:", e);
+        }
+    }, [allPokemon]);
+
+    const handleQuickExport = useCallback((teamMember: TeamMember) => {
+        try {
+            const dataStr = JSON.stringify(teamMember);
+            const compressed = pako.deflate(dataStr);
+            const base64Str = btoa(String.fromCharCode.apply(null, compressed as unknown as number[]));
+            
+            navigator.clipboard.writeText(base64Str);
+            alert(`${teamMember.pokedexData.Name} export data copied to clipboard!`);
+        } catch (err) {
+            setError('Failed to export Pokémon data. Please try again.');
+            console.error('Export error:', err);
+        }
+    }, []);
 
     return {
         allPokemon,
@@ -297,6 +367,7 @@ export const useAppContext = () => {
         team,
         trainerData,
         selectedPokemon,
+        selectedTeamMember,
         isLoading,
         error,
         isSidebarOpen,
@@ -321,5 +392,7 @@ export const useAppContext = () => {
         handleLoadTeam,
         isPokemonInTeam,
         handleAddSuggestionToTeam,
+        handleQuickImport,
+        handleQuickExport,
     };
 };
