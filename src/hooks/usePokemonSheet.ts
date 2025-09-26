@@ -131,7 +131,7 @@ export function usePokemonSheet(
     }, []);
 
     const learnableMoves = useMemo((): LearnableMove[] => {
-        const trainerRankOrder = RANK_ORDER[trainerRank];
+        const pokemonRankOrder = RANK_ORDER[pokemonData.rank];
         
         return pokemon.Moves
             .map(learnset => ({
@@ -145,7 +145,7 @@ export function usePokemonSheet(
 
                 if (requiredRank) {
                     const moveRankOrder = RANK_ORDER[requiredRank];
-                    if (moveRankOrder > trainerRankOrder) {
+                    if (moveRankOrder > pokemonRankOrder) {
                         isAvailable = false;
                     }
                 }
@@ -158,7 +158,7 @@ export function usePokemonSheet(
                 if (!a.isAvailable && b.isAvailable) return 1;
                 return a.move.Name.localeCompare(b.move.Name);
             });
-    }, [pokemon.Moves, allMoves, moveSearchTerm, trainerRank]);
+    }, [pokemon.Moves, allMoves, moveSearchTerm, pokemonData.rank]);
 
     const availableAbilities = useMemo(() => {
         return [
