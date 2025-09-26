@@ -39,7 +39,7 @@ const LeftColumn: React.FC<LeftColumnProps> = ({ pokemon, pokemonData, onDataCha
             {/* Attributes */}
             <div className="flex-grow flex flex-col justify-between">
                 <PointsDisplay label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
-                <div className="flex flex-wrap gap-2 justify-center">
+                <div className="flex flex-col gap-2">
                     {attributes.map(attr => {
                         const baseStatKey = (attr.name.charAt(0) + attr.name.slice(1).toLowerCase()) as keyof Pokedex;
                         const baseValue = pokemon[baseStatKey] as number;
@@ -52,7 +52,6 @@ const LeftColumn: React.FC<LeftColumnProps> = ({ pokemon, pokemonData, onDataCha
                                 max={attr.max}
                                 baseValue={baseValue}
                                 key={attr.name}
-                                className="flex-grow"
                             />
                         );
                     })}

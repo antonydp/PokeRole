@@ -10,6 +10,8 @@ interface MoveModalProps {
     onSelectMove: (move: Move) => void;
     searchTerm: string;
     onSearchTermChange: (term: string) => void;
+    showTutorMoves: boolean;
+    onShowTutorMovesChange: (show: boolean) => void;
 }
 
 const MoveModal: React.FC<MoveModalProps> = ({
@@ -19,6 +21,8 @@ const MoveModal: React.FC<MoveModalProps> = ({
     onSelectMove,
     searchTerm,
     onSearchTermChange,
+    showTutorMoves,
+    onShowTutorMovesChange,
 }) => {
     if (!isOpen) return null;
 
@@ -34,18 +38,29 @@ const MoveModal: React.FC<MoveModalProps> = ({
                         onChange={e => onSearchTermChange(e.target.value)}
                         className="w-full p-2 mt-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-poke-blue"
                     />
+                    <div className="mt-2 text-center">
+                        <button
+                            onClick={() => onShowTutorMovesChange(!showTutorMoves)}
+                            className="text-sm text-poke-yellow font-semibold hover:underline"
+                        >
+                            {showTutorMoves ? 'Hide Tutor Moves' : 'Show Tutor Moves'}
+                        </button>
+                    </div>
                 </div>
                 <div className="overflow-y-auto p-2">
-                    {learnableMoves.length > 0 ? learnableMoves.map(({ move, isAvailable, requiredRank }) => (
+                    {learnableMoves.length > 0 ? learnableMoves.map(({ move, isAvailable, requiredRank, isOverRanked, isTutorMove }) => (
                         <button
                             key={move._id}
                             onClick={() => onSelectMove(move)}
-                            disabled={!isAvailable}
-                            className={`w-full text-left p-3 my-1 bg-slate-700 rounded-lg transition-colors flex justify-between items-center ${isAvailable ? 'hover:bg-poke-blue' : 'opacity-60 cursor-not-allowed'}`}
+                            className={`w-full text-left p-3 my-1 bg-slate-700 rounded-lg transition-colors flex justify-between items-center ${isOverRanked ? 'opacity-60 hover:bg-slate-600' : 'hover:bg-poke-blue'}`}
                         >
                             <div>
-                                <p className="font-bold text-white">{move.Name}</p>
-                                <p className="text-sm text-gray-400 hidden sm:block">{move.Effect}</p>
+                                <div className="flex items-center gap-2">
+                                    <p className="font-bold text-white">{move.Name}</p>
+                                    {isTutorMove && <span className="text-xs bg-purple-600 text-white px-2 py-0.5 rounded-full">Tutor</span>}
+                                    {isOverRanked && <span className="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full">Over-Rank</span>}
+                                </div>
+                                <p className="text-sm text-gray-400 hidden sm:block mt-1">{move.Effect}</p>
                                 {!isAvailable && requiredRank && (
                                     <div className="flex items-center gap-1.5 mt-2 text-poke-yellow text-xs font-semibold">
                                         <LockIcon className="w-4 h-4" />

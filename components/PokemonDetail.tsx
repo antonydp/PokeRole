@@ -9,6 +9,7 @@ import RightColumn from './PokemonDetail/RightColumn.js';
 import MovesSection from './PokemonDetail/MovesSection.js';
 import MoveModal from './PokemonDetail/MoveModal.js';
 import NatureModal from '../components/shared/NatureModal.js';
+import ConfirmationModal from '../components/shared/ConfirmationModal.js';
 import { RANK_SKILL_LIMITS } from '../src/logic/core.js';
 import { usePokemonSheet } from '../src/hooks/usePokemonSheet.js';
 import { useNatureModal } from '../src/hooks/useNatureModal.js';
@@ -40,7 +41,13 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
         handleClearMove,
         expandedMoves,
         handleToggleMoveExpand,
-        availableAbilities
+        availableAbilities,
+        showTutorMoves,
+        setShowTutorMoves,
+        isConfirmationModalOpen,
+        confirmOverRankMove,
+        cancelOverRankMove,
+        selectedMove
     } = usePokemonSheet(pokemon, teamMember?.sheetData, unitSettings, trainerRank, isInTeam, onSheetDataChange, allMoves, teamMember?.instanceID);
  
     const {
@@ -79,6 +86,8 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
                 onSelectMove={handleSelectMove}
                 searchTerm={moveSearchTerm}
                 onSearchTermChange={setMoveSearchTerm}
+                showTutorMoves={showTutorMoves}
+                onShowTutorMovesChange={setShowTutorMoves}
             />
             <NatureModal
                 isOpen={isNatureModalOpen}
@@ -88,6 +97,17 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
                 searchTerm={natureSearchTerm}
                 onSearchTermChange={setNatureSearchTerm}
             />
+            <ConfirmationModal
+                isOpen={isConfirmationModalOpen}
+                onClose={cancelOverRankMove}
+                onConfirm={confirmOverRankMove}
+                title="Over-Rank Move"
+            >
+                <p>
+                    Are you sure you want to learn <span className="font-bold">{selectedMove?.Name}</span>?
+                    This move is above the Pokémon's current rank and may have consequences.
+                </p>
+            </ConfirmationModal>
 
             <button onClick={onClose} className="absolute top-2 right-2 z-20 p-2 rounded-full bg-[#B2483D] text-white hover:bg-poke-red transition-transform transform hover:scale-110" aria-label="Close sheet">
                 <CloseIcon className="w-5 h-5" />

@@ -28,6 +28,9 @@ export function usePokemonSheet(
     const [moveSlotIndex, setMoveSlotIndex] = useState<number | null>(null);
     const [moveSearchTerm, setMoveSearchTerm] = useState('');
     const [expandedMoves, setExpandedMoves] = useState<Set<number>>(new Set());
+    const [showTutorMoves, setShowTutorMoves] = useState(false);
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [selectedMove, setSelectedMove] = useState<Move | null>(null);
 
     useEffect(() => {
         setPokemonData(sheetData || createInitialSheetData(pokemon, unitSettings, trainerRank));
@@ -91,6 +94,7 @@ export function usePokemonSheet(
     const openMoveModal = useCallback((index: number) => {
         setMoveSlotIndex(index);
         setMoveSearchTerm('');
+        setShowTutorMoves(false);
         setIsMoveModalOpen(true);
     }, []);
 
@@ -100,6 +104,21 @@ export function usePokemonSheet(
     };
 
     const handleSelectMove = (move: Move) => {
+        const pokemonRankOrder = RANK_ORDER[pokemonData.rank as Rank];
+        const learnset = pokemon.Moves.find(m => m.Name.toLowerCase() === move.Name.toLowerCase());
+        const requiredRank = learnset ? parseMoveRank(learnset.Learned) : null;
+        const moveRankOrder = requiredRank ? RANK_ORDER[requiredRank] : Infinity;
+        const isOverRanked = requiredRank ? moveRankOrder > pokemonRankOrder : false;
+
+        if (isOverRanked) {
+            setSelectedMove(move);
+            setIsConfirmationModalOpen(true);
+        } else {
+            addMoveToSheet(move);
+        }
+    };
+
+    const addMoveToSheet = (move: Move) => {
         if (moveSlotIndex === null) return;
 
         setPokemonData(prev => {
@@ -107,7 +126,21 @@ export function usePokemonSheet(
             newMoves[moveSlotIndex] = move._id;
             return { ...prev, moves: newMoves };
         });
+
         closeMoveModal();
+        setIsConfirmationModalOpen(false);
+        setSelectedMove(null);
+    };
+
+    const confirmOverRankMove = () => {
+        if (selectedMove) {
+            addMoveToSheet(selectedMove);
+        }
+    };
+
+    const cancelOverRankMove = () => {
+        setIsConfirmationModalOpen(false);
+        setSelectedMove(null);
     };
 
     const handleClearMove = useCallback((index: number) => {
@@ -131,34 +164,41 @@ export function usePokemonSheet(
     }, []);
 
     const learnableMoves = useMemo((): LearnableMove[] => {
-        const pokemonRankOrder = RANK_ORDER[pokemonData.rank];
-        
-        return pokemon.Moves
-            .map(learnset => ({
-                move: allMoves[learnset.Name.toLowerCase().replace(/'/g, "").replace(/ /g, "-")],
-                learnset
-            }))
-            .filter(({ move }) => !!move)
-            .map(({ move, learnset }) => {
-                const requiredRank = parseMoveRank(learnset.Learned);
-                let isAvailable = true;
+        const pokemonRankOrder = RANK_ORDER[pokemonData.rank as Rank];
+        const pokemonLearnedMoveNames = new Set(pokemon.Moves.map(m => m.Name.toLowerCase()));
 
-                if (requiredRank) {
-                    const moveRankOrder = RANK_ORDER[requiredRank];
-                    if (moveRankOrder > pokemonRankOrder) {
-                        isAvailable = false;
-                    }
-                }
-                return { move, isAvailable, requiredRank };
+        const allLearnableMoves = Object.values(allMoves).map(move => {
+            const learnset = pokemon.Moves.find(m => m.Name.toLowerCase() === move.Name.toLowerCase());
+            const requiredRank = learnset ? parseMoveRank(learnset.Learned) : null;
+            const moveRankOrder = requiredRank ? RANK_ORDER[requiredRank] : Infinity;
+            
+            const isNaturallyLearned = pokemonLearnedMoveNames.has(move.Name.toLowerCase());
+            const isAvailable = isNaturallyLearned && requiredRank ? moveRankOrder <= pokemonRankOrder : true;
+            const isOverRanked = requiredRank ? moveRankOrder > pokemonRankOrder : false;
+
+            return {
+                move,
+                isAvailable,
+                requiredRank,
+                isOverRanked,
+                isTutorMove: !isNaturallyLearned
+            };
+        });
+
+        return allLearnableMoves
+            .filter(item => {
+                const searchTermMatch = item.move.Name.toLowerCase().includes(moveSearchTerm.toLowerCase());
+                const isTutorMoveShown = showTutorMoves || !item.isTutorMove;
+                return searchTermMatch && isTutorMoveShown;
             })
-            .filter((item): item is { move: Move; isAvailable: boolean; requiredRank: Rank | null } => !!item.move)
-            .filter(({ move }) => move.Name.toLowerCase().includes(moveSearchTerm.toLowerCase()))
             .sort((a, b) => {
                 if (a.isAvailable && !b.isAvailable) return -1;
                 if (!a.isAvailable && b.isAvailable) return 1;
+                if (a.isTutorMove && !b.isTutorMove) return 1;
+                if (!a.isTutorMove && b.isTutorMove) return -1;
                 return a.move.Name.localeCompare(b.move.Name);
             });
-    }, [pokemon.Moves, allMoves, moveSearchTerm, pokemonData.rank]);
+    }, [pokemon.Moves, allMoves, moveSearchTerm, pokemonData.rank, showTutorMoves]);
 
     const availableAbilities = useMemo(() => {
         return [
@@ -183,6 +223,12 @@ export function usePokemonSheet(
         handleClearMove,
         expandedMoves,
         handleToggleMoveExpand,
-        availableAbilities
+        availableAbilities,
+        showTutorMoves,
+        setShowTutorMoves,
+        isConfirmationModalOpen,
+        confirmOverRankMove,
+        cancelOverRankMove,
+        selectedMove
     };
 }

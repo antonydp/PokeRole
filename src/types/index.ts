@@ -200,6 +200,8 @@ export interface LearnableMove {
   move: Move;
   isAvailable: boolean;
   requiredRank: Rank | null;
+  isOverRanked: boolean;
+  isTutorMove: boolean;
 }
 
 /**
