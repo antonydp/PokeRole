@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { List, type RowComponentProps } from "react-window";
 import { Pokedex } from '../src/types/index.js';
 import PokemonCard from './PokemonCard.js';
 import { TYPE_COLORS } from '../src/constants/gameConstants.js';
@@ -38,6 +39,22 @@ const STAT_FIELDS: (keyof typeof initialStatFilters)[] = ['BaseHP', 'Strength', 
  */
 
 import { PokemonListProps } from './types.js';
+
+const PokemonRow: React.FC<RowComponentProps<{
+    pokemonList: Pokedex[];
+    onSelectPokemon: (id: number) => void;
+}>> = ({ index, style, pokemonList, onSelectPokemon }) => {
+    const pokemon = pokemonList[index];
+    
+    return (
+        <div style={style} className="px-2 pb-2">
+            <PokemonCard
+                pokemon={pokemon}
+                onSelect={() => onSelectPokemon(pokemon.DexID)}
+            />
+        </div>
+    );
+};
 
 const PokemonList: React.FC<PokemonListProps> = ({ allPokemon, onSelectPokemon }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -207,11 +224,17 @@ const PokemonList: React.FC<PokemonListProps> = ({ allPokemon, onSelectPokemon }
                     </div>
                 )}
             </div>
-            <div className="flex-grow overflow-y-auto p-2 space-y-2">
+            <div className="flex-grow overflow-hidden">
                 {filteredPokemon.length > 0 ? (
-                    filteredPokemon.map(pokemon => (
-                        <PokemonCard key={pokemon.DexID} pokemon={pokemon} onSelect={() => onSelectPokemon(pokemon.DexID)} />
-                    ))
+                    <List
+                        rowCount={filteredPokemon.length}
+                        rowHeight={100}
+                        rowComponent={PokemonRow}
+                        rowProps={{
+                            pokemonList: filteredPokemon,
+                            onSelectPokemon: onSelectPokemon
+                        }}
+                    />
                 ) : (
                     <p className="text-center text-gray-400 mt-8">No Pokémon found.</p>
                 )}
