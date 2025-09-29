@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { Pokedex, PokemonData, Move, Nature, Rank, Ability } from '../src/types/index.js';
 import { CloseIcon } from './Icons.js';
 
+import { GlobalTooltip, TooltipData } from '../components/shared/GlobalTooltip.js';
 import PokemonDetailHeader from './PokemonDetail/PokemonDetailHeader.js';
 import LeftColumn from './PokemonDetail/LeftColumn.js';
 import MiddleColumn from './PokemonDetail/MiddleColumn.js';
@@ -29,6 +30,7 @@ import { PokemonDetailProps } from './types.js';
 const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allMoves, allAbilities, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, onSheetDataChange, unitSettings, trainerRank, ribbonsData }) => {
 
     const [isAbilityModalOpen, setIsAbilityModalOpen] = React.useState(false);
+    const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
 
     const {
         pokemonData,
@@ -80,8 +82,23 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
     
     const skillLimit = useMemo(() => RANK_SKILL_LIMITS[pokemonData.rank as Rank], [pokemonData.rank]);
 
+    const handleShowTooltip = (e: React.MouseEvent<HTMLElement>, content: { name: string; description: string } | null) => {
+        if (!content) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        setTooltipData({ content, rect });
+    };
+
+    const handleHideTooltip = () => {
+        setTooltipData(null);
+    };
+
+    const selectedAbility = useMemo(() => {
+        return allAbilities.find(a => a.Name === pokemonData.ability);
+    }, [allAbilities, pokemonData.ability]);
+
     return (
         <div className="relative w-full max-w-7xl mx-auto p-4 rounded-xl font-primary animate-fade-in-scale" style={{ backgroundColor: '#E46243' }}>
+            <GlobalTooltip tooltipData={tooltipData} />
             <AbilityModal
                 isOpen={isAbilityModalOpen}
                 onClose={() => setIsAbilityModalOpen(false)}
@@ -137,6 +154,9 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
                 pokemon={pokemon}
                 availableAbilities={availableAbilities}
                 onAbilityClick={() => setIsAbilityModalOpen(true)}
+                onShowTooltip={handleShowTooltip}
+                onHideTooltip={handleHideTooltip}
+                selectedAbility={selectedAbility}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-4 gap-y-3">

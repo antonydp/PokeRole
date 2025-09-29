@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Pokedex, PokemonData } from '../../src/types/index.js';
+import { Pokedex, PokemonData, Ability } from '../../src/types/index.js';
 import { MinusIcon, PlusIcon } from '../Icons.js';
 
 interface PokemonDetailHeaderProps {
@@ -13,6 +13,9 @@ interface PokemonDetailHeaderProps {
     pokemon: Pokedex;
     availableAbilities: string[];
     onAbilityClick: () => void;
+    onShowTooltip: (e: React.MouseEvent<HTMLElement>, content: { name: string; description: string } | null) => void;
+    onHideTooltip: () => void;
+    selectedAbility: Ability | undefined;
 }
 
 const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
@@ -24,6 +27,9 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
     onRemoveFromTeam,
     availableAbilities,
     onAbilityClick,
+    onShowTooltip,
+    onHideTooltip,
+    selectedAbility,
 }) => {
     return (
         <div className="flex justify-between items-center mb-4 flex-wrap gap-4 font-primary">
@@ -45,7 +51,12 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
 
             {/* Right side: Ability and Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 items-stretch flex-shrink-0 w-full sm:w-auto">
-                <button onClick={onAbilityClick} className="relative w-full sm:w-48 bg-[#B2483D] rounded-xl px-2 pt-1 pb-1.5 border-2 border-[#3A3A3A] flex flex-col justify-center text-left hover:bg-red-800 transition-colors">
+                <button
+                    onClick={onAbilityClick}
+                    onMouseEnter={(e) => onShowTooltip(e, selectedAbility ? { name: selectedAbility.Name, description: selectedAbility.Description } : null)}
+                    onMouseLeave={onHideTooltip}
+                    className="relative w-full sm:w-48 bg-[#B2483D] rounded-xl px-2 pt-1 pb-1.5 border-2 border-[#3A3A3A] flex flex-col justify-center text-left hover:bg-red-800 transition-colors"
+                >
                     <label className="font-primary text-[10px] tracking-wider uppercase text-white/90 font-bold">
                         ABILITY
                     </label>
