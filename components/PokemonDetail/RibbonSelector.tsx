@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Ribbon } from '../../src/types/index.js';
-import { GlobalTooltip } from '../shared/GlobalTooltip.js';
+import { GlobalTooltip, TooltipData } from '../shared/GlobalTooltip.js';
 import RibbonModal from './RibbonModal.js';
 
 interface RibbonSelectorProps {
@@ -12,6 +12,17 @@ interface RibbonSelectorProps {
 export const RibbonSelector: React.FC<RibbonSelectorProps> = ({ ribbons, allRibbons, onRibbonChange }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeSlot, setActiveSlot] = useState<number | null>(null);
+    const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
+
+    const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>, ribbon: Ribbon | undefined) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const content = ribbon ? { name: ribbon.name, description: ribbon.description } : { name: 'Empty Slot', description: 'Click to select a ribbon' };
+        setTooltipData({ content, rect });
+    };
+
+    const handleMouseLeave = () => {
+        setTooltipData(null);
+    };
 
     const handleSlotClick = (index: number) => {
         setActiveSlot(index);
@@ -41,8 +52,8 @@ export const RibbonSelector: React.FC<RibbonSelectorProps> = ({ ribbons, allRibb
                             className="bg-white rounded-xl w-full aspect-square border-2 border-[#3A3A3A] cursor-pointer"
                             aria-label={`Ribbon slot ${index + 1}`}
                             onClick={() => handleSlotClick(index)}
-                            data-tooltip-id="ribbon-tooltip"
-                            data-tooltip-content={ribbon ? `${ribbon.name}: ${ribbon.description}` : 'Click to select a ribbon'}
+                            onMouseEnter={(e) => handleMouseEnter(e, ribbon)}
+                            onMouseLeave={handleMouseLeave}
                         >
                             {ribbon && (
                                 <img src={ribbon.image_url} alt={ribbon.name} className="w-full h-full object-contain" />
@@ -57,7 +68,7 @@ export const RibbonSelector: React.FC<RibbonSelectorProps> = ({ ribbons, allRibb
                 allRibbons={allRibbons}
                 onSelectRibbon={handleSelectRibbon}
             />
-            <GlobalTooltip id="ribbon-tooltip" />
+            <GlobalTooltip tooltipData={tooltipData} />
         </div>
     );
 };
