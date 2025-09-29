@@ -69,7 +69,7 @@ const PokemonTooltip: React.FC<{ tooltipData: TooltipData | null }> = ({ tooltip
         >
             <div className="absolute bottom-[-9px] left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-800 border-b border-r border-slate-600 transform rotate-45"></div>
             
-            <h4 className="font-bold text-poke-yellow mb-2 text-center text-lg">{pokemon.Name}</h4>
+            <h4 className="font-bold text-poke-yellow mb-2 text-center text-lg">{sheetData.pokemonName || pokemon.Name}</h4>
 
             {pokemon.RecommendedRank && pokemon.RecommendedRank !== 'Starter' && (
                 <p className="text-center text-xs text-poke-yellow/80 font-semibold -mt-2 mb-2">
@@ -248,7 +248,7 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onA
         );
     }
 
-    const { pokedexData: pokemon } = teamMember;
+    const { pokedexData: pokemon, sheetData } = teamMember;
     const imageUrl = `${IMAGE_BASE_URL}${pokemon.Image}`;
 
     const handleMouseEnter = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -286,7 +286,7 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onA
             <img src={imageUrl} alt={pokemon.Name} className="h-24 w-24 object-contain" />
             
             <div className="text-center mt-1 w-full">
-                <h3 className="text-sm font-bold text-white truncate px-1">{pokemon.Name}</h3>
+                <h3 className="text-sm font-bold text-white truncate px-1">{sheetData.pokemonName || pokemon.Name}</h3>
                 <div className="flex space-x-1 mt-1 justify-center">
                     <TypeBadge type={pokemon.Type1} />
                     {pokemon.Type2 && <TypeBadge type={pokemon.Type2} />}

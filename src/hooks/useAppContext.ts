@@ -331,7 +331,12 @@ export const useAppContext = () => {
 
                 setTeam(prevTeam => {
                     const newTeam = [...prevTeam];
-                    newTeam[slotIndex] = newMember;
+                    const firstEmptyIndex = newTeam.findIndex(member => !member);
+                    if (firstEmptyIndex !== -1) {
+                        newTeam[firstEmptyIndex] = newMember;
+                    } else {
+                        newTeam.push(newMember);
+                    }
                     return newTeam.slice(0, 6);
                 });
             } else {
