@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { Pokedex, PokemonData, Move, Nature, Rank } from '../src/types/index.js';
+import type { Pokedex, PokemonData, Move, Nature, Rank, Ability } from '../src/types/index.js';
 import { CloseIcon } from './Icons.js';
 
 import PokemonDetailHeader from './PokemonDetail/PokemonDetailHeader.js';
@@ -8,6 +8,7 @@ import MiddleColumn from './PokemonDetail/MiddleColumn.js';
 import RightColumn from './PokemonDetail/RightColumn.js';
 import MovesSection from './PokemonDetail/MovesSection.js';
 import MoveModal from './PokemonDetail/MoveModal.js';
+import AbilityModal from './PokemonDetail/AbilityModal.js';
 import NatureModal from '../components/shared/NatureModal.js';
 import ConfirmationModal from '../components/shared/ConfirmationModal.js';
 import { RANK_SKILL_LIMITS } from '../src/logic/core.js';
@@ -25,7 +26,9 @@ import { PokemonDetailProps } from './types.js';
  * @param {PokemonDetailProps} props - The props for the PokemonDetail component.
  * @returns {React.FC} The rendered PokemonDetail component.
  */
-const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allMoves, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, onSheetDataChange, unitSettings, trainerRank, ribbonsData }) => {
+const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allMoves, allAbilities, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, onSheetDataChange, unitSettings, trainerRank, ribbonsData }) => {
+
+    const [isAbilityModalOpen, setIsAbilityModalOpen] = React.useState(false);
 
     const {
         pokemonData,
@@ -79,6 +82,13 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
 
     return (
         <div className="relative w-full max-w-7xl mx-auto p-4 rounded-xl font-primary animate-fade-in-scale" style={{ backgroundColor: '#E46243' }}>
+            <AbilityModal
+                isOpen={isAbilityModalOpen}
+                onClose={() => setIsAbilityModalOpen(false)}
+                pokemonAbilities={availableAbilities}
+                allAbilities={allAbilities}
+                onSelectAbility={(ability) => handleDataChange('ability', ability)}
+            />
             <MoveModal
                 isOpen={isMoveModalOpen}
                 onClose={closeMoveModal}
@@ -126,6 +136,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
                 }}
                 pokemon={pokemon}
                 availableAbilities={availableAbilities}
+                onAbilityClick={() => setIsAbilityModalOpen(true)}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-4 gap-y-3">

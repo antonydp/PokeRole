@@ -1,4 +1,4 @@
-import type { Pokedex, TeamMember, TrainerData, ItemsData, PokemonData, Move, Nature, Rank, Ribbon, Badge } from '../src/types/index.js';
+import type { Pokedex, TeamMember, TrainerData, ItemsData, PokemonData, Move, Nature, Rank, Ribbon, Badge, Ability } from '../src/types/index.js';
 
 export interface DashboardProps {
     team: TeamMember[];
@@ -23,6 +23,7 @@ export interface PokemonDetailProps {
     pokemon: Pokedex;
     teamMember: TeamMember | null;
     allMoves: Record<string, Move>;
+    allAbilities: Ability[];
     onClose: () => void;
     onAddToTeam: (pokemon: Pokedex, sheetData: PokemonData) => void;
     onRemoveFromTeam: (instanceId: string) => void;

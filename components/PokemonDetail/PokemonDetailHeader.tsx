@@ -12,6 +12,7 @@ interface PokemonDetailHeaderProps {
     onRemoveFromTeam: () => void;
     pokemon: Pokedex;
     availableAbilities: string[];
+    onAbilityClick: () => void;
 }
 
 const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
@@ -22,6 +23,7 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
     onAddToTeam,
     onRemoveFromTeam,
     availableAbilities,
+    onAbilityClick,
 }) => {
     return (
         <div className="flex justify-between items-center mb-4 flex-wrap gap-4 font-primary">
@@ -43,24 +45,14 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
 
             {/* Right side: Ability and Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 items-stretch flex-shrink-0 w-full sm:w-auto">
-                <div className="relative w-full sm:w-48 bg-[#B2483D] rounded-xl px-2 pt-1 pb-1.5 border-2 border-[#3A3A3A] flex flex-col justify-center">
-                    <label htmlFor="ability" className="font-primary text-[10px] tracking-wider uppercase text-white/90 font-bold">
+                <button onClick={onAbilityClick} className="relative w-full sm:w-48 bg-[#B2483D] rounded-xl px-2 pt-1 pb-1.5 border-2 border-[#3A3A3A] flex flex-col justify-center text-left hover:bg-red-800 transition-colors">
+                    <label className="font-primary text-[10px] tracking-wider uppercase text-white/90 font-bold">
                         ABILITY
                     </label>
-                    <select
-                        id="ability"
-                        value={pokemonData.ability}
-                        onChange={(e) => updateField('ability', e.target.value)}
-                        className="w-full bg-transparent text-white font-sans text-sm focus:outline-none p-0 appearance-none pr-6"
-                        disabled={availableAbilities.length <= 1}
-                    >
-                        {availableAbilities.map(ab => <option key={ab} value={ab} className="text-black">{ab}</option>)}
-                        {availableAbilities.length === 0 && <option value="" className="text-black">N/A</option>}
-                    </select>
-                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white/90">
-                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    <div className="w-full bg-transparent text-white font-sans text-sm focus:outline-none p-0 truncate">
+                        {pokemonData.ability || 'Select Ability'}
                     </div>
-                </div>
+                </button>
 
                 <div className="flex-grow">
                     {isInTeam ? (

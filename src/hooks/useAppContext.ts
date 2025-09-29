@@ -365,7 +365,7 @@ export const useAppContext = () => {
     return {
         allPokemon,
         allMoves,
-        allAbilities,
+        allAbilities: Object.values(allAbilities),
         allItems,
         ribbonsData,
         allBadges,

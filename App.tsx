@@ -99,6 +99,7 @@ const App: React.FC = () => {
         allPokemon,
         allMoves,
         allItems,
+        allAbilities,
         ribbonsData,
         allBadges,
         team,
@@ -250,6 +251,7 @@ const App: React.FC = () => {
                             <PokemonDetail
                                 pokemon={selectedPokemon}
                                 allMoves={allMoves}
+                                allAbilities={allAbilities}
                                 onClose={handleClearSelection}
                                 onAddToTeam={handleAddToTeam}
                                 onRemoveFromTeam={handleRemoveFromTeam}

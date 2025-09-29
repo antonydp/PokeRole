@@ -311,7 +311,7 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onA
 const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemoveFromTeam, onAddPokemonClick, onOpenSuggestModal, onQuickImport, onQuickExport }) => {
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const teamCoverage = useMemo(() => calculateTeamTypeCoverage(team), [team]);
-    
+
     const handleMouseEnter = useCallback((teamMember: TeamMember, element: HTMLElement) => {
         setTooltipData({ content: teamMember, rect: element.getBoundingClientRect() });
     }, []);
@@ -319,6 +319,11 @@ const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemo
     const handleMouseLeave = useCallback(() => {
         setTooltipData(null);
     }, []);
+
+    const handleRemoveFromTeam = (instanceID: string) => {
+        setTooltipData(null);
+        onRemoveFromTeam(instanceID);
+    };
 
     const handleQuickImport = (index: number) => {
         if (team.length >= 6) {
@@ -356,7 +361,7 @@ const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemo
                         key={teamMember ? teamMember.instanceID : index}
                         teamMember={teamMember}
                         onSelect={onSelectPokemon}
-                        onRemove={onRemoveFromTeam}
+                        onRemove={handleRemoveFromTeam}
                         onAddPokemonClick={onAddPokemonClick}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
