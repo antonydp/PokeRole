@@ -26,14 +26,20 @@ export const StatRedistributionModal: React.FC = () => {
 
     const [tempSheet, setTempSheet] = useState<PokemonData>(() => {
         const newSheet = createInitialSheetData(newPokedexData, unitSettings, teamMember.sheetData.rank as Rank);
-        // Carry over non-resettable data
-        newSheet.pokemonName = teamMember.sheetData.pokemonName;
+        
+        // Conditionally set the Pokémon's name
+        const isDefaultName = teamMember.sheetData.pokemonName === teamMember.pokedexData.Name;
+        newSheet.pokemonName = isDefaultName
+            ? newPokedexData.Name // Update to the new species name if it was the default
+            : teamMember.sheetData.pokemonName; // Keep the existing nickname
+
+        // Carry over other non-resettable data
         newSheet.pokemonNature = teamMember.sheetData.pokemonNature;
         newSheet.confidence = teamMember.sheetData.confidence;
         newSheet.happiness = teamMember.sheetData.happiness;
         newSheet.loyalty = teamMember.sheetData.loyalty;
         newSheet.extraSkillName = teamMember.sheetData.extraSkillName;
-        // ... copy other persistent fields like loyalty, happiness, etc.
+        
         return newSheet;
     });
 
