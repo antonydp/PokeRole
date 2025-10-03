@@ -39,24 +39,24 @@ export function usePointCalculations(data: SheetData, basePokemon?: Pokedex) {
 
         if (isTrainer) {
             const trainerData = data as TrainerData;
-            spentAttributePoints = ((trainerData.strength || 1) - 1) + ((trainerData.dexterity || 1) - 1) + ((trainerData.vitality || 1) - 1) + ((trainerData.insight || 1) - 1);
-            spentSocialAttributePoints = ((trainerData.tough || 1) - 1) + ((trainerData.cool || 1) - 1) + ((trainerData.beauty || 1) - 1) + ((trainerData.clever || 1) - 1) + ((trainerData.cute || 1) - 1);
+            spentAttributePoints = ((trainerData.strength ?? 1) - 1) + ((trainerData.dexterity ?? 1) - 1) + ((trainerData.vitality ?? 1) - 1) + ((trainerData.insight ?? 1) - 1);
+            spentSocialAttributePoints = ((trainerData.tough ?? 1) - 1) + ((trainerData.cool ?? 1) - 1) + ((trainerData.beauty ?? 1) - 1) + ((trainerData.clever ?? 1) - 1) + ((trainerData.cute ?? 1) - 1);
             spentSkillPoints = TRAINER_SKILL_FIELDS.reduce((acc, field) => acc + (trainerData[field] || 0), 0) +
                 (trainerData.extraSkills || []).reduce((acc, skill) => acc + (skill.value || 0), 0);
         } else {
             const pokemonData = data as PokemonData;
             spentAttributePoints =
-                ((pokemonData.strength || basePokemon.Strength) - basePokemon.Strength) +
-                ((pokemonData.dexterity || basePokemon.Dexterity) - basePokemon.Dexterity) +
-                ((pokemonData.vitality || basePokemon.Vitality) - basePokemon.Vitality) +
-                ((pokemonData.special || basePokemon.Special) - basePokemon.Special) +
-                ((pokemonData.insight || basePokemon.Insight) - basePokemon.Insight);
+                ((pokemonData.strength ?? basePokemon.Strength) - basePokemon.Strength) +
+                ((pokemonData.dexterity ?? basePokemon.Dexterity) - basePokemon.Dexterity) +
+                ((pokemonData.vitality ?? basePokemon.Vitality) - basePokemon.Vitality) +
+                ((pokemonData.special ?? basePokemon.Special) - basePokemon.Special) +
+                ((pokemonData.insight ?? basePokemon.Insight) - basePokemon.Insight);
             spentSocialAttributePoints =
-                ((pokemonData.tough || 1) - 1) +
-                ((pokemonData.cool || 1) - 1) +
-                ((pokemonData.beauty || 1) - 1) +
-                ((pokemonData.cute || 1) - 1) +
-                ((pokemonData.clever || 1) - 1);
+                ((pokemonData.tough ?? 1) - 1) +
+                ((pokemonData.cool ?? 1) - 1) +
+                ((pokemonData.beauty ?? 1) - 1) +
+                ((pokemonData.cute ?? 1) - 1) +
+                ((pokemonData.clever ?? 1) - 1);
             spentSkillPoints = POKEMON_SKILL_FIELDS.reduce((acc, field) => acc + (pokemonData[field] || 0), 0);
         }
 
