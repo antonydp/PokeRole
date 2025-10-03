@@ -17,10 +17,7 @@ const TRAINER_SKILL_FIELDS: TrainerSkill[] = ['brawl', 'throw', 'evasion', 'weap
 
 type SheetData = PokemonData | TrainerData;
 
-export function usePointCalculations(data: SheetData, basePokemon?: Pokedex) {
-    const isTrainer = !basePokemon;
-    const rank = ('trainerRank' in data ? data.trainerRank : data.rank) as Rank;
-
+export function usePointCalculations(data: SheetData | null, basePokemon?: Pokedex) {
     const {
         spentAttributePoints,
         totalAttributePoints,
@@ -29,6 +26,20 @@ export function usePointCalculations(data: SheetData, basePokemon?: Pokedex) {
         spentSkillPoints,
         totalSkillPoints
     } = useMemo(() => {
+        if (!data) {
+            return {
+                spentAttributePoints: 0,
+                totalAttributePoints: 0,
+                spentSocialAttributePoints: 0,
+                totalSocialAttributePoints: 0,
+                spentSkillPoints: 0,
+                totalSkillPoints: 0,
+            };
+        }
+
+        const isTrainer = !basePokemon;
+        const rank = ('trainerRank' in data ? data.trainerRank : data.rank) as Rank;
+
         const totalAttributePoints = RANK_ATTRIBUTE_POINTS[rank];
         const totalSocialAttributePoints = RANK_SOCIAL_ATTRIBUTE_POINTS[rank];
         const totalSkillPoints = RANK_SKILL_POINTS[rank];
@@ -68,7 +79,7 @@ export function usePointCalculations(data: SheetData, basePokemon?: Pokedex) {
             spentSkillPoints,
             totalSkillPoints
         };
-    }, [data, rank, isTrainer, basePokemon]);
+    }, [data, basePokemon]);
 
     const points = {
         attributes: { spent: spentAttributePoints, total: totalAttributePoints },

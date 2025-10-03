@@ -15,6 +15,8 @@ import {
 } from '../logic/core.js';
 import { usePointCalculations } from './usePointCalculations.js';
 
+import { useSessionStore } from '../store/useSessionStore.js';
+
 export function usePokemonSheet(
     pokemon: Pokedex,
     sheetData: PokemonData | undefined,
@@ -25,7 +27,10 @@ export function usePokemonSheet(
     allMoves: Record<string, Move>,
     instanceID: string | undefined
 ) {
-    const [pokemonData, setPokemonData] = useState<PokemonData>(() => sheetData || createInitialSheetData(pokemon, unitSettings, trainerRank));
+    const teamMember = useSessionStore(state => state.team.find(m => m.instanceID === instanceID));
+    const activePokemon = teamMember?.temporaryForm || pokemon;
+
+    const [pokemonData, setPokemonData] = useState<PokemonData>(() => sheetData || createInitialSheetData(activePokemon, unitSettings, trainerRank));
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
     const [moveSlotIndex, setMoveSlotIndex] = useState<number | null>(null);
     const [moveSearchTerm, setMoveSearchTerm] = useState('');
@@ -35,16 +40,16 @@ export function usePokemonSheet(
     const [selectedMove, setSelectedMove] = useState<Move | null>(null);
 
     useEffect(() => {
-        setPokemonData(sheetData || createInitialSheetData(pokemon, unitSettings, trainerRank));
+        setPokemonData(sheetData || createInitialSheetData(activePokemon, unitSettings, trainerRank));
         setExpandedMoves(new Set());
-    }, [pokemon, sheetData, unitSettings, trainerRank]);
+    }, [activePokemon, sheetData, unitSettings, trainerRank]);
 
     const {
         points,
         isAttributePoolExhausted,
         isSocialAttributePoolExhausted,
         isSkillPoolExhausted
-    } = usePointCalculations(pokemonData, pokemon);
+    } = usePointCalculations(pokemonData, activePokemon);
 
     const skillLimit = useMemo(() => RANK_SKILL_LIMITS[pokemonData.rank as Rank], [pokemonData.rank]);
 
@@ -61,7 +66,7 @@ export function usePokemonSheet(
             
             if (field === 'rank') {
                 const newRank = value as Rank;
-                newData.hp = String(calculatePokemonHP(pokemon.BaseHP, newData.vitality, newRank));
+                newData.hp = String(calculatePokemonHP(activePokemon.BaseHP, newData.vitality, newRank));
                 newData.will = String(calculatePokemonWill(newData.insight, newRank));
                 newData.initiative = String(calculateInitiative(newData.dexterity, newData.alert, newRank));
                 newData.defSDef = calculateDefSDef(newData.vitality, newData.insight, newRank);
@@ -69,7 +74,7 @@ export function usePokemonSheet(
                 const currentRank = newData.rank as Rank;
                 switch (field) {
                     case 'vitality':
-                        newData.hp = String(calculatePokemonHP(pokemon.BaseHP, numericValue, currentRank));
+                        newData.hp = String(calculatePokemonHP(activePokemon.BaseHP, numericValue, currentRank));
                         newData.defSDef = calculateDefSDef(numericValue, newData.insight, currentRank);
                         break;
                     case 'insight':
@@ -100,7 +105,7 @@ export function usePokemonSheet(
             
             return newData;
         });
-    }, [pokemon]);
+    }, [activePokemon]);
 
     const openMoveModal = useCallback((index: number) => {
         setMoveSlotIndex(index);
@@ -116,7 +121,7 @@ export function usePokemonSheet(
 
     const handleSelectMove = (move: Move) => {
         const pokemonRankOrder = RANK_ORDER[pokemonData.rank as Rank];
-        const learnset = pokemon.Moves.find(m => m.Name.toLowerCase() === move.Name.toLowerCase());
+        const learnset = activePokemon.Moves.find(m => m.Name.toLowerCase() === move.Name.toLowerCase());
         const requiredRank = learnset ? parseMoveRank(learnset.Learned) : null;
         const moveRankOrder = requiredRank ? RANK_ORDER[requiredRank] : Infinity;
         const isOverRanked = requiredRank ? moveRankOrder > pokemonRankOrder : false;
@@ -176,10 +181,10 @@ export function usePokemonSheet(
 
     const learnableMoves = useMemo((): LearnableMove[] => {
         const pokemonRankOrder = RANK_ORDER[pokemonData.rank as Rank];
-        const pokemonLearnedMoveNames = new Set(pokemon.Moves.map(m => m.Name.toLowerCase()));
+        const pokemonLearnedMoveNames = new Set(activePokemon.Moves.map(m => m.Name.toLowerCase()));
 
         const allLearnableMoves = Object.values(allMoves).map(move => {
-            const learnset = pokemon.Moves.find(m => m.Name.toLowerCase() === move.Name.toLowerCase());
+            const learnset = activePokemon.Moves.find(m => m.Name.toLowerCase() === move.Name.toLowerCase());
             const requiredRank = learnset ? parseMoveRank(learnset.Learned) : null;
             const moveRankOrder = requiredRank ? RANK_ORDER[requiredRank] : Infinity;
             
@@ -209,16 +214,16 @@ export function usePokemonSheet(
                 if (!a.isTutorMove && b.isTutorMove) return -1;
                 return a.move.Name.localeCompare(b.move.Name);
             });
-    }, [pokemon.Moves, allMoves, moveSearchTerm, pokemonData.rank, showTutorMoves]);
+    }, [activePokemon.Moves, allMoves, moveSearchTerm, pokemonData.rank, showTutorMoves]);
 
     const availableAbilities = useMemo(() => {
         return [
-            pokemon.Ability1,
-            pokemon.Ability2,
-            pokemon.HiddenAbility,
-            ...(pokemon.EventAbilities?.split(',').map(a => a.trim()) || [])
+            activePokemon.Ability1,
+            activePokemon.Ability2,
+            activePokemon.HiddenAbility,
+            ...(activePokemon.EventAbilities?.split(',').map(a => a.trim()) || [])
         ].filter((a): a is string => !!a && a.trim() !== '');
-    }, [pokemon]);
+    }, [activePokemon]);
 
     return {
         pokemonData,

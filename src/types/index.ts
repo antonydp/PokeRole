@@ -211,6 +211,7 @@ export interface TeamMember {
   instanceID: string;
   pokedexData: Pokedex;
   sheetData: PokemonData;
+  temporaryForm?: Pokedex;
 }
 
 /**

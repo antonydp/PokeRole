@@ -1,11 +1,39 @@
 import { create } from 'zustand';
 import React from 'react';
-import { Pokedex, TeamMember, PokemonData, TrainerData, ItemInstance } from '../types/index.js';
+import { Pokedex, TeamMember, PokemonData, TrainerData, ItemInstance, Rank } from '../types/index.js';
 import { createInitialTrainerData, createInitialSheetData } from '../logic/initializers.js';
 import { calculateWeaknesses } from '../logic/formulas.js';
 import pako from 'pako';
 import { useUIStore } from './useUIStore.js';
 import { useGameDataStore } from './useGameDataStore.js';
+import { RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../logic/core.js';
+
+const POKEMON_SKILL_FIELDS: (keyof PokemonData)[] = ['brawl', 'channel', 'clash', 'evasion', 'alert', 'athletic', 'nature', 'stealth', 'allure', 'etiquette', 'intimidate', 'perform', 'extraSkillValue'];
+
+function calculateSpentPoints(sheetData: PokemonData, pokedexData: Pokedex) {
+    const spentAttributes =
+        ((sheetData.strength ?? pokedexData.Strength) - pokedexData.Strength) +
+        ((sheetData.dexterity ?? pokedexData.Dexterity) - pokedexData.Dexterity) +
+        ((sheetData.vitality ?? pokedexData.Vitality) - pokedexData.Vitality) +
+        ((sheetData.special ?? pokedexData.Special) - pokedexData.Special) +
+        ((sheetData.insight ?? pokedexData.Insight) - pokedexData.Insight);
+
+    const spentSocial =
+        ((sheetData.tough ?? 1) - 1) +
+        ((sheetData.cool ?? 1) - 1) +
+        ((sheetData.beauty ?? 1) - 1) +
+        ((sheetData.cute ?? 1) - 1) +
+        ((sheetData.clever ?? 1) - 1);
+
+    const spentSkills = POKEMON_SKILL_FIELDS.reduce((acc, field) => acc + (sheetData[field] as number || 0), 0);
+
+    return {
+        attributes: spentAttributes,
+        social: spentSocial,
+        skills: spentSkills,
+    };
+}
+
 
 interface SessionState {
     team: TeamMember[];
@@ -21,6 +49,11 @@ interface SessionState {
     quickExport: (teamMember: TeamMember) => void;
     isPokemonInTeam: (dexId: string) => boolean;
     selectedTeamMember: () => TeamMember | null;
+    initiatePermanentEvolution: (instanceID: string, targetPokedex: Pokedex) => void;
+    finalizePermanentEvolution: (instanceID: string, finalSheetData: PokemonData) => void;
+    applyOverrank: (instanceID: string, moveId: string) => void;
+    applyTemporaryForm: (instanceID: string, formPokedex: Pokedex) => void;
+    revertTemporaryForm: (instanceID: string) => void;
 }
 
 export const useSessionStore = create<SessionState>((set, get) => ({
@@ -221,5 +254,91 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         } catch (err) {
             console.error('Export error:', err);
         }
+    },
+    initiatePermanentEvolution: (instanceID, targetPokedex) => {
+        const { team } = get();
+        const member = team.find(m => m.instanceID === instanceID);
+        if (!member) return;
+
+        // 1. Calculate Bonus Points
+        const rank = member.sheetData.rank as Rank;
+        const totalPoints = {
+            attributes: RANK_ATTRIBUTE_POINTS[rank],
+            social: RANK_SOCIAL_ATTRIBUTE_POINTS[rank],
+            skills: RANK_SKILL_POINTS[rank],
+        };
+
+        const spentPoints = calculateSpentPoints(member.sheetData, member.pokedexData);
+
+        const bonusPoints = {
+            attributes: spentPoints.attributes,
+            social: spentPoints.social,
+            skills: spentPoints.skills,
+        };
+        
+        // 2. Open the UI for redistribution
+        useUIStore.getState().setEvolutionStep('REDISTRIBUTE', {
+            bonusPoints,
+            newPokedexData: targetPokedex,
+        });
+    },
+
+    finalizePermanentEvolution: (instanceID, finalSheetData) => {
+        const { team } = get();
+        const member = team.find(m => m.instanceID === instanceID);
+        const { evolutionState } = useUIStore.getState();
+        if (!member || !evolutionState.isOpen || !evolutionState.newPokedexData) return;
+
+        // 3. Update the team member with all new data
+        set(state => ({
+            team: state.team.map(m =>
+                m.instanceID === instanceID
+                    ? {
+                        ...m,
+                        pokedexData: evolutionState.newPokedexData!,
+                        sheetData: {
+                            ...finalSheetData,
+                            victories: '0' // Reset victory counter
+                        }
+                      }
+                    : m
+            )
+        }));
+        
+        // 4. Proceed to next steps
+        useUIStore.getState().setEvolutionStep('MOVESET');
+    },
+
+    applyOverrank: (instanceID, moveId) => {
+        set(state => ({
+            team: state.team.map(m => {
+                if (m.instanceID !== instanceID) return m;
+                const newSheet = { ...m.sheetData, victories: '0' };
+                const emptySlotIndex = newSheet.moves.indexOf(null);
+                if (emptySlotIndex !== -1) {
+                    newSheet.moves[emptySlotIndex] = moveId;
+                }
+                return { ...m, sheetData: newSheet };
+            })
+        }));
+        useUIStore.getState().closeEvolutionModal();
+    },
+    applyTemporaryForm: (instanceID, formPokedex) => {
+        set(state => ({
+            team: state.team.map(m =>
+                m.instanceID === instanceID
+                    ? { ...m, temporaryForm: formPokedex }
+                    : m
+            )
+        }));
+    },
+    revertTemporaryForm: (instanceID) => {
+        set(state => ({
+            team: state.team.map(m =>
+                m.instanceID === instanceID
+                    ? { ...m, temporaryForm: undefined }
+                    : m
+            )
+        }));
     },
 }));

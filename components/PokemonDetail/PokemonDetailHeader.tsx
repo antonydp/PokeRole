@@ -16,6 +16,8 @@ interface PokemonDetailHeaderProps {
     onShowTooltip: (e: React.MouseEvent<HTMLElement>, content: { name: string; description: string } | null) => void;
     onHideTooltip: () => void;
     selectedAbility: Ability | undefined;
+    onEvolveClick: () => void;
+    isEvolveEligible: boolean;
 }
 
 const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
@@ -25,6 +27,8 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
     teamIsFull,
     onAddToTeam,
     onRemoveFromTeam,
+    onEvolveClick,
+    isEvolveEligible,
     availableAbilities,
     onAbilityClick,
     onShowTooltip,
@@ -65,7 +69,7 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
                     </div>
                 </button>
 
-                <div className="flex-grow">
+                <div className="flex-grow flex gap-2">
                     {isInTeam ? (
                         <button onClick={onRemoveFromTeam} className="h-full flex items-center justify-center px-4 py-2 bg-poke-red hover:bg-red-700 rounded-lg font-bold text-white transition-colors text-sm w-full">
                             <MinusIcon className="w-5 h-5 mr-2" /> REMOVE
@@ -75,6 +79,13 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
                             <PlusIcon className="w-5 h-5 mr-2" /> ADD TO TEAM
                         </button>
                     )}
+                    <button
+                        onClick={onEvolveClick}
+                        disabled={!isEvolveEligible}
+                        className="h-full flex items-center justify-center px-4 py-2 bg-poke-yellow text-slate-900 hover:bg-yellow-300 rounded-lg font-bold transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed text-sm w-full"
+                    >
+                        EVOLVE
+                    </button>
                 </div>
             </div>
         </div>

@@ -17,10 +17,12 @@ import { useNatureModal } from '../src/hooks/useNatureModal.js';
 import { useGameDataStore } from '../src/store/useGameDataStore.js';
 import { useUIStore } from '../src/store/useUIStore.js';
 import { useSessionStore } from '../src/store/useSessionStore.js';
+import { useEvolution } from '../src/hooks/useEvolution.js';
+import { EvolutionModal } from './PokemonDetail/EvolutionModal.js';
 
 const PokemonDetail: React.FC = () => {
     const { allMoves, allAbilities, ribbonsData, allPokemon } = useGameDataStore();
-    const { unitSettings, clearSelection, selectedPokemonId } = useUIStore();
+    const { unitSettings, clearSelection, selectedPokemonId, evolutionState, openEvolutionModal } = useUIStore();
     const { team, trainerData, addToTeam, removeFromTeam, updateSheetData, isPokemonInTeam, selectedTeamMember } = useSessionStore();
 
     const pokemon = useMemo(() => {
@@ -28,6 +30,7 @@ const PokemonDetail: React.FC = () => {
         return allPokemon.find(p => p.DexID === selectedPokemonId.dexID) || null;
     }, [selectedPokemonId, allPokemon]);
     const teamMember = selectedTeamMember();
+    const { availableEvolutions } = useEvolution(teamMember);
 
     const [isAbilityModalOpen, setIsAbilityModalOpen] = useState(false);
     
@@ -93,6 +96,9 @@ const PokemonDetail: React.FC = () => {
     return (
         <div className="relative w-full max-w-7xl mx-auto p-4 rounded-xl font-primary animate-fade-in-scale" style={{ backgroundColor: '#E46243' }}>
             <GlobalTooltip tooltipData={tooltipData} />
+            {evolutionState.isOpen && teamMember?.instanceID === evolutionState.teamMemberInstanceId && (
+                <EvolutionModal />
+            )}
             <AbilityModal
                 isOpen={isAbilityModalOpen}
                 onClose={() => setIsAbilityModalOpen(false)}
@@ -141,6 +147,8 @@ const PokemonDetail: React.FC = () => {
                 teamIsFull={team.length >= 6}
                 onAddToTeam={() => addToTeam(pokemon, pokemonData)}
                 onRemoveFromTeam={() => removeFromTeam(teamMember!.instanceID)}
+                onEvolveClick={() => openEvolutionModal(teamMember!.instanceID)}
+                isEvolveEligible={availableEvolutions.some(e => e.isEligible)}
                 pokemon={pokemon}
                 availableAbilities={availableAbilities}
                 onAbilityClick={() => setIsAbilityModalOpen(true)}
