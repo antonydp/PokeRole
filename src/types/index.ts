@@ -112,8 +112,8 @@ export interface Move {
   Effect: string;
   Description: string;
   _id: string;
-  Attributes: object;
-  AddedEffects: AddedEffects;
+  Attributes?: object | null;
+  AddedEffects?: AddedEffects | null;
   Category: string;
 }
 

@@ -21,6 +21,10 @@ const TriangleIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 
 const AddedEffectsDisplay: React.FC<{ effects: AddedEffects; effectString: string }> = ({ effects, effectString }) => {
+    if (!effects) {
+        if (!effectString) return null;
+        return <p className="text-xs">{effectString}</p>;
+    }
     const chanceEffects: string[] = [];
     const guaranteedEffects: string[] = [];
     let diceCount: number | undefined;
