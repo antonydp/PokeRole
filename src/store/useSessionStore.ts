@@ -9,24 +9,6 @@ import { useGameDataStore } from './useGameDataStore.js';
 import { RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../logic/core.js';
 import { POKEMON_SKILL_FIELDS } from '../constants/gameConstants.js'; // You'll need to export this
 
-// Helper function to calculate points spent on a sheet
-function calculateSpentPoints(sheetData: PokemonData, pokedexData: Pokedex) {
-    const spentAttributes =
-        ((sheetData.strength ?? pokedexData.Strength) - pokedexData.Strength) +
-        ((sheetData.dexterity ?? pokedexData.Dexterity) - pokedexData.Dexterity) +
-        ((sheetData.vitality ?? pokedexData.Vitality) - pokedexData.Vitality) +
-        ((sheetData.special ?? pokedexData.Special) - pokedexData.Special) +
-        ((sheetData.insight ?? pokedexData.Insight) - pokedexData.Insight);
-
-    const spentSocial =
-        ((sheetData.tough ?? 1) - 1) + ((sheetData.cool ?? 1) - 1) +
-        ((sheetData.beauty ?? 1) - 1) + ((sheetData.cute ?? 1) - 1) +
-        ((sheetData.clever ?? 1) - 1);
-
-    const spentSkills = POKEMON_SKILL_FIELDS.reduce((acc, field) => acc + (sheetData[field] as number || 0), 0);
-
-    return { attributes: spentAttributes, social: spentSocial, skills: spentSkills };
-}
 
 // Helper function to remove one instance of an item from a pocket
 const removeItemFromPockets = (pockets: { smallPocket: ItemInstance[], mainPocket: ItemInstance[] }, itemName: string) => {
@@ -275,11 +257,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     initiatePermanentEvolution: (instanceID, targetPokedex) => {
         const member = get().team.find(m => m.instanceID === instanceID);
         if (!member) return;
+        const currentRank = member.sheetData.rank as Rank;
 
-        const spentPoints = calculateSpentPoints(member.sheetData, member.pokedexData);
+        const totalPointsFromRank = {
+            attributes: RANK_ATTRIBUTE_POINTS[currentRank],
+            social: RANK_SOCIAL_ATTRIBUTE_POINTS[currentRank],
+            skills: RANK_SKILL_POINTS[currentRank]
+        };
         
         useUIStore.getState().setEvolutionStep('REDISTRIBUTE', {
-            bonusPoints: spentPoints,
+            bonusPoints: totalPointsFromRank,
             newPokedexData: targetPokedex,
         });
     },
