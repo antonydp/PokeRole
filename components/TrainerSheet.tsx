@@ -10,18 +10,10 @@ import { GlobalTooltip } from './shared/GlobalTooltip.js';
 import { useTrainerSheet } from '../src/hooks/useTrainerSheet.js';
 import { useNatureModal } from '../src/hooks/useNatureModal.js';
 import { usePointCalculations } from '../src/hooks/usePointCalculations.js';
+import useStore from '../src/store/useStore.js';
 
-/**
- * The TrainerSheet component displays and allows editing of a Trainer's character sheet.
- * It includes sections for core attributes, skills, social attributes, inventory, and achievements.
- * It also integrates with modals for selecting natures and adding items.
- * @param {TrainerSheetProps} props - The props for the TrainerSheet component.
- * @returns {React.FC} The rendered TrainerSheet component.
- */
-
-import { TrainerSheetProps } from './types.js';
-
-const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, allItems, allBadges }) => {
+const TrainerSheet: React.FC = () => {
+    const { trainerData, updateTrainerData, allItems, allBadges } = useStore();
 
     const {
         isNatureModalOpen,
@@ -47,7 +39,7 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
         handleRemoveAchievement,
         handleAddItem,
         itemMap
-    } = useTrainerSheet(trainerData, onDataChange, allItems);
+    } = useTrainerSheet(trainerData, updateTrainerData, allItems);
 
     const {
         points,
@@ -57,7 +49,7 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
     } = usePointCalculations(trainerData);
 
     const handleSelectNature = (nature: Nature) => {
-        onDataChange(prev => ({
+        updateTrainerData(prev => ({
             ...prev,
             nature: nature.name,
             confidence: String(nature.confidence),
@@ -90,7 +82,7 @@ const TrainerSheet: React.FC<TrainerSheetProps> = ({ trainerData, onDataChange, 
                 
                 <TrainerSheetHeader 
                     trainerData={trainerData}
-                    onUpdateField={handleFieldChange}
+                    onDataChange={handleFieldChange}
                     onOpenNatureModal={openNatureModal}
                 />
                 

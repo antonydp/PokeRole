@@ -38,12 +38,14 @@ const STAT_FIELDS: (keyof typeof initialStatFilters)[] = ['BaseHP', 'Strength', 
  * @returns {React.FC} The rendered PokemonList component.
  */
 
-import { PokemonListProps } from './types.js';
+import useStore from '../src/store/useStore.js';
 
-const PokemonRow: React.FC<RowComponentProps<{
+const PokemonRow = ({ index, style, pokemonList, onSelectPokemon }: {
+    index: number;
+    style: React.CSSProperties;
     pokemonList: Pokedex[];
-    onSelectPokemon: (id: number) => void;
-}>> = ({ index, style, pokemonList, onSelectPokemon }) => {
+    onSelectPokemon: (id: string) => void;
+}) => {
     const pokemon = pokemonList[index];
     
     return (
@@ -56,7 +58,8 @@ const PokemonRow: React.FC<RowComponentProps<{
     );
 };
 
-const PokemonList: React.FC<PokemonListProps> = ({ allPokemon, onSelectPokemon }) => {
+const PokemonList: React.FC = () => {
+    const { allPokemon, selectPokemon: onSelectPokemon } = useStore();
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<string | null>(null);
     const [showAdvanced, setShowAdvanced] = useState(false);

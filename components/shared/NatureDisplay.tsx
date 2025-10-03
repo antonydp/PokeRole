@@ -28,7 +28,7 @@ const NatureDisplay: React.FC<NatureDisplayProps> = ({ nature, confidence, onOpe
                 <input
                     id="confidence"
                     type="text"
-                    value={confidence}
+                    value={confidence || ''}
                     readOnly
                     className="w-full bg-white rounded-xl px-2 py-1.5 text-black text-sm font-sans focus:outline-none border-2 border-[#3A3A3A] cursor-default"
                 />

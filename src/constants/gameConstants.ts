@@ -130,7 +130,7 @@ export const SKILLS = {
     SURVIVAL: [
         { name: 'ALERT', field: 'alert' },
         { name: 'ATHLETIC', field: 'athletic' },
-        { name: 'NATURE', field: 'natureSkill' },
+        { name: 'NATURE', field: 'natureSurvival' },
         { name: 'STEALTH', field: 'stealth' },
     ],
     SOCIAL: [

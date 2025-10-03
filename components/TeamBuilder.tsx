@@ -10,7 +10,8 @@ import { calculateTeamTypeCoverage } from '../src/logic/formulas.js';
 /**
  * TooltipData interface for tooltip content and position.
  */
-import { TooltipData, TeamBuilderProps, TeamSlotProps } from './types.js';
+import useStore from '../src/store/useStore.js';
+import { TooltipData, TeamSlotProps } from './types.js';
 
 /**
  * PokemonTooltip component displays detailed information about a Pokémon in the team when hovered.
@@ -308,7 +309,8 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onA
  * TeamBuilderProps interface for the TeamBuilder component.
  */
 
-const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemoveFromTeam, onAddPokemonClick, onOpenSuggestModal, onQuickImport, onQuickExport }) => {
+const TeamBuilder: React.FC = () => {
+    const { team, selectPokemon, removeFromTeam, openSidebar, setIsSuggestModalOpen, quickImport, quickExport } = useStore();
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const teamCoverage = useMemo(() => calculateTeamTypeCoverage(team), [team]);
 
@@ -322,7 +324,7 @@ const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemo
 
     const handleRemoveFromTeam = (instanceID: string) => {
         setTooltipData(null);
-        onRemoveFromTeam(instanceID);
+        removeFromTeam(instanceID);
     };
 
     const handleQuickImport = (index: number) => {
@@ -332,7 +334,7 @@ const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemo
         }
         const importString = prompt(`Quick Import for Slot ${index + 1}\n\nPaste a Pokémon Showdown export string for a single Pokémon.`);
         if (importString) {
-            onQuickImport(importString, index);
+            quickImport(importString);
         }
     };
 
@@ -342,7 +344,7 @@ const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemo
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mb-2">
                 <h2 className="text-3xl font-bold text-poke-yellow">Your Team</h2>
                  <button
-                    onClick={onOpenSuggestModal}
+                    onClick={() => setIsSuggestModalOpen(true)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white font-primary text-xs rounded-md border-b-2 border-purple-800 hover:bg-purple-500 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
                     title="Get an AI-powered team suggestion!"
                 >
@@ -360,13 +362,13 @@ const TeamBuilder: React.FC<TeamBuilderProps> = ({ team, onSelectPokemon, onRemo
                     <TeamSlot
                         key={teamMember ? teamMember.instanceID : index}
                         teamMember={teamMember}
-                        onSelect={onSelectPokemon}
+                        onSelect={selectPokemon}
                         onRemove={handleRemoveFromTeam}
-                        onAddPokemonClick={onAddPokemonClick}
+                        onAddPokemonClick={openSidebar}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                         onQuickImport={() => handleQuickImport(index)}
-                        onQuickExport={onQuickExport}
+                        onQuickExport={quickExport}
                     />
                 )})}
             </div>

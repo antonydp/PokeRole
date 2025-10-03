@@ -1,30 +1,33 @@
 import React from 'react';
 import { LabeledInput } from '../shared/LabeledInput.js';
+import { PlusIcon, TrashIcon } from '../Icons.js';
 
-// --- AchievementsBlock Component ---
+interface Achievement {
+    text: string;
+    completed: boolean;
+}
+
 interface AchievementsBlockProps {
-    achievements: { text: string; completed: boolean }[];
-    onAchievementChange: (index: number, field: 'text' | 'completed', value: string | boolean) => void;
+    achievements: Achievement[];
+    onAchievementChange: (index: number, field: keyof Achievement, value: any) => void;
     onAddAchievement: () => void;
     onRemoveAchievement: (index: number) => void;
 }
 
 export const AchievementsBlock: React.FC<AchievementsBlockProps> = ({ achievements, onAchievementChange, onAddAchievement, onRemoveAchievement }) => (
-    <div className="bg-gradient-to-br from-red-700 to-red-900 p-3 rounded-md shadow-md border border-red-600">
+    <div className="bg-slate-800/50 rounded-lg p-4">
         <div className="flex justify-between items-center mb-3">
-            <h3 className="text-xl font-extrabold text-yellow-300 tracking-wide">ACHIEVEMENTS</h3>
+            <h3 className="text-lg font-bold text-poke-yellow font-primary">Achievements & Notes</h3>
             <button
                 onClick={onAddAchievement}
-                className="bg-yellow-400 hover:bg-yellow-300 text-red-900 font-extrabold py-1 px-3 rounded-full text-sm shadow-md transition duration-300 ease-in-out transform hover:scale-110 flex items-center justify-center space-x-1"
-                aria-label="Add new achievement"
+                className="flex items-center justify-center px-3 py-1.5 bg-green-600 text-white font-primary text-xs rounded-md border-b-2 border-green-800 hover:bg-green-500 active:translate-y-px active:border-b-0 transition-all duration-150"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
+                <PlusIcon className="w-4 h-4" />
+                <span className="ml-1">Add</span>
             </button>
         </div>
         <div className="space-y-3">
-            {achievements.map((achievement, index) => (
+            {(achievements || []).map((achievement, index) => (
                 <div
                     key={index}
                     className={`flex items-center space-x-3 p-2 rounded-md transition-all duration-300 ${
@@ -64,10 +67,10 @@ export const AchievementsBlock: React.FC<AchievementsBlockProps> = ({ achievemen
                     </div>
                     <LabeledInput
                         label=""
+                        id={`achievement-${index}`}
                         value={achievement.text}
                         onChange={(value) => onAchievementChange(index, 'text', value)}
-                        placeholder="Descrizione Achievement"
-                        type="text"
+                        placeholder="Achievement description"
                         containerClassName={`flex-grow border-0 focus:border-yellow-400 rounded px-3 py-2 text-base font-extrabold ${
                             achievement.completed
                                 ? 'bg-green-800 text-yellow-100 line-through decoration-yellow-300/70'
@@ -77,12 +80,10 @@ export const AchievementsBlock: React.FC<AchievementsBlockProps> = ({ achievemen
                     />
                     <button
                         onClick={() => onRemoveAchievement(index)}
-                        className="bg-red-500 hover:bg-red-400 text-white font-bold py-1 px-2 rounded-full text-sm shadow-md transition duration-300 ease-in-out transform hover:scale-110 flex items-center justify-center flex-shrink-0"
-                        aria-label="Rimuovi achievement"
+                        className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                        aria-label="Remove achievement"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
+                        <TrashIcon className="w-5 h-5" />
                     </button>
                 </div>
             ))}

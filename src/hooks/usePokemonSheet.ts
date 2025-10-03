@@ -10,8 +10,10 @@ import {
     calculateEvasion,
     calculateClash,
     calculateMaxMoves,
-    RANK_ORDER
+    RANK_ORDER,
+    RANK_SKILL_LIMITS
 } from '../logic/core.js';
+import { usePointCalculations } from './usePointCalculations.js';
 
 export function usePokemonSheet(
     pokemon: Pokedex,
@@ -36,6 +38,15 @@ export function usePokemonSheet(
         setPokemonData(sheetData || createInitialSheetData(pokemon, unitSettings, trainerRank));
         setExpandedMoves(new Set());
     }, [pokemon, sheetData, unitSettings, trainerRank]);
+
+    const {
+        points,
+        isAttributePoolExhausted,
+        isSocialAttributePoolExhausted,
+        isSkillPoolExhausted
+    } = usePointCalculations(pokemonData, pokemon);
+
+    const skillLimit = useMemo(() => RANK_SKILL_LIMITS[pokemonData.rank as Rank], [pokemonData.rank]);
 
     useEffect(() => {
         if (isInTeam && instanceID) {
@@ -229,6 +240,11 @@ export function usePokemonSheet(
         isConfirmationModalOpen,
         confirmOverRankMove,
         cancelOverRankMove,
-        selectedMove
+        selectedMove,
+        points,
+        isAttributePoolExhausted,
+        isSocialAttributePoolExhausted,
+        isSkillPoolExhausted,
+        skillLimit
     };
 }

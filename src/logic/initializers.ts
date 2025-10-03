@@ -118,8 +118,8 @@ export const createInitialTrainerData = (): TrainerData => {
         weapons: 0,
         
         // Skills - Survival
-        alert: 0, athletic: 0, 
-        natureSkill: 0, stealth: 0,
+        alert: 0, athletic: 0,
+        natureSurvival: 0, stealth: 0,
         
         // Skills - Social
         allure: 0, etiquette: 0, intimidate: 0, perform: 0,

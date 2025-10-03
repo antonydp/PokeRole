@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import type { Pokedex, PokemonData, Move, Nature, Rank, Ability } from '../src/types/index.js';
-import { CloseIcon } from './Icons.js';
+import { Nature } from '../src/types/index.js';
+import { CloseIcon, PokeballIcon } from './Icons.js';
 
-import { GlobalTooltip, TooltipData } from '../components/shared/GlobalTooltip.js';
+import { GlobalTooltip } from '../components/shared/GlobalTooltip.js';
 import PokemonDetailHeader from './PokemonDetail/PokemonDetailHeader.js';
 import LeftColumn from './PokemonDetail/LeftColumn.js';
 import MiddleColumn from './PokemonDetail/MiddleColumn.js';
@@ -12,64 +12,67 @@ import MoveModal from './PokemonDetail/MoveModal.js';
 import AbilityModal from './PokemonDetail/AbilityModal.js';
 import NatureModal from '../components/shared/NatureModal.js';
 import ConfirmationModal from '../components/shared/ConfirmationModal.js';
-import { RANK_SKILL_LIMITS } from '../src/logic/core.js';
 import { usePokemonSheet } from '../src/hooks/usePokemonSheet.js';
 import { useNatureModal } from '../src/hooks/useNatureModal.js';
-import { usePointCalculations } from '../src/hooks/usePointCalculations.js';
+import useStore from '../src/store/useStore.js';
 
-import { PokemonDetailProps } from './types.js';
+const PokemonDetail: React.FC = () => {
+    const {
+        selectedPokemon: getSelectedPokemon,
+        selectedTeamMember: getSelectedTeamMember,
+        allMoves,
+        allAbilities,
+        team,
+        trainerData,
+        unitSettings,
+        ribbonsData,
+        clearSelection,
+        addToTeam,
+        removeFromTeam,
+        updateSheetData,
+    } = useStore();
 
+    const pokemon = getSelectedPokemon();
+    const teamMember = getSelectedTeamMember();
 
-/**
- * The PokemonDetail component displays and allows editing of a Pokémon's full character sheet.
- * It includes sections for attributes, skills, social stats, moves, and derived combat statistics.
- * Users can customize their Pokémon's sheet, add it to their team, or remove it.
- * @param {PokemonDetailProps} props - The props for the PokemonDetail component.
- * @returns {React.FC} The rendered PokemonDetail component.
- */
-const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allMoves, allAbilities, onClose, onAddToTeam, onRemoveFromTeam, isInTeam, teamIsFull, onSheetDataChange, unitSettings, trainerRank, ribbonsData }) => {
+    const [isAbilityModalOpen, setIsAbilityModalOpen] = useState(false);
+    
+    type TooltipData = {
+        content: { name: string; description: string };
+        rect: DOMRect;
+    } | null;
+    const [tooltipData, setTooltipData] = useState<TooltipData>(null);
 
-    const [isAbilityModalOpen, setIsAbilityModalOpen] = React.useState(false);
-    const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
+    if (!pokemon) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-center text-gray-400">
+                <PokeballIcon className="w-24 h-24 mb-4 text-gray-600" />
+                <h2 className="text-2xl font-bold">Select a Pokémon</h2>
+                <p>Choose a Pokémon from the list to see its details.</p>
+            </div>
+        );
+    }
+    
+    const isInTeam = useStore(state => state.isPokemonInTeam(pokemon.DexID));
+    const allAbilitiesArray = useMemo(() => Object.values(allAbilities), [allAbilities]);
 
     const {
         pokemonData,
         setPokemonData,
         handleDataChange,
-        isMoveModalOpen,
-        openMoveModal,
-        closeMoveModal,
-        handleSelectMove,
-        moveSearchTerm,
-        setMoveSearchTerm,
-        learnableMoves,
-        handleClearMove,
-        expandedMoves,
-        handleToggleMoveExpand,
-        availableAbilities,
-        showTutorMoves,
-        setShowTutorMoves,
-        isConfirmationModalOpen,
-        confirmOverRankMove,
-        cancelOverRankMove,
-        selectedMove
-    } = usePokemonSheet(pokemon, teamMember?.sheetData, unitSettings, trainerRank, isInTeam, onSheetDataChange, allMoves, teamMember?.instanceID);
+        isMoveModalOpen, openMoveModal, closeMoveModal,
+        handleSelectMove, moveSearchTerm, setMoveSearchTerm,
+        learnableMoves, handleClearMove, expandedMoves, handleToggleMoveExpand,
+        availableAbilities, showTutorMoves, setShowTutorMoves,
+        isConfirmationModalOpen, confirmOverRankMove, cancelOverRankMove, selectedMove,
+        points, isAttributePoolExhausted, isSocialAttributePoolExhausted, isSkillPoolExhausted,
+        skillLimit
+    } = usePokemonSheet(pokemon, teamMember?.sheetData, unitSettings, trainerData.trainerRank, isInTeam, updateSheetData, allMoves, teamMember?.instanceID);
  
     const {
-        isNatureModalOpen,
-        closeNatureModal,
-        openNatureModal,
-        natureSearchTerm,
-        setNatureSearchTerm,
-        filteredNatures,
+        isNatureModalOpen, closeNatureModal, openNatureModal,
+        natureSearchTerm, setNatureSearchTerm, filteredNatures,
     } = useNatureModal();
-
-    const {
-        points,
-        isAttributePoolExhausted,
-        isSocialAttributePoolExhausted,
-        isSkillPoolExhausted
-    } = usePointCalculations(pokemonData, pokemon);
 
     const handleSelectNature = (nature: Nature) => {
         setPokemonData(prev => ({
@@ -79,13 +82,10 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
         }));
         closeNatureModal();
     };
-    
-    const skillLimit = useMemo(() => RANK_SKILL_LIMITS[pokemonData.rank as Rank], [pokemonData.rank]);
 
     const handleShowTooltip = (e: React.MouseEvent<HTMLElement>, content: { name: string; description: string } | null) => {
         if (!content) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        setTooltipData({ content, rect });
+        setTooltipData({ content, rect: e.currentTarget.getBoundingClientRect() });
     };
 
     const handleHideTooltip = () => {
@@ -93,8 +93,8 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
     };
 
     const selectedAbility = useMemo(() => {
-        return allAbilities.find(a => a.Name === pokemonData.ability);
-    }, [allAbilities, pokemonData.ability]);
+        return allAbilitiesArray.find(a => a.Name === pokemonData.ability);
+    }, [allAbilitiesArray, pokemonData.ability]);
 
     return (
         <div className="relative w-full max-w-7xl mx-auto p-4 rounded-xl font-primary animate-fade-in-scale" style={{ backgroundColor: '#E46243' }}>
@@ -103,7 +103,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
                 isOpen={isAbilityModalOpen}
                 onClose={() => setIsAbilityModalOpen(false)}
                 pokemonAbilities={availableAbilities}
-                allAbilities={allAbilities}
+                allAbilities={allAbilitiesArray}
                 onSelectAbility={(ability) => handleDataChange('ability', ability)}
             />
             <MoveModal
@@ -136,7 +136,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
                 </p>
             </ConfirmationModal>
 
-            <button onClick={onClose} className="absolute top-2 right-2 z-20 p-2 rounded-full bg-[#B2483D] text-white hover:bg-poke-red transition-transform transform hover:scale-110" aria-label="Close sheet">
+            <button onClick={clearSelection} className="absolute top-2 right-2 z-20 p-2 rounded-full bg-[#B2483D] text-white hover:bg-poke-red transition-transform transform hover:scale-110" aria-label="Close sheet">
                 <CloseIcon className="w-5 h-5" />
             </button>
 
@@ -144,13 +144,9 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
                 pokemonData={pokemonData}
                 updateField={handleDataChange}
                 isInTeam={isInTeam}
-                teamIsFull={teamIsFull}
-                onAddToTeam={() => onAddToTeam(pokemon, pokemonData)}
-                onRemoveFromTeam={() => {
-                    if (teamMember) {
-                        onRemoveFromTeam(teamMember.instanceID);
-                    }
-                }}
+                teamIsFull={team.length >= 6}
+                onAddToTeam={() => addToTeam(pokemon, pokemonData)}
+                onRemoveFromTeam={() => removeFromTeam(teamMember!.instanceID)}
                 pokemon={pokemon}
                 availableAbilities={availableAbilities}
                 onAbilityClick={() => setIsAbilityModalOpen(true)}
@@ -177,7 +173,7 @@ const PokemonDetail: React.FC<PokemonDetailProps> = ({ pokemon, teamMember, allM
                     isSocialAttributePoolExhausted={isSocialAttributePoolExhausted}
                     ribbonsData={ribbonsData}
                 />
-                <RightColumn pokemonData={pokemonData} updateField={handleDataChange} pokemon={pokemon} trainerRank={trainerRank} />
+                <RightColumn pokemonData={pokemonData} updateField={handleDataChange} pokemon={pokemon} trainerRank={trainerData.trainerRank} />
             </div>
 
             <MovesSection 

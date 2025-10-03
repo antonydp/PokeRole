@@ -263,7 +263,7 @@ export interface TrainerData {
   // Skills - Survival
   alert: number;
   athletic: number;
-  natureSkill: number; // Renamed from 'nature' to avoid conflicts
+  natureSurvival: number;
   stealth: number;
   
   // Skills - Social

@@ -72,7 +72,7 @@ const PotionCard: React.FC<{
 
 const PotionManager: React.FC<PotionManagerProps> = ({ potions, onUpdate }) => {
     const totalUnits = React.useMemo(() => {
-        return potions.reduce((sum, bottle) => sum + bottle.currentUnits, 0);
+        return (potions || []).reduce((sum, bottle) => sum + bottle.currentUnits, 0);
     }, [potions]);
 
     const handleAddPotion = (type: PotionType) => {
@@ -83,16 +83,16 @@ const PotionManager: React.FC<PotionManagerProps> = ({ potions, onUpdate }) => {
             maxUnits: config.units,
             currentUnits: config.units,
         };
-        onUpdate([...potions, newBottle]);
+        onUpdate([...(potions || []), newBottle]);
     };
 
     const handleUnitChange = (id: string, newUnits: number) => {
-        const newPotions = potions.map(p => p.id === id ? { ...p, currentUnits: newUnits } : p);
+        const newPotions = (potions || []).map(p => p.id === id ? { ...p, currentUnits: newUnits } : p);
         onUpdate(newPotions);
     };
 
     const handleDiscard = (id: string) => {
-        onUpdate(potions.filter(p => p.id !== id));
+        onUpdate((potions || []).filter(p => p.id !== id));
     };
 
     return (
@@ -111,7 +111,7 @@ const PotionManager: React.FC<PotionManagerProps> = ({ potions, onUpdate }) => {
             </div>
             
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                {potions.length > 0 ? potions.map(bottle => (
+                {(potions || []).length > 0 ? (potions || []).map(bottle => (
                     <PotionCard key={bottle.id} bottle={bottle} onUnitChange={handleUnitChange} onDiscard={handleDiscard} />
                 )) : (
                     <p className="text-center text-sm text-stone-300 py-4">No potions in pocket.</p>

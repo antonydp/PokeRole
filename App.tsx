@@ -97,39 +97,23 @@ const SettingsModal: React.FC<{
 const App: React.FC = () => {
     const {
         allPokemon,
-        allMoves,
-        allItems,
-        allAbilities,
-        ribbonsData,
-        allBadges,
         team,
-        trainerData,
         isLoading,
         error,
         isSidebarOpen,
         isSettingsOpen,
         isSuggestModalOpen,
         unitSettings,
+        selectedPokemonId,
         loadData,
         setIsSidebarOpen,
         setIsSettingsOpen,
         setUnitSettings,
         setIsSuggestModalOpen,
         selectPokemon,
-        clearSelection,
-        addToTeam,
-        removeFromTeam,
-        openSidebar,
-        updateSheetData,
-        updateTrainerData,
         exportTeam,
         loadTeam,
         addSuggestionToTeam,
-        quickImport,
-        quickExport,
-        selectedPokemon: getSelectedPokemon,
-        selectedTeamMember: getSelectedTeamMember,
-        isPokemonInTeam: getIsPokemonInTeam,
     } = useStore();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -141,11 +125,6 @@ const App: React.FC = () => {
     const handleLoadClick = () => {
         fileInputRef.current?.click();
     };
-
-    const selectedPokemon = getSelectedPokemon();
-    const selectedTeamMember = getSelectedTeamMember();
-    const allAbilitiesArray = Object.values(allAbilities);
-    const isPokemonInTeam = selectedPokemon ? getIsPokemonInTeam(selectedPokemon.DexID) : false;
 
     if (isLoading) {
         return (
@@ -253,44 +232,14 @@ const App: React.FC = () => {
                 }>
                     <div className="h-full p-2">
                         <div className="bg-slate-800/50 rounded-lg h-full overflow-y-auto">
-                            <PokemonList allPokemon={allPokemon} onSelectPokemon={selectPokemon} />
+                            <PokemonList />
                         </div>
                     </div>
                 </aside>
 
                 <main className="flex-1 p-4 w-full">
                     <div className="bg-slate-800/50 rounded-lg p-4 h-full overflow-y-auto">
-                        {selectedPokemon ? (
-                            <PokemonDetail
-                                pokemon={selectedPokemon}
-                                allMoves={allMoves}
-                                allAbilities={allAbilitiesArray}
-                                onClose={clearSelection}
-                                onAddToTeam={addToTeam}
-                                onRemoveFromTeam={removeFromTeam}
-                                isInTeam={isPokemonInTeam}
-                                teamIsFull={team.length >= 6}
-                                teamMember={selectedTeamMember}
-                                onSheetDataChange={updateSheetData}
-                                unitSettings={unitSettings}
-                                trainerRank={trainerData.trainerRank}
-                                ribbonsData={ribbonsData}
-                            />
-                        ) : (
-                            <Dashboard
-                                team={team}
-                                onSelectPokemon={selectPokemon}
-                                onRemoveFromTeam={removeFromTeam}
-                                onAddPokemonClick={openSidebar}
-                                trainerData={trainerData}
-                                onTrainerDataChange={updateTrainerData}
-                                allItems={allItems}
-                                onOpenSuggestModal={() => setIsSuggestModalOpen(true)}
-                                allBadges={allBadges}
-                                onQuickImport={quickImport}
-                                onQuickExport={quickExport}
-                            />
-                        )}
+                        {selectedPokemonId ? <PokemonDetail /> : <Dashboard />}
                     </div>
                 </main>
             </div>

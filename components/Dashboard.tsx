@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Pokedex, TeamMember, TrainerData, ItemsData } from '../src/types/index.js';
 import TeamBuilder from './TeamBuilder.js';
 import TrainerSheet from './TrainerSheet.js';
 import { DashboardProps } from './types.js';
@@ -42,26 +41,9 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                     Trainer Sheet
                 </button>
             </div>
-            <div className="flex-grow pt-4">
-                {activeView === 'team' && (
-                    <TeamBuilder 
-                        team={props.team}
-                        onSelectPokemon={props.onSelectPokemon}
-                        onRemoveFromTeam={props.onRemoveFromTeam}
-                        onAddPokemonClick={props.onAddPokemonClick}
-                        onOpenSuggestModal={props.onOpenSuggestModal}
-                        onQuickImport={props.onQuickImport}
-                        onQuickExport={props.onQuickExport}
-                    />
-                )}
-                {activeView === 'trainer' && (
-                    <TrainerSheet
-                        trainerData={props.trainerData}
-                        onDataChange={props.onTrainerDataChange}
-                        allItems={props.allItems}
-                        allBadges={props.allBadges}
-                    />
-                )}
+            <div className="flex-grow pt-4 overflow-y-auto">
+                {activeView === 'team' && <TeamBuilder />}
+                {activeView === 'trainer' && <TrainerSheet />}
             </div>
         </div>
     );

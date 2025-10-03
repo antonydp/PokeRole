@@ -1,39 +1,11 @@
 import type { Pokedex, TeamMember, TrainerData, ItemsData, PokemonData, Move, Nature, Rank, Ribbon, Badge, Ability } from '../src/types/index.js';
 
-export interface DashboardProps {
-    team: TeamMember[];
-    onSelectPokemon: (dexID: string, instanceID?: string) => void;
-    onRemoveFromTeam: (instanceId: string) => void;
-    onAddPokemonClick: () => void;
-    trainerData: TrainerData;
-    onTrainerDataChange: ((updaterOrData: ((prev: TrainerData) => TrainerData) | TrainerData) => void);
-    allItems: ItemsData | null;
-    onOpenSuggestModal: () => void;
-    allBadges: Badge[];
-    onQuickImport: (importString: string, slotIndex: number) => void;
-    onQuickExport: (teamMember: TeamMember) => void;
-}
 
 export interface PokemonCardProps {
     pokemon: Pokedex;
     onSelect: (dexID: string) => void;
 }
 
-export interface PokemonDetailProps {
-    pokemon: Pokedex;
-    teamMember: TeamMember | null;
-    allMoves: Record<string, Move>;
-    allAbilities: Ability[];
-    onClose: () => void;
-    onAddToTeam: (pokemon: Pokedex, sheetData: PokemonData) => void;
-    onRemoveFromTeam: (instanceId: string) => void;
-    isInTeam: boolean;
-    teamIsFull: boolean;
-    onSheetDataChange: (instanceId: string, newSheetData: PokemonData) => void;
-    unitSettings: { height: 'imperial' | 'metric', weight: 'imperial' | 'metric' };
-    trainerRank: Rank;
-    ribbonsData: Ribbon[];
-}
 
 export interface PokemonListProps {
     allPokemon: Pokedex[];
@@ -55,15 +27,6 @@ export interface SuggestionCardProps {
     teamIsFull: boolean;
 }
 
-export interface TeamBuilderProps {
-    team: TeamMember[];
-    onSelectPokemon: (dexID: string, instanceID?: string) => void;
-    onRemoveFromTeam: (instanceId: string) => void;
-    onAddPokemonClick: () => void;
-    onOpenSuggestModal: () => void;
-    onQuickImport: (importString: string, slotIndex: number) => void;
-    onQuickExport: (teamMember: TeamMember) => void;
-}
 export interface TeamSlotProps {
     teamMember?: TeamMember;
     onSelect: (dexID: string, instanceID?: string) => void;
@@ -81,12 +44,6 @@ export interface TooltipData {
     rect: DOMRect;
 }
 
-export interface TrainerSheetProps {
-    trainerData: TrainerData;
-    onDataChange: (updaterOrData: ((prev: TrainerData) => TrainerData) | TrainerData) => void;
-    allItems: ItemsData | null;
-    allBadges: Badge[];
-}
 
 export interface TypeBadgeProps {
     type: string;

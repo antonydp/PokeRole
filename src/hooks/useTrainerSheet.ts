@@ -10,20 +10,37 @@ export function useTrainerSheet(
     const [isItemModalOpen, setIsItemModalOpen] = useState(false);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
 
-    const updateData = useCallback((updater: (prev: TrainerData) => TrainerData) => {
-        onDataChange(updater);
-    }, [onDataChange]);
-
     const handleFieldChange = useCallback((field: keyof TrainerData, value: any) => {
-        updateData(prev => ({ ...prev, [field]: value }));
-    }, [updateData]);
+        onDataChange(prev => {
+            const numericFields: (keyof TrainerData)[] = [
+                'strength', 'dexterity', 'vitality', 'insight',
+                'brawl', 'throw', 'evasion', 'weapons',
+                'alert', 'athletic', 'natureSurvival', 'stealth',
+                'allure', 'etiquette', 'intimidate', 'perform',
+                'crafts', 'lore', 'medicine', 'science',
+                'tough', 'cool', 'beauty', 'clever', 'cute'
+            ];
+
+            if (numericFields.includes(field)) {
+                if (value === '') {
+                    return { ...prev, [field]: 0 };
+                }
+                const numValue = parseInt(value, 10);
+                if (!isNaN(numValue)) {
+                    return { ...prev, [field]: numValue };
+                }
+                return prev;
+            }
+            return { ...prev, [field]: value };
+        });
+    }, [onDataChange]);
 
     const handlePointFieldChange = useCallback((
         field: keyof TrainerData,
         newValue: number,
         pool: { spent: number, total: number }
     ) => {
-        updateData(prev => {
+        onDataChange(prev => {
             const oldValue = (prev[field] as number) || 0;
             const isIncreasing = newValue > oldValue;
             if (isIncreasing && pool.spent >= pool.total) {
@@ -31,22 +48,22 @@ export function useTrainerSheet(
             }
             return { ...prev, [field]: newValue };
         });
-    }, [updateData]);
+    }, [onDataChange]);
 
     const handleExtraSkillChange = useCallback((index: number, field: 'name' | 'value', value: string | number, spentSkillPoints: number, totalSkillPoints: number) => {
-        updateData(prev => {
+        onDataChange(prev => {
             if (field === 'value') {
-                const oldValue = prev.extraSkills[index]?.value || 0;
+                const oldValue = (prev.extraSkills || [])[index]?.value || 0;
                 const isIncreasing = (value as number) > oldValue;
                 if (isIncreasing && spentSkillPoints >= totalSkillPoints) {
                     return prev;
                 }
             }
-            const newExtraSkills = [...prev.extraSkills];
+            const newExtraSkills = [...(prev.extraSkills || [])];
             newExtraSkills[index] = { ...newExtraSkills[index], [field]: value };
             return { ...prev, extraSkills: newExtraSkills };
         });
-    }, [updateData]);
+    }, [onDataChange]);
 
     const handlePocketUpdate = useCallback((pocket: 'smallPocket' | 'mainPocket', updatedPocket: ItemInstance[]) => {
         handleFieldChange(pocket, updatedPocket);
@@ -61,28 +78,32 @@ export function useTrainerSheet(
     }, []);
 
     const handleAchievementChange = useCallback((index: number, field: 'text' | 'completed', value: string | boolean) => {
-        const newAchievements = [...trainerData.achievements];
-        newAchievements[index] = { ...newAchievements[index], [field]: value };
-        handleFieldChange('achievements', newAchievements);
-    }, [trainerData.achievements, handleFieldChange]);
-
-    const handleAddAchievement = useCallback(() => {
-        updateData(prev => ({
-            ...prev,
-            achievements: [...prev.achievements, { text: '', completed: false }]
-        }));
-    }, [updateData]);
-
-    const handleRemoveAchievement = useCallback((index: number) => {
-        updateData(prev => {
-            const newAchievements = prev.achievements.filter((_, i) => i !== index);
+        onDataChange(prev => {
+            const newAchievements = [...(prev.achievements || [])];
+            if (newAchievements[index]) {
+                newAchievements[index] = { ...newAchievements[index], [field]: value };
+            }
             return { ...prev, achievements: newAchievements };
         });
-    }, [updateData]);
+    }, [onDataChange]);
+
+    const handleAddAchievement = useCallback(() => {
+        onDataChange(prev => ({
+            ...prev,
+            achievements: [...(prev.achievements || []), { text: '', completed: false }]
+        }));
+    }, [onDataChange]);
+
+    const handleRemoveAchievement = useCallback((index: number) => {
+        onDataChange(prev => {
+            const newAchievements = (prev.achievements || []).filter((_, i) => i !== index);
+            return { ...prev, achievements: newAchievements };
+        });
+    }, [onDataChange]);
 
     const handleAddItem = useCallback((item: Item) => {
         const pocketName = item.usable_in_battle ? 'smallPocket' : 'mainPocket';
-        updateData((currentTrainerData: TrainerData) => {
+        onDataChange((currentTrainerData: TrainerData) => {
             const currentPocket: ItemInstance[] = currentTrainerData[pocketName] || [];
             const existingItemIndex = currentPocket.findIndex(i => i.name.toLowerCase() === item.name.toLowerCase());
             let newPocket: ItemInstance[];
@@ -101,7 +122,7 @@ export function useTrainerSheet(
             }
             return { ...currentTrainerData, [pocketName]: newPocket };
         });
-    }, [updateData]);
+    }, [onDataChange]);
 
     const itemMap = useMemo(() => {
         const map = new Map<string, Item>();

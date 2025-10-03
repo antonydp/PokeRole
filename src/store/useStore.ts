@@ -40,7 +40,7 @@ interface AppState {
     removeFromTeam: (instanceID: string) => void;
     openSidebar: () => void;
     updateSheetData: (instanceID: string, newSheetData: PokemonData) => void;
-    updateTrainerData: (data: TrainerData) => void;
+    updateTrainerData: (updater: ((prev: TrainerData) => TrainerData) | TrainerData) => void;
     exportTeam: () => void;
     loadTeam: (event: React.ChangeEvent<HTMLInputElement>) => void;
     addSuggestionToTeam: (pokemon: Pokedex) => void;
@@ -161,8 +161,10 @@ const useStore = create<AppState>((set, get) => ({
             )
         }));
     },
-    updateTrainerData: (data) => {
-        set({ trainerData: data });
+    updateTrainerData: (updater) => {
+        set(state => ({
+            trainerData: typeof updater === 'function' ? updater(state.trainerData) : updater
+        }));
     },
     exportTeam: () => {
         const { team, trainerData, unitSettings } = get();

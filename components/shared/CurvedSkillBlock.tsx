@@ -22,7 +22,7 @@ interface CurvedSkillBlockProps<T extends Record<string, any>> {
 export const CurvedSkillBlock = <T extends Record<string, any>>({ title, skills, onSkillChange, skillLimit, isPoolExhausted, position, className }: CurvedSkillBlockProps<T>) => (
     <div className={`flex flex-grow ${className}`}>
         <div className={`bg-[#C95649]/90 p-2 flex-grow flex flex-col justify-center gap-y-2 ${positionClasses[position]}`}>
-            {skills.map(skill => (
+            {(skills || []).map(skill => (
                 <div key={skill.name} className="flex flex-col items-center">
                     <span className="text-white uppercase font-bold">{skill.name}</span>
                     <CircleRating 
@@ -56,7 +56,7 @@ interface CurvedExtraSkillBlockProps {
 export const CurvedExtraSkillBlock: React.FC<CurvedExtraSkillBlockProps> = ({ title, extraSkills, onSkillChange, skillLimit, isPoolExhausted, position, className }) => (
     <div className={`flex flex-grow ${className}`}>
         <div className={`bg-[#C95649]/90 p-2 flex-grow flex flex-col justify-center gap-y-2 ${positionClasses[position]}`}>
-            {extraSkills.map((skill, index) => (
+            {(extraSkills || []).map((skill, index) => (
                 <div key={index} className="flex flex-col gap-y-1 items-center w-full">
                     <input
                         type="text"
