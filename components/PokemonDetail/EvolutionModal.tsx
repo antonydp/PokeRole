@@ -10,27 +10,47 @@ import { CloseIcon } from '../Icons.js';
 
 export const EvolutionModal: React.FC = () => {
     const { evolutionState, closeEvolutionModal, setEvolutionStep } = useUIStore();
-    const { selectedTeamMember, initiatePermanentEvolution, applyOverrank, applyTemporaryForm } = useSessionStore();
-    const teamMember = selectedTeamMember();
+    // Get the right member using the ID from the UI store
+    const teamMember = useSessionStore(state =>
+        state.team.find(m => m.instanceID === evolutionState.teamMemberInstanceId)
+    );
+    // Get the actions from the session store
+    const { initiatePermanentEvolution, applyTemporaryForm } = useSessionStore();
     const { availableEvolutions } = useEvolution(teamMember);
 
+    // ... guard clauses
     if (!evolutionState.isOpen || !teamMember) {
         return null;
     }
 
     const handleEvolutionSelect = (evolution: AvailableEvolution) => {
-        if (!evolution.isEligible || !evolution.targetPokedex) return;
+        if (!evolution.isEligible || !evolution.targetPokedex || !teamMember) return;
 
         if (evolution.Kind === 'Mega' || evolution.Kind === 'Form') {
+            // This now calls the correct action to apply a temporary change
             applyTemporaryForm(teamMember.instanceID, evolution.targetPokedex);
         } else {
+            // For permanent evolutions, show the overrank choice
             setEvolutionStep('OVERRANK_CHOICE', { selectedEvolution: evolution });
         }
     };
 
+    const handleOverrankChoice = (shouldEvolve: boolean) => {
+        if (!evolutionState.isOpen || !evolutionState.selectedEvolution || !teamMember) return;
+
+        if (shouldEvolve) {
+            // This is where we calculate bonus points and switch to redistribution UI
+            initiatePermanentEvolution(teamMember.instanceID, evolutionState.selectedEvolution.targetPokedex);
+        } else {
+            // Switch to the move selection UI for overranking
+            setEvolutionStep('OVERRANK_MOVESET');
+        }
+    }
+    
     const renderStep = () => {
         switch (evolutionState.step) {
             case 'CHOICE':
+                // Your existing CHOICE UI is good. It just needs to call handleEvolutionSelect.
                 return (
                     <div className="p-6 bg-slate-800 text-white rounded-lg w-full max-w-lg">
                         <h2 className="text-2xl font-primary text-poke-yellow mb-4 text-center">Evolve {teamMember.pokedexData.Name}?</h2>
@@ -49,36 +69,27 @@ export const EvolutionModal: React.FC = () => {
                         </div>
                     </div>
                 );
-            // New Case for the Switch Statement
+            
             case 'OVERRANK_CHOICE':
-                if (!evolutionState.selectedEvolution) return null;
+                // This is the new modal asking "Evolve Now" or "Stop Evolution (Overrank)"
                 return (
-                    <div className="p-6 bg-slate-800 text-white rounded-lg w-full max-w-lg">
-                        <h2 className="text-2xl font-primary text-poke-yellow mb-4 text-center">
-                            Evolve into {evolutionState.selectedEvolution.To}?
-                        </h2>
-                        <p className="text-center mb-6">You can let the evolution proceed, or stop it to learn a powerful move from a higher rank (Overranking).</p>
+                    <div className="p-6 bg-slate-800 ...">
+                        {/* ... title ... */}
                         <div className="flex justify-center gap-4">
-                            <button
-                                onClick={() => initiatePermanentEvolution(teamMember.instanceID, evolutionState.selectedEvolution!.targetPokedex)}
-                                className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-500 transition-colors"
-                            >
+                            <button onClick={() => handleOverrankChoice(true)} className="...">
                                 Evolve Now
                             </button>
-                            <button
-                                onClick={() => setEvolutionStep('OVERRANK_MOVESET')}
-                                className="px-6 py-3 bg-poke-red text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
-                            >
+                            <button onClick={() => handleOverrankChoice(false)} className="...">
                                 Stop Evolution (Overrank)
                             </button>
                         </div>
                     </div>
                 );
+
+            case 'REDISTRIBUTE':
+                return <StatRedistributionModal />; // This new component will handle redistribution
             case 'OVERRANK_MOVESET':
                 return <OverrankMoveSelectionModal />;
-            case 'REDISTRIBUTE':
-                // This component now fetches all its data from the stores, no props needed
-                return <StatRedistributionModal />;
             case 'MOVESET':
                 return <MoveSelectionModal />;
             case 'LOYALTY_CHECK':
@@ -86,7 +97,7 @@ export const EvolutionModal: React.FC = () => {
             default:
                 return null;
         }
-    };
+    }
 
     return (
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 animate-fade-in" onClick={closeEvolutionModal}>

@@ -7,9 +7,9 @@ import pako from 'pako';
 import { useUIStore } from './useUIStore.js';
 import { useGameDataStore } from './useGameDataStore.js';
 import { RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../logic/core.js';
+import { POKEMON_SKILL_FIELDS } from '../constants/gameConstants.js'; // You'll need to export this
 
-const POKEMON_SKILL_FIELDS: (keyof PokemonData)[] = ['brawl', 'channel', 'clash', 'evasion', 'alert', 'athletic', 'nature', 'stealth', 'allure', 'etiquette', 'intimidate', 'perform', 'extraSkillValue'];
-
+// Helper function to calculate points spent on a sheet
 function calculateSpentPoints(sheetData: PokemonData, pokedexData: Pokedex) {
     const spentAttributes =
         ((sheetData.strength ?? pokedexData.Strength) - pokedexData.Strength) +
@@ -19,19 +19,13 @@ function calculateSpentPoints(sheetData: PokemonData, pokedexData: Pokedex) {
         ((sheetData.insight ?? pokedexData.Insight) - pokedexData.Insight);
 
     const spentSocial =
-        ((sheetData.tough ?? 1) - 1) +
-        ((sheetData.cool ?? 1) - 1) +
-        ((sheetData.beauty ?? 1) - 1) +
-        ((sheetData.cute ?? 1) - 1) +
+        ((sheetData.tough ?? 1) - 1) + ((sheetData.cool ?? 1) - 1) +
+        ((sheetData.beauty ?? 1) - 1) + ((sheetData.cute ?? 1) - 1) +
         ((sheetData.clever ?? 1) - 1);
 
     const spentSkills = POKEMON_SKILL_FIELDS.reduce((acc, field) => acc + (sheetData[field] as number || 0), 0);
 
-    return {
-        attributes: spentAttributes,
-        social: spentSocial,
-        skills: spentSkills,
-    };
+    return { attributes: spentAttributes, social: spentSocial, skills: spentSkills };
 }
 
 
@@ -49,6 +43,7 @@ interface SessionState {
     quickExport: (teamMember: TeamMember) => void;
     isPokemonInTeam: (dexId: string) => boolean;
     selectedTeamMember: () => TeamMember | null;
+    // ... existing state
     initiatePermanentEvolution: (instanceID: string, targetPokedex: Pokedex) => void;
     finalizePermanentEvolution: (instanceID: string, finalSheetData: PokemonData) => void;
     applyOverrank: (instanceID: string, moveId: string) => void;
@@ -256,40 +251,21 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         }
     },
     initiatePermanentEvolution: (instanceID, targetPokedex) => {
-        const { team } = get();
-        const member = team.find(m => m.instanceID === instanceID);
+        const member = get().team.find(m => m.instanceID === instanceID);
         if (!member) return;
 
-        // 1. Calculate Bonus Points
-        const rank = member.sheetData.rank as Rank;
-        const totalPoints = {
-            attributes: RANK_ATTRIBUTE_POINTS[rank],
-            social: RANK_SOCIAL_ATTRIBUTE_POINTS[rank],
-            skills: RANK_SKILL_POINTS[rank],
-        };
-
         const spentPoints = calculateSpentPoints(member.sheetData, member.pokedexData);
-
-        const bonusPoints = {
-            attributes: spentPoints.attributes,
-            social: spentPoints.social,
-            skills: spentPoints.skills,
-        };
         
-        // 2. Open the UI for redistribution
         useUIStore.getState().setEvolutionStep('REDISTRIBUTE', {
-            bonusPoints,
+            bonusPoints: spentPoints,
             newPokedexData: targetPokedex,
         });
     },
 
     finalizePermanentEvolution: (instanceID, finalSheetData) => {
-        const { team } = get();
-        const member = team.find(m => m.instanceID === instanceID);
         const { evolutionState } = useUIStore.getState();
-        if (!member || !evolutionState.isOpen || !evolutionState.newPokedexData) return;
+        if (!evolutionState.isOpen || !evolutionState.newPokedexData) return;
 
-        // 3. Update the team member with all new data
         set(state => ({
             team: state.team.map(m =>
                 m.instanceID === instanceID
@@ -298,14 +274,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                         pokedexData: evolutionState.newPokedexData!,
                         sheetData: {
                             ...finalSheetData,
-                            victories: '0' // Reset victory counter
+                            victories: '0' // Reset victory counter per rules
                         }
                       }
                     : m
             )
         }));
-        
-        // 4. Proceed to next steps
+
         useUIStore.getState().setEvolutionStep('MOVESET');
     },
 
@@ -313,33 +288,39 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         set(state => ({
             team: state.team.map(m => {
                 if (m.instanceID !== instanceID) return m;
+
                 const newSheet = { ...m.sheetData, victories: '0' };
+                // Add move to the first available slot
                 const emptySlotIndex = newSheet.moves.indexOf(null);
                 if (emptySlotIndex !== -1) {
                     newSheet.moves[emptySlotIndex] = moveId;
+                } else { // Or replace the last move if full
+                    newSheet.moves[newSheet.moves.length - 1] = moveId;
                 }
                 return { ...m, sheetData: newSheet };
             })
         }));
         useUIStore.getState().closeEvolutionModal();
     },
+
     applyTemporaryForm: (instanceID, formPokedex) => {
+        // This handles Mega Evolution
         set(state => ({
             team: state.team.map(m =>
-                m.instanceID === instanceID
-                    ? { ...m, temporaryForm: formPokedex }
-                    : m
+                m.instanceID === instanceID ? { ...m, temporaryForm: formPokedex } : m
             )
         }));
-        // We probably don't close the modal here, as the user might want to see the new stats immediately
-        // But for this example, we'll close it.
+        
+        // In a real game, you wouldn't close the modal, but for this app it makes sense.
+        // The UI will now re-render with the new stats.
         useUIStore.getState().closeEvolutionModal();
     },
+
     revertTemporaryForm: (instanceID) => {
         set(state => ({
             team: state.team.map(m => {
                 if (m.instanceID === instanceID) {
-                    const { temporaryForm, ...rest } = m;
+                    const { temporaryForm, ...rest } = m; // Destructure to remove the temporary form
                     return rest;
                 }
                 return m;

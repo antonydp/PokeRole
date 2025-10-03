@@ -188,3 +188,8 @@ export const POKEMON_SKILLS = {
         { name: 'PERFORM', field: 'perform' },
     ],
 };
+
+import { PokemonData } from '../types/index.js';
+
+// In `src/constants/gameConstants.ts`, make sure to export `POKEMON_SKILL_FIELDS`
+export const POKEMON_SKILL_FIELDS: (keyof PokemonData)[] = ['brawl', 'channel', 'clash', 'evasion', 'alert', 'athletic', 'nature', 'stealth', 'allure', 'etiquette', 'intimidate', 'perform', 'extraSkillValue'];

@@ -18,7 +18,7 @@ import { usePointCalculations } from './usePointCalculations.js';
 import { useSessionStore } from '../store/useSessionStore.js';
 
 export function usePokemonSheet(
-    pokemon: Pokedex,
+    pokemon: Pokedex, // This is the base form
     sheetData: PokemonData | undefined,
     unitSettings: { height: 'imperial' | 'metric', weight: 'imperial' | 'metric' },
     trainerRank: Rank,
@@ -39,6 +39,7 @@ export function usePokemonSheet(
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
     const [selectedMove, setSelectedMove] = useState<Move | null>(null);
 
+    // Update the local sheet data if the active Pokémon form changes (e.g., Mega Evolution)
     useEffect(() => {
         setPokemonData(sheetData || createInitialSheetData(activePokemon, unitSettings, trainerRank));
         setExpandedMoves(new Set());
