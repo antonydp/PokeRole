@@ -23,13 +23,22 @@ import { EvolutionModal } from './PokemonDetail/EvolutionModal.js';
 const PokemonDetail: React.FC = () => {
     const { allMoves, allAbilities, ribbonsData, allPokemon } = useGameDataStore();
     const { unitSettings, clearSelection, selectedPokemonId, evolutionState, openEvolutionModal } = useUIStore();
-    const { team, trainerData, addToTeam, removeFromTeam, updateSheetData, isPokemonInTeam, selectedTeamMember } = useSessionStore();
+    const { team, trainerData, addToTeam, removeFromTeam, updateSheetData, isPokemonInTeam } = useSessionStore();
+
+    const teamMember = useMemo(() => {
+        if (!selectedPokemonId?.instanceID) return null;
+        return team.find(m => m.instanceID === selectedPokemonId.instanceID) || null;
+    }, [selectedPokemonId, team]);
 
     const pokemon = useMemo(() => {
-        if (!selectedPokemonId) return null;
-        return allPokemon.find(p => p.DexID === selectedPokemonId.dexID) || null;
-    }, [selectedPokemonId, allPokemon]);
-    const teamMember = selectedTeamMember();
+        if (teamMember) {
+            return teamMember.temporaryForm || teamMember.pokedexData;
+        }
+        if (selectedPokemonId) {
+            return allPokemon.find(p => p.DexID === selectedPokemonId.dexID) || null;
+        }
+        return null;
+    }, [teamMember, selectedPokemonId, allPokemon]);
     const { availableEvolutions } = useEvolution(teamMember);
 
     const [isAbilityModalOpen, setIsAbilityModalOpen] = useState(false);

@@ -189,7 +189,7 @@ export const POKEMON_SKILLS = {
     ],
 };
 
-import { PokemonData } from '../types/index.js';
+import { PokemonData, Pokedex } from '../types/index.js';
 
-// In `src/constants/gameConstants.ts`, make sure to export `POKEMON_SKILL_FIELDS`
+// Add this export
 export const POKEMON_SKILL_FIELDS: (keyof PokemonData)[] = ['brawl', 'channel', 'clash', 'evasion', 'alert', 'athletic', 'nature', 'stealth', 'allure', 'etiquette', 'intimidate', 'perform', 'extraSkillValue'];
