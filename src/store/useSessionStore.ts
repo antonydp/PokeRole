@@ -28,6 +28,28 @@ function calculateSpentPoints(sheetData: PokemonData, pokedexData: Pokedex) {
     return { attributes: spentAttributes, social: spentSocial, skills: spentSkills };
 }
 
+// Helper function to remove one instance of an item from a pocket
+const removeItemFromPockets = (pockets: { smallPocket: ItemInstance[], mainPocket: ItemInstance[] }, itemName: string) => {
+    const newPockets = { ...pockets };
+    let itemFoundAndRemoved = false;
+
+    for (const pocketName of ['smallPocket', 'mainPocket'] as const) {
+        const pocket = newPockets[pocketName];
+        const itemIndex = pocket.findIndex(i => i.name.toLowerCase() === itemName.toLowerCase());
+
+        if (itemIndex > -1) {
+            if (pocket[itemIndex].quantity > 1) {
+                pocket[itemIndex] = { ...pocket[itemIndex], quantity: pocket[itemIndex].quantity - 1 };
+            } else {
+                newPockets[pocketName] = pocket.filter((_, i) => i !== itemIndex);
+            }
+            itemFoundAndRemoved = true;
+            break; // Exit after removing one item
+        }
+    }
+    return newPockets;
+};
+
 
 interface SessionState {
     team: TeamMember[];
@@ -264,9 +286,24 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
     finalizePermanentEvolution: (instanceID, finalSheetData) => {
         const { evolutionState } = useUIStore.getState();
-        if (!evolutionState.isOpen || !evolutionState.newPokedexData) return;
+        const { trainerData } = get();
+        if (!evolutionState.isOpen || !evolutionState.newPokedexData || !evolutionState.selectedEvolution) return;
+
+        let newTrainerData = { ...trainerData };
+        const evolutionMethod = evolutionState.selectedEvolution;
+
+        // Consume the item if it's a stone evolution
+        if (evolutionMethod.Kind === 'Stone' && evolutionMethod.Item) {
+            const { smallPocket, mainPocket } = removeItemFromPockets(
+                { smallPocket: trainerData.smallPocket, mainPocket: trainerData.mainPocket },
+                evolutionMethod.Item
+            );
+            newTrainerData.smallPocket = smallPocket;
+            newTrainerData.mainPocket = mainPocket;
+        }
 
         set(state => ({
+            trainerData: newTrainerData, // Update trainer data with removed item
             team: state.team.map(m =>
                 m.instanceID === instanceID
                     ? {
@@ -274,7 +311,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                         pokedexData: evolutionState.newPokedexData!,
                         sheetData: {
                             ...finalSheetData,
-                            victories: '0' // Reset victory counter per rules
+                            victories: '0'
                         }
                       }
                     : m

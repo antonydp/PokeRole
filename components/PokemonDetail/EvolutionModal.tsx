@@ -11,8 +11,11 @@ import { CloseIcon } from '../Icons.js';
 export const EvolutionModal: React.FC = () => {
     const { evolutionState, closeEvolutionModal, setEvolutionStep } = useUIStore();
     // Get the right member using the ID from the UI store
+    const teamMemberInstanceId = evolutionState.isOpen ? evolutionState.teamMemberInstanceId : undefined;
+
+    // Get the right member using the ID from the UI store
     const teamMember = useSessionStore(state =>
-        state.team.find(m => m.instanceID === evolutionState.teamMemberInstanceId)
+        state.team.find(m => m.instanceID === teamMemberInstanceId)
     );
     // Get the actions from the session store
     const { initiatePermanentEvolution, applyTemporaryForm } = useSessionStore();
@@ -56,15 +59,27 @@ export const EvolutionModal: React.FC = () => {
                         <h2 className="text-2xl font-primary text-poke-yellow mb-4 text-center">Evolve {teamMember.pokedexData.Name}?</h2>
                         <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
                             {availableEvolutions.length > 0 ? availableEvolutions.map(evo => (
-                                <button
-                                    key={evo.To}
-                                    onClick={() => handleEvolutionSelect(evo)}
-                                    disabled={!evo.isEligible}
-                                    className="w-full p-4 border rounded-lg text-left transition-colors bg-slate-700 border-slate-600 hover:bg-poke-blue hover:border-poke-yellow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-700"
-                                >
-                                    <p className="font-bold text-lg">Evolve to {evo.To}</p>
-                                    <p className="text-sm text-gray-300 mt-1">{evo.reason}</p>
-                                </button>
+                                <div key={evo.To} className="flex gap-2 items-center">
+                                    <button
+                                        onClick={() => handleEvolutionSelect(evo)}
+                                        disabled={!evo.isEligible && evo.Kind !== 'Special'} // Only special can be forced
+                                        className="w-full p-4 border rounded-lg text-left transition-colors bg-slate-700 border-slate-600 hover:bg-poke-blue hover:border-poke-yellow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-700"
+                                    >
+                                        <p className="font-bold text-lg">Evolve to {evo.To}</p>
+                                        <p className="text-sm text-gray-300 mt-1">{evo.reason}</p>
+                                    </button>
+                                    {/* *** ADD THIS BUTTON *** */}
+                                    {evo.Kind === 'Special' && (
+                                        <button
+                                            onClick={() => handleEvolutionSelect(evo)}
+                                            title="Manually trigger this special evolution (Storyteller)"
+                                            className="p-4 bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                                        </button>
+                                    )}
+                                    {/* *** END OF ADDED BUTTON *** */}
+                                </div>
                             )) : <p className="text-center text-gray-400">No evolutions available.</p>}
                         </div>
                     </div>

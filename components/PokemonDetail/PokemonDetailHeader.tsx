@@ -2,6 +2,7 @@
 import React from 'react';
 import { Pokedex, PokemonData, Ability } from '../../src/types/index.js';
 import { MinusIcon, PlusIcon } from '../Icons.js';
+import { useSessionStore } from '../../src/store/useSessionStore.js';
 
 interface PokemonDetailHeaderProps {
     pokemonData: PokemonData;
@@ -18,10 +19,11 @@ interface PokemonDetailHeaderProps {
     selectedAbility: Ability | undefined;
     onEvolveClick: () => void;
     isEvolveEligible: boolean;
+    isInTemporaryForm: boolean;
 }
 
 const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
-    pokemonData,
+    pokemonData, // Keep this prop for displaying data
     updateField,
     isInTeam,
     teamIsFull,
@@ -29,12 +31,18 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
     onRemoveFromTeam,
     onEvolveClick,
     isEvolveEligible,
+    isInTemporaryForm,
     availableAbilities,
     onAbilityClick,
     onShowTooltip,
     onHideTooltip,
     selectedAbility,
 }) => {
+    const { revertTemporaryForm, selectedTeamMember } = useSessionStore();
+    const teamMember = selectedTeamMember();
+
+    if (isInTemporaryForm && !teamMember) return null; // If in temp form, must be a team member
+
     return (
         <div className="flex justify-between items-center mb-4 flex-wrap gap-4 font-primary">
             {/* Left side: Name and Pokedex # */}
@@ -70,18 +78,27 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
                 </button>
 
                 <div className="flex-grow flex gap-2">
-                    {isInTeam ? (
+                     {/* ADD THIS CONDITIONAL BUTTON */}
+                     {isInTemporaryForm && (
+                        <button
+                           onClick={() => revertTemporaryForm(teamMember!.instanceID)}
+                           className="h-full flex items-center justify-center px-4 py-2 bg-cyan-500 text-white hover:bg-cyan-600 rounded-lg font-bold transition-colors text-sm w-full"
+                       >
+                            REVERT FORM
+                        </button>
+                    )}
+                    {isInTeam && !isInTemporaryForm ? ( // Hide remove/add when in temp form
                         <button onClick={onRemoveFromTeam} className="h-full flex items-center justify-center px-4 py-2 bg-poke-red hover:bg-red-700 rounded-lg font-bold text-white transition-colors text-sm w-full">
                             <MinusIcon className="w-5 h-5 mr-2" /> REMOVE
                         </button>
-                    ) : (
+                    ) : !isInTemporaryForm && (
                         <button onClick={onAddToTeam} disabled={teamIsFull} className="h-full flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-white transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed text-sm w-full">
                             <PlusIcon className="w-5 h-5 mr-2" /> ADD TO TEAM
                         </button>
                     )}
                     <button
                         onClick={onEvolveClick}
-                        disabled={!isEvolveEligible}
+                        disabled={!isEvolveEligible || isInTemporaryForm} // Disable Evolve when in temp form
                         className="h-full flex items-center justify-center px-4 py-2 bg-poke-yellow text-slate-900 hover:bg-yellow-300 rounded-lg font-bold transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed text-sm w-full"
                     >
                         EVOLVE

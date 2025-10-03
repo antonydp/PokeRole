@@ -158,6 +158,7 @@ const PokemonDetail: React.FC = () => {
                 onRemoveFromTeam={() => removeFromTeam(teamMember!.instanceID)}
                 onEvolveClick={() => openEvolutionModal(teamMember!.instanceID)}
                 isEvolveEligible={availableEvolutions.some(e => e.isEligible)}
+                isInTemporaryForm={!!teamMember?.temporaryForm} // Add this prop
                 pokemon={pokemon}
                 availableAbilities={availableAbilities}
                 onAbilityClick={() => setIsAbilityModalOpen(true)}

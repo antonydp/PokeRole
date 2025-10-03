@@ -9,6 +9,8 @@ import { RANK_SKILL_LIMITS } from '../../src/logic/core.js';
 import { AttributeBlock } from '../shared/AttributeBlock.js';
 import { CurvedSkillBlock, CurvedExtraSkillBlock } from '../shared/CurvedSkillBlock.js';
 import { PointsDisplay } from '../shared/Points.js';
+import { SOCIAL_ATTRIBUTES } from '../../src/constants/gameConstants.js';
+import { SocialAttribute } from '../shared/SocialAttribute.js';
 
 export const StatRedistributionModal: React.FC = () => {
     const { evolutionState, setEvolutionStep } = useUIStore();
@@ -66,15 +68,22 @@ export const StatRedistributionModal: React.FC = () => {
                     <PointsDisplay label="Social Points Left" spent={0} total={remainingPoints.social} />
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Attributes */}
-                    <div className="space-y-2">
+                    <div className="lg:col-span-1 space-y-2">
+                        <h3 className="font-bold text-center text-poke-yellow">Attributes</h3>
                         {POKEMON_ATTRIBUTES.map(attr => (
                             <AttributeBlock<PokemonData>
                                 key={attr.name}
                                 name={attr.name}
                                 value={tempSheet[attr.field as keyof PokemonData] as number}
-                                onChange={(v) => handleDataChange(attr.field as keyof PokemonData, v)}
+                                onChange={(v) => {
+                                    const baseValue = newPokedexData[attr.name.charAt(0).toUpperCase() + attr.name.slice(1).toLowerCase() as keyof Pokedex] as number;
+                                    if (v < baseValue) return;
+                                    const oldValue = tempSheet[attr.field as keyof PokemonData] as number;
+                                    if (v > oldValue && remainingPoints.attributes <= 0) return;
+                                    handleDataChange(attr.field as keyof PokemonData, v);
+                                }}
                                 isPoolExhausted={remainingPoints.attributes <= 0}
                                 max={newPokedexData[`Max${attr.name.charAt(0) + attr.name.slice(1).toLowerCase()}` as keyof Pokedex] as number}
                                 baseValue={newPokedexData[attr.name.charAt(0).toUpperCase() + attr.name.slice(1).toLowerCase() as keyof Pokedex] as number}
@@ -83,12 +92,35 @@ export const StatRedistributionModal: React.FC = () => {
                     </div>
 
                     {/* Skills */}
-                    <div className="flex flex-col">
+                    <div className="lg:col-span-1 flex flex-col">
+                         <h3 className="font-bold text-center text-poke-yellow">Skills</h3>
                         <CurvedSkillBlock<PokemonData> title="FIGHT" skills={POKEMON_SKILLS.FIGHT.map(s => ({...s, value: tempSheet[s.field as keyof PokemonData] as number}))} onSkillChange={handleDataChange} skillLimit={RANK_SKILL_LIMITS[tempSheet.rank as Rank]} isPoolExhausted={remainingPoints.skills <= 0} position="top" />
                         <CurvedSkillBlock<PokemonData> title="SURVIVAL" skills={POKEMON_SKILLS.SURVIVAL.map(s => ({...s, value: tempSheet[s.field as keyof PokemonData] as number}))} onSkillChange={handleDataChange} skillLimit={RANK_SKILL_LIMITS[tempSheet.rank as Rank]} isPoolExhausted={remainingPoints.skills <= 0} position="middle" />
                          <CurvedSkillBlock<PokemonData> title="SOCIAL" skills={POKEMON_SKILLS.SOCIAL.map(s => ({...s, value: tempSheet[s.field as keyof PokemonData] as number}))} onSkillChange={handleDataChange} skillLimit={RANK_SKILL_LIMITS[tempSheet.rank as Rank]} isPoolExhausted={remainingPoints.skills <= 0} position="middle" />
                          <CurvedExtraSkillBlock title="EXTRA" extraSkills={[{ name: tempSheet.extraSkillName, value: tempSheet.extraSkillValue }]} onSkillChange={(index, field, value) => handleDataChange(field === 'name' ? 'extraSkillName' : 'extraSkillValue', value)} skillLimit={RANK_SKILL_LIMITS[tempSheet.rank as Rank]} isPoolExhausted={remainingPoints.skills <= 0} position="bottom" />
                     </div>
+
+                    {/* *** ADD THIS SECTION FOR SOCIAL ATTRIBUTES *** */}
+                    <div className="lg:col-span-1 space-y-2">
+                        <h3 className="font-bold text-center text-poke-yellow">Social Attributes</h3>
+                        {SOCIAL_ATTRIBUTES.map(attr => (
+                            <SocialAttribute
+                                key={attr.name}
+                                label={attr.name}
+                                value={tempSheet[attr.field]}
+                                max={5}
+                                min={1}
+                                color={attr.color}
+                                onChange={(newValue) => {
+                                    if (newValue < 1) return;
+                                    const oldValue = tempSheet[attr.field];
+                                    if (newValue > oldValue && remainingPoints.social <= 0) return;
+                                    handleDataChange(attr.field, newValue);
+                                }}
+                            />
+                        ))}
+                    </div>
+                     {/* *** END OF ADDED SECTION *** */}
                 </div>
             </div>
 
