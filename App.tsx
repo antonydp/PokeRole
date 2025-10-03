@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PokemonList from './components/PokemonList.js';
 import PokemonDetail from './components/PokemonDetail.js';
 import Dashboard from './components/Dashboard.js';
 import { PokeballIcon, MenuIcon, SettingsIcon } from './components/Icons.js';
 import SuggestTeamModal from './components/SuggestTeamModal.js';
-import { useAppContext } from './src/hooks/useAppContext.js';
+import useStore from './src/store/useStore.js';
 
 /**
  * @typedef {object} UnitSettings
@@ -104,35 +104,48 @@ const App: React.FC = () => {
         allBadges,
         team,
         trainerData,
-        selectedPokemon,
-        selectedTeamMember,
         isLoading,
         error,
         isSidebarOpen,
         isSettingsOpen,
         isSuggestModalOpen,
-        fileInputRef,
         unitSettings,
         loadData,
         setIsSidebarOpen,
         setIsSettingsOpen,
         setUnitSettings,
         setIsSuggestModalOpen,
-        handleSelectPokemon,
-        handleClearSelection,
-        handleAddToTeam,
-        handleRemoveFromTeam,
-        handleAddPokemonClick,
-        handleSheetDataChange,
-        handleTrainerDataChange,
-        handleExportTeam,
-        handleLoadClick,
-        handleLoadTeam,
-        isPokemonInTeam,
-        handleAddSuggestionToTeam,
-        handleQuickImport,
-        handleQuickExport,
-    } = useAppContext();
+        selectPokemon,
+        clearSelection,
+        addToTeam,
+        removeFromTeam,
+        openSidebar,
+        updateSheetData,
+        updateTrainerData,
+        exportTeam,
+        loadTeam,
+        addSuggestionToTeam,
+        quickImport,
+        quickExport,
+        selectedPokemon: getSelectedPokemon,
+        selectedTeamMember: getSelectedTeamMember,
+        isPokemonInTeam: getIsPokemonInTeam,
+    } = useStore();
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
+
+    const handleLoadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const selectedPokemon = getSelectedPokemon();
+    const selectedTeamMember = getSelectedTeamMember();
+    const allAbilitiesArray = Object.values(allAbilities);
+    const isPokemonInTeam = selectedPokemon ? getIsPokemonInTeam(selectedPokemon.DexID) : false;
 
     if (isLoading) {
         return (
@@ -166,7 +179,7 @@ const App: React.FC = () => {
                 onClose={() => setIsSuggestModalOpen(false)}
                 allPokemon={allPokemon}
                 team={team}
-                onAddSuggestionToTeam={handleAddSuggestionToTeam}
+                onAddSuggestionToTeam={addSuggestionToTeam}
             />
              <SettingsModal
                 isOpen={isSettingsOpen}
@@ -188,7 +201,7 @@ const App: React.FC = () => {
                 </div>
                  <div className="flex items-center gap-2">
                      <button
-                        onClick={handleExportTeam}
+                        onClick={exportTeam}
                         className="flex items-center justify-center px-3 py-1.5 bg-green-600 text-white font-primary text-xs rounded-md border-b-2 border-green-800 hover:bg-green-500 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
                         aria-label="Export Session Data"
                         title="Export Session Data"
@@ -212,7 +225,7 @@ const App: React.FC = () => {
                     <input
                         type="file"
                         ref={fileInputRef}
-                        onChange={handleLoadTeam}
+                        onChange={loadTeam}
                         accept="application/json,.json"
                         className="hidden"
                         aria-hidden="true"
@@ -240,7 +253,7 @@ const App: React.FC = () => {
                 }>
                     <div className="h-full p-2">
                         <div className="bg-slate-800/50 rounded-lg h-full overflow-y-auto">
-                            <PokemonList allPokemon={allPokemon} onSelectPokemon={handleSelectPokemon} />
+                            <PokemonList allPokemon={allPokemon} onSelectPokemon={selectPokemon} />
                         </div>
                     </div>
                 </aside>
@@ -251,14 +264,14 @@ const App: React.FC = () => {
                             <PokemonDetail
                                 pokemon={selectedPokemon}
                                 allMoves={allMoves}
-                                allAbilities={allAbilities}
-                                onClose={handleClearSelection}
-                                onAddToTeam={handleAddToTeam}
-                                onRemoveFromTeam={handleRemoveFromTeam}
+                                allAbilities={allAbilitiesArray}
+                                onClose={clearSelection}
+                                onAddToTeam={addToTeam}
+                                onRemoveFromTeam={removeFromTeam}
                                 isInTeam={isPokemonInTeam}
                                 teamIsFull={team.length >= 6}
                                 teamMember={selectedTeamMember}
-                                onSheetDataChange={handleSheetDataChange}
+                                onSheetDataChange={updateSheetData}
                                 unitSettings={unitSettings}
                                 trainerRank={trainerData.trainerRank}
                                 ribbonsData={ribbonsData}
@@ -266,16 +279,16 @@ const App: React.FC = () => {
                         ) : (
                             <Dashboard
                                 team={team}
-                                onSelectPokemon={handleSelectPokemon}
-                                onRemoveFromTeam={handleRemoveFromTeam}
-                                onAddPokemonClick={handleAddPokemonClick}
+                                onSelectPokemon={selectPokemon}
+                                onRemoveFromTeam={removeFromTeam}
+                                onAddPokemonClick={openSidebar}
                                 trainerData={trainerData}
-                                onTrainerDataChange={handleTrainerDataChange}
+                                onTrainerDataChange={updateTrainerData}
                                 allItems={allItems}
                                 onOpenSuggestModal={() => setIsSuggestModalOpen(true)}
                                 allBadges={allBadges}
-                                onQuickImport={handleQuickImport}
-                                onQuickExport={handleQuickExport}
+                                onQuickImport={quickImport}
+                                onQuickExport={quickExport}
                             />
                         )}
                     </div>

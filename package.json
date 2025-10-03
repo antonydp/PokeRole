@@ -16,7 +16,8 @@
     "pako": "^2.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-window": "^2.1.2"
+    "react-window": "^2.1.2",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
