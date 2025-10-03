@@ -1,44 +1,17 @@
 import { create } from 'zustand';
 import React from 'react';
-import { Pokedex, Move, Ability, TeamMember, PokemonData, TrainerData, ItemsData, ItemInstance, Ribbon, Badge } from '../types/index.js';
-import { fetchAllData } from '../../services/pokedexService.js';
-import { createInitialSheetData, createInitialTrainerData } from '../logic/initializers.js';
+import { Pokedex, TeamMember, PokemonData, TrainerData, ItemInstance } from '../types/index.js';
+import { createInitialTrainerData, createInitialSheetData } from '../logic/initializers.js';
 import { calculateWeaknesses } from '../logic/formulas.js';
 import pako from 'pako';
+import { useUIStore } from './useUIStore.js';
+import { useGameDataStore } from './useGameDataStore.js';
 
-type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
-type SelectedPokemon = { dexID: string; instanceID?: string };
-
-interface AppState {
-    // State
-    allPokemon: Pokedex[];
-    allMoves: Record<string, Move>;
-    allAbilities: Record<string, Ability>;
-    allItems: ItemsData | null;
-    ribbonsData: Ribbon[];
-    allBadges: Badge[];
+interface SessionState {
     team: TeamMember[];
     trainerData: TrainerData;
-    selectedPokemonId: SelectedPokemon | null;
-    isLoading: boolean;
-    error: string | null;
-    isSidebarOpen: boolean;
-    isSettingsOpen: boolean;
-    isSuggestModalOpen: boolean;
-    unitSettings: UnitSettings;
-
-    // Computed
-    selectedPokemon: () => Pokedex | null;
-    selectedTeamMember: () => TeamMember | null;
-    isPokemonInTeam: (dexId: string) => boolean;
-
-    // Actions
-    loadData: () => Promise<void>;
-    selectPokemon: (dexID: string, instanceID?: string) => void;
-    clearSelection: () => void;
     addToTeam: (pokemon: Pokedex, sheetData: PokemonData) => void;
     removeFromTeam: (instanceID: string) => void;
-    openSidebar: () => void;
     updateSheetData: (instanceID: string, newSheetData: PokemonData) => void;
     updateTrainerData: (updater: ((prev: TrainerData) => TrainerData) | TrainerData) => void;
     exportTeam: () => void;
@@ -46,89 +19,22 @@ interface AppState {
     addSuggestionToTeam: (pokemon: Pokedex) => void;
     quickImport: (importString: string) => void;
     quickExport: (teamMember: TeamMember) => void;
-    setIsSidebarOpen: (isOpen: boolean) => void;
-    setIsSettingsOpen: (isOpen: boolean) => void;
-    setIsSuggestModalOpen: (isOpen: boolean) => void;
-    setUnitSettings: (settings: UnitSettings) => void;
+    isPokemonInTeam: (dexId: string) => boolean;
+    selectedTeamMember: () => TeamMember | null;
 }
 
-const useStore = create<AppState>((set, get) => ({
-    // Initial State
-    allPokemon: [],
-    allMoves: {},
-    allAbilities: {},
-    allItems: null,
-    ribbonsData: [],
-    allBadges: [],
+export const useSessionStore = create<SessionState>((set, get) => ({
     team: [],
     trainerData: createInitialTrainerData(),
-    selectedPokemonId: null,
-    isLoading: true,
-    error: null,
-    isSidebarOpen: false,
-    isSettingsOpen: false,
-    isSuggestModalOpen: false,
-    unitSettings: (() => {
-        try {
-            const saved = localStorage.getItem('pokerole-unit-settings');
-            return saved ? JSON.parse(saved) : { height: 'imperial', weight: 'imperial' };
-        } catch (e) {
-            console.error("Failed to parse unit settings from localStorage", e);
-            return { height: 'imperial', weight: 'imperial' };
-        }
-    })(),
-
-    // Computed getters
-    selectedPokemon: () => {
-        const { selectedPokemonId, allPokemon } = get();
-        if (!selectedPokemonId) return null;
-        return allPokemon.find(p => p.DexID === selectedPokemonId.dexID) || null;
-    },
-    selectedTeamMember: () => {
-        const { selectedPokemonId, team } = get();
-        if (!selectedPokemonId?.instanceID) return null;
-        return team.find(m => m.instanceID === selectedPokemonId.instanceID) || null;
-    },
     isPokemonInTeam: (dexId: string) => {
         const { team } = get();
         return team.some(member => member.pokedexData.DexID === dexId);
     },
-
-    // Actions
-    loadData: async () => {
-        try {
-            set({ isLoading: true, error: null });
-            const { pokemonData, movesData, abilitiesData, itemsData, ribbonsData, badgesData } = await fetchAllData();
-            
-            const movesMap = movesData.reduce((acc, move) => {
-                acc[move._id] = move;
-                return acc;
-            }, {} as Record<string, Move>);
-
-            const abilitiesMap = abilitiesData.reduce((acc, ability) => {
-                acc[ability._id] = ability;
-                return acc;
-            }, {} as Record<string, Ability>);
-
-            set({
-                allPokemon: pokemonData,
-                allMoves: movesMap,
-                allAbilities: abilitiesMap,
-                allItems: itemsData,
-                ribbonsData: ribbonsData,
-                allBadges: badgesData,
-                isLoading: false
-            });
-        } catch (err) {
-            set({ error: 'Failed to fetch Pokémon data. Please try again.', isLoading: false });
-            console.error(err);
-        }
-    },
-    selectPokemon: (dexID, instanceID) => {
-        set({ selectedPokemonId: { dexID, instanceID }, isSidebarOpen: false });
-    },
-    clearSelection: () => {
-        set({ selectedPokemonId: null });
+    selectedTeamMember: () => {
+        const selectedPokemonId = useUIStore.getState().selectedPokemonId;
+        const { team } = get();
+        if (!selectedPokemonId?.instanceID) return null;
+        return team.find(m => m.instanceID === selectedPokemonId.instanceID) || null;
     },
     addToTeam: (pokemon, sheetData) => {
         set(state => {
@@ -145,12 +51,12 @@ const useStore = create<AppState>((set, get) => ({
     },
     removeFromTeam: (instanceID) => {
         set(state => ({
-            team: state.team.filter(member => member.instanceID !== instanceID),
-            selectedPokemonId: state.selectedPokemonId?.instanceID === instanceID ? null : state.selectedPokemonId
+            team: state.team.filter(member => member.instanceID !== instanceID)
         }));
-    },
-    openSidebar: () => {
-        set({ isSidebarOpen: true });
+        const selectedPokemonId = useUIStore.getState().selectedPokemonId;
+        if (selectedPokemonId?.instanceID === instanceID) {
+            useUIStore.getState().clearSelection();
+        }
     },
     updateSheetData: (instanceID, newSheetData) => {
         set(state => ({
@@ -167,7 +73,8 @@ const useStore = create<AppState>((set, get) => ({
         }));
     },
     exportTeam: () => {
-        const { team, trainerData, unitSettings } = get();
+        const { team, trainerData } = get();
+        const { unitSettings } = useUIStore.getState();
         if (team.length === 0 && !trainerData.name) {
             alert("Your team and trainer sheet are empty!");
             return;
@@ -184,7 +91,6 @@ const useStore = create<AppState>((set, get) => ({
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
         } catch (err) {
-            set({ error: 'Failed to export data. Please try again.' });
             console.error('Export error:', err);
         }
     },
@@ -200,14 +106,14 @@ const useStore = create<AppState>((set, get) => ({
                 
                 const loadedData = JSON.parse(content);
                 const loadedTeam: TeamMember[] = loadedData.team || [];
-                const loadedSettings: UnitSettings | undefined = loadedData.unitSettings;
+                const loadedSettings: { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' } | undefined = loadedData.unitSettings;
                 const loadedTrainer: TrainerData | undefined = loadedData.trainer;
 
                 if (!Array.isArray(loadedTeam) || loadedTeam.some(m => !m.pokedexData || !m.sheetData)) {
                     throw new Error("Invalid team data format.");
                 }
 
-                if (loadedSettings) get().setUnitSettings(loadedSettings);
+                if (loadedSettings) useUIStore.getState().setUnitSettings(loadedSettings);
 
                 if (loadedTrainer) {
                     const parsePocketString = (pocketString: string): ItemInstance[] => {
@@ -251,18 +157,19 @@ const useStore = create<AppState>((set, get) => ({
                     }
                 }));
 
-                set({ team: teamWithUpdatedWeaknesses.slice(0, 6), error: null, selectedPokemonId: null });
+                set({ team: teamWithUpdatedWeaknesses.slice(0, 6) });
+                useUIStore.getState().clearSelection();
             } catch (err) {
                 console.error("Failed to load data:", err);
-                set({ error: "Failed to load data. The file might be corrupted or in an incorrect format." });
             }
         };
-        reader.onerror = () => set({ error: "Failed to read the selected file." });
+        reader.onerror = () => console.error("Failed to read the selected file.");
         reader.readAsText(file);
         event.target.value = '';
     },
     addSuggestionToTeam: (pokemon) => {
-        const { team, unitSettings, trainerData } = get();
+        const { team, trainerData } = get();
+        const { unitSettings } = useUIStore.getState();
         if (team.length < 6) {
             const sheetData = createInitialSheetData(pokemon, unitSettings, trainerData.trainerRank);
             const newMember: TeamMember = {
@@ -274,7 +181,7 @@ const useStore = create<AppState>((set, get) => ({
         }
     },
     quickImport: (importString) => {
-        const { allPokemon } = get();
+        const { allPokemon } = useGameDataStore.getState();
         try {
             const binaryString = atob(importString);
             const bytes = new Uint8Array(binaryString.length);
@@ -312,36 +219,7 @@ const useStore = create<AppState>((set, get) => ({
             navigator.clipboard.writeText(base64Str);
             alert(`${teamMember.pokedexData.Name} export data copied to clipboard!`);
         } catch (err) {
-            set({ error: 'Failed to export Pokémon data.' });
             console.error('Export error:', err);
         }
     },
-    setIsSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
-    setIsSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
-    setIsSuggestModalOpen: (isOpen) => set({ isSuggestModalOpen: isOpen }),
-    setUnitSettings: (settings) => {
-        try {
-            localStorage.setItem('pokerole-unit-settings', JSON.stringify(settings));
-            set({ unitSettings: settings });
-
-            // Update team members with new units
-            set(state => ({
-                team: state.team.map(member => {
-                    const { pokedexData } = member;
-                    const feet = Math.floor(pokedexData.Height.Feet);
-                    const inches = Math.round((pokedexData.Height.Feet % 1) * 12);
-                    const newSize = settings.height === 'imperial' ? `${feet}'${inches}"` : `${pokedexData.Height.Meters}m`;
-                    const newWeight = settings.weight === 'imperial' ? `${pokedexData.Weight.Pounds} lbs` : `${pokedexData.Weight.Kilograms}kg`;
-                    return {
-                        ...member,
-                        sheetData: { ...member.sheetData, size: newSize, weight: newWeight }
-                    };
-                })
-            }));
-        } catch (e) {
-            console.error("Failed to save unit settings to localStorage", e);
-        }
-    },
 }));
-
-export default useStore;

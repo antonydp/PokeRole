@@ -14,26 +14,20 @@ import NatureModal from '../components/shared/NatureModal.js';
 import ConfirmationModal from '../components/shared/ConfirmationModal.js';
 import { usePokemonSheet } from '../src/hooks/usePokemonSheet.js';
 import { useNatureModal } from '../src/hooks/useNatureModal.js';
-import useStore from '../src/store/useStore.js';
+import { useGameDataStore } from '../src/store/useGameDataStore.js';
+import { useUIStore } from '../src/store/useUIStore.js';
+import { useSessionStore } from '../src/store/useSessionStore.js';
 
 const PokemonDetail: React.FC = () => {
-    const {
-        selectedPokemon: getSelectedPokemon,
-        selectedTeamMember: getSelectedTeamMember,
-        allMoves,
-        allAbilities,
-        team,
-        trainerData,
-        unitSettings,
-        ribbonsData,
-        clearSelection,
-        addToTeam,
-        removeFromTeam,
-        updateSheetData,
-    } = useStore();
+    const { allMoves, allAbilities, ribbonsData, allPokemon } = useGameDataStore();
+    const { unitSettings, clearSelection, selectedPokemonId } = useUIStore();
+    const { team, trainerData, addToTeam, removeFromTeam, updateSheetData, isPokemonInTeam, selectedTeamMember } = useSessionStore();
 
-    const pokemon = getSelectedPokemon();
-    const teamMember = getSelectedTeamMember();
+    const pokemon = useMemo(() => {
+        if (!selectedPokemonId) return null;
+        return allPokemon.find(p => p.DexID === selectedPokemonId.dexID) || null;
+    }, [selectedPokemonId, allPokemon]);
+    const teamMember = selectedTeamMember();
 
     const [isAbilityModalOpen, setIsAbilityModalOpen] = useState(false);
     
@@ -53,7 +47,7 @@ const PokemonDetail: React.FC = () => {
         );
     }
     
-    const isInTeam = useStore(state => state.isPokemonInTeam(pokemon.DexID));
+    const isInTeam = isPokemonInTeam(pokemon.DexID);
     const allAbilitiesArray = useMemo(() => Object.values(allAbilities), [allAbilities]);
 
     const {

@@ -10,10 +10,12 @@ import { GlobalTooltip } from './shared/GlobalTooltip.js';
 import { useTrainerSheet } from '../src/hooks/useTrainerSheet.js';
 import { useNatureModal } from '../src/hooks/useNatureModal.js';
 import { usePointCalculations } from '../src/hooks/usePointCalculations.js';
-import useStore from '../src/store/useStore.js';
+import { useSessionStore } from '../src/store/useSessionStore.js';
+import { useGameDataStore } from '../src/store/useGameDataStore.js';
 
 const TrainerSheet: React.FC = () => {
-    const { trainerData, updateTrainerData, allItems, allBadges } = useStore();
+    const { trainerData, updateTrainerData } = useSessionStore();
+    const { allItems, allBadges } = useGameDataStore();
 
     const {
         isNatureModalOpen,

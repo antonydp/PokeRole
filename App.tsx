@@ -4,7 +4,9 @@ import PokemonDetail from './components/PokemonDetail.js';
 import Dashboard from './components/Dashboard.js';
 import { PokeballIcon, MenuIcon, SettingsIcon } from './components/Icons.js';
 import SuggestTeamModal from './components/SuggestTeamModal.js';
-import useStore from './src/store/useStore.js';
+import { useGameDataStore } from './src/store/useGameDataStore.js';
+import { useUIStore } from './src/store/useUIStore.js';
+import { useSessionStore } from './src/store/useSessionStore.js';
 
 /**
  * @typedef {object} UnitSettings
@@ -95,26 +97,9 @@ const SettingsModal: React.FC<{
  * @returns {React.FC} The root App component.
  */
 const App: React.FC = () => {
-    const {
-        allPokemon,
-        team,
-        isLoading,
-        error,
-        isSidebarOpen,
-        isSettingsOpen,
-        isSuggestModalOpen,
-        unitSettings,
-        selectedPokemonId,
-        loadData,
-        setIsSidebarOpen,
-        setIsSettingsOpen,
-        setUnitSettings,
-        setIsSuggestModalOpen,
-        selectPokemon,
-        exportTeam,
-        loadTeam,
-        addSuggestionToTeam,
-    } = useStore();
+    const { allPokemon, isLoading, error, loadData } = useGameDataStore();
+    const { isSidebarOpen, isSettingsOpen, isSuggestModalOpen, unitSettings, selectedPokemonId, setIsSidebarOpen, setIsSettingsOpen, setUnitSettings, setIsSuggestModalOpen, selectPokemon } = useUIStore();
+    const { team, exportTeam, loadTeam, addSuggestionToTeam } = useSessionStore();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 

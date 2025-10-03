@@ -10,7 +10,8 @@ import { calculateTeamTypeCoverage } from '../src/logic/formulas.js';
 /**
  * TooltipData interface for tooltip content and position.
  */
-import useStore from '../src/store/useStore.js';
+import { useSessionStore } from '../src/store/useSessionStore.js';
+import { useUIStore } from '../src/store/useUIStore.js';
 import { TooltipData, TeamSlotProps } from './types.js';
 
 /**
@@ -310,7 +311,9 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onA
  */
 
 const TeamBuilder: React.FC = () => {
-    const { team, selectPokemon, removeFromTeam, openSidebar, setIsSuggestModalOpen, quickImport, quickExport } = useStore();
+    const { team, removeFromTeam, quickImport, quickExport } = useSessionStore();
+    const { selectPokemon, setIsSuggestModalOpen, setIsSidebarOpen } = useUIStore();
+    const openSidebar = () => setIsSidebarOpen(true);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const teamCoverage = useMemo(() => calculateTeamTypeCoverage(team), [team]);
 
