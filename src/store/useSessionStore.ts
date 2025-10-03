@@ -69,6 +69,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         return team.find(m => m.instanceID === selectedPokemonId.instanceID) || null;
     },
     addToTeam: (pokemon, sheetData) => {
+        let newInstanceID: string | null = null;
         set(state => {
             if (state.team.length < 6) {
                 const newMember: TeamMember = {
@@ -76,10 +77,15 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                     pokedexData: pokemon,
                     sheetData: sheetData,
                 };
+                newInstanceID = newMember.instanceID; // Capture the new ID
+
                 return { team: [...state.team, newMember] };
             }
             return {};
         });
+        if (newInstanceID) {
+            useUIStore.getState().selectPokemon(pokemon.DexID, newInstanceID);
+        }
     },
     removeFromTeam: (instanceID) => {
         set(state => ({
