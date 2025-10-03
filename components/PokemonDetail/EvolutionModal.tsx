@@ -3,11 +3,14 @@ import { useUIStore } from '../../src/store/useUIStore.js';
 import { useSessionStore } from '../../src/store/useSessionStore.js';
 import { useEvolution, AvailableEvolution } from '../../src/hooks/useEvolution.js';
 import { StatRedistributionModal } from './StatRedistributionModal.js';
+import { OverrankMoveSelectionModal } from './OverrankMoveSelectionModal.js';
+import { MoveSelectionModal } from './MoveSelectionModal.js';
+import { LoyaltyCheckModal } from './LoyaltyCheckModal.js';
 import { CloseIcon } from '../Icons.js';
 
 export const EvolutionModal: React.FC = () => {
     const { evolutionState, closeEvolutionModal, setEvolutionStep } = useUIStore();
-    const { selectedTeamMember, initiatePermanentEvolution } = useSessionStore();
+    const { selectedTeamMember, initiatePermanentEvolution, applyOverrank, applyTemporaryForm } = useSessionStore();
     const teamMember = selectedTeamMember();
     const { availableEvolutions } = useEvolution(teamMember);
 
@@ -19,11 +22,9 @@ export const EvolutionModal: React.FC = () => {
         if (!evolution.isEligible || !evolution.targetPokedex) return;
 
         if (evolution.Kind === 'Mega' || evolution.Kind === 'Form') {
-            // Handle temporary forms (future feature)
-            alert(`Temporary evolution to ${evolution.To} is not yet implemented.`);
+            applyTemporaryForm(teamMember.instanceID, evolution.targetPokedex);
         } else {
-            // This is a permanent evolution
-            initiatePermanentEvolution(teamMember.instanceID, evolution.targetPokedex);
+            setEvolutionStep('OVERRANK_CHOICE', { selectedEvolution: evolution });
         }
     };
 
@@ -48,15 +49,40 @@ export const EvolutionModal: React.FC = () => {
                         </div>
                     </div>
                 );
+            // New Case for the Switch Statement
+            case 'OVERRANK_CHOICE':
+                if (!evolutionState.selectedEvolution) return null;
+                return (
+                    <div className="p-6 bg-slate-800 text-white rounded-lg w-full max-w-lg">
+                        <h2 className="text-2xl font-primary text-poke-yellow mb-4 text-center">
+                            Evolve into {evolutionState.selectedEvolution.To}?
+                        </h2>
+                        <p className="text-center mb-6">You can let the evolution proceed, or stop it to learn a powerful move from a higher rank (Overranking).</p>
+                        <div className="flex justify-center gap-4">
+                            <button
+                                onClick={() => initiatePermanentEvolution(teamMember.instanceID, evolutionState.selectedEvolution!.targetPokedex)}
+                                className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-500 transition-colors"
+                            >
+                                Evolve Now
+                            </button>
+                            <button
+                                onClick={() => setEvolutionStep('OVERRANK_MOVESET')}
+                                className="px-6 py-3 bg-poke-red text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                                Stop Evolution (Overrank)
+                            </button>
+                        </div>
+                    </div>
+                );
+            case 'OVERRANK_MOVESET':
+                return <OverrankMoveSelectionModal />;
             case 'REDISTRIBUTE':
                 // This component now fetches all its data from the stores, no props needed
                 return <StatRedistributionModal />;
             case 'MOVESET':
-                // Placeholder for your MoveSelectionModal
-                return <div className="p-6 bg-slate-800 text-white rounded-lg"><h2 className="text-2xl font-primary text-poke-yellow">Select New Moves</h2><button onClick={() => setEvolutionStep('LOYALTY_CHECK')}>Next</button></div>;
+                return <MoveSelectionModal />;
             case 'LOYALTY_CHECK':
-                // Placeholder for your LoyaltyCheckModal
-                return <div className="p-6 bg-slate-800 text-white rounded-lg"><h2 className="text-2xl font-primary text-poke-yellow">Loyalty Check</h2><button onClick={closeEvolutionModal}>Finish</button></div>;
+                return <LoyaltyCheckModal />;
             default:
                 return null;
         }

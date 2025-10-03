@@ -331,14 +331,19 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                     : m
             )
         }));
+        // We probably don't close the modal here, as the user might want to see the new stats immediately
+        // But for this example, we'll close it.
+        useUIStore.getState().closeEvolutionModal();
     },
     revertTemporaryForm: (instanceID) => {
         set(state => ({
-            team: state.team.map(m =>
-                m.instanceID === instanceID
-                    ? { ...m, temporaryForm: undefined }
-                    : m
-            )
+            team: state.team.map(m => {
+                if (m.instanceID === instanceID) {
+                    const { temporaryForm, ...rest } = m;
+                    return rest;
+                }
+                return m;
+            })
         }));
     },
 }));

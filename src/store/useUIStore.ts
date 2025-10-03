@@ -4,12 +4,13 @@ import { Pokedex, PokemonData } from '../types/index.js';
 type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
 type SelectedPokemon = { dexID: string; instanceID?: string };
 
-type EvolutionStep = 'CHOICE' | 'OVERRANK' | 'REDISTRIBUTE' | 'MOVESET' | 'LOYALTY_CHECK';
+type EvolutionStep = 'CHOICE' | 'OVERRANK_CHOICE' | 'OVERRANK_MOVESET' | 'REDISTRIBUTE' | 'MOVESET' | 'LOYALTY_CHECK';
 
 type EvolutionState = {
     isOpen: true;
     teamMemberInstanceId: string;
     step: EvolutionStep;
+    selectedEvolution?: import('../hooks/useEvolution.js').AvailableEvolution; // Add this
     bonusPoints?: { attributes: number; social: number; skills: number };
     newPokedexData?: Pokedex;
     tempSheetData?: PokemonData;
