@@ -40,12 +40,15 @@ const STAT_FIELDS: (keyof typeof initialStatFilters)[] = ['BaseHP', 'Strength', 
 
 import useStore from '../src/store/useStore.js';
 
+type PokemonRowData = {
+    pokemonList: Pokedex[];
+    onSelectPokemon: (dexID: string, instanceID?: string) => void;
+};
+
 const PokemonRow = ({ index, style, pokemonList, onSelectPokemon }: {
     index: number;
     style: React.CSSProperties;
-    pokemonList: Pokedex[];
-    onSelectPokemon: (id: string) => void;
-}) => {
+} & PokemonRowData) => {
     const pokemon = pokemonList[index];
     
     return (
@@ -229,7 +232,7 @@ const PokemonList: React.FC = () => {
             </div>
             <div className="flex-grow overflow-hidden">
                 {filteredPokemon.length > 0 ? (
-                    <List
+                    <List<PokemonRowData>
                         rowCount={filteredPokemon.length}
                         rowHeight={100}
                         rowComponent={PokemonRow}

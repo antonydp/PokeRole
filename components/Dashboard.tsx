@@ -1,17 +1,9 @@
 import React, { useState } from 'react';
 import TeamBuilder from './TeamBuilder.js';
 import TrainerSheet from './TrainerSheet.js';
-import { DashboardProps } from './types.js';
 
 
-/**
- * The Dashboard component serves as the main navigation hub for the application.
- * It allows users to switch between viewing their Pokémon team and their Trainer Sheet.
- * @param {DashboardProps} props - The props for the Dashboard component.
- * @returns {React.FC} The rendered Dashboard component.
- */
-
-const Dashboard: React.FC<DashboardProps> = (props) => {
+const Dashboard: React.FC = (props) => {
     const [activeView, setActiveView] = useState<'team' | 'trainer'>('team');
 
 
