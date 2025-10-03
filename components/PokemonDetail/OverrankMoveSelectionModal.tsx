@@ -4,6 +4,7 @@ import { useSessionStore } from '../../src/store/useSessionStore.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { Rank, Move } from '../../src/types/index.js';
 import { RANK_ORDER } from '../../src/logic/core.js';
+import { parseMoveRank } from '../../src/logic/formulas.js';
 import TypeBadge from '../TypeBadge.js';
 
 export const OverrankMoveSelectionModal: React.FC = () => {
@@ -23,10 +24,8 @@ export const OverrankMoveSelectionModal: React.FC = () => {
             const learnset = teamMember.pokedexData.Moves.find(m => m.Name.toLowerCase() === move.Name.toLowerCase());
             if (!learnset) return false;
             
-            const moveRankMatch = learnset.Learned.match(/Rank: (\w+)/);
-            if (!moveRankMatch) return false;
-            
-            const moveRank = moveRankMatch[1] as Rank;
+            const moveRank = parseMoveRank(learnset.Learned);
+            if (!moveRank) return false;
             const moveRankOrder = RANK_ORDER[moveRank];
 
             const nameMatch = move.Name.toLowerCase().includes(searchTerm.toLowerCase());

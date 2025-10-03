@@ -88,14 +88,18 @@ export const EvolutionModal: React.FC = () => {
             case 'OVERRANK_CHOICE':
                 // This is the new modal asking "Evolve Now" or "Stop Evolution (Overrank)"
                 return (
-                    <div className="p-6 bg-slate-800 ...">
-                        {/* ... title ... */}
+                    <div className="p-6 bg-slate-800 text-white rounded-lg w-full max-w-lg text-center">
+                        <h2 className="text-2xl font-primary text-poke-yellow mb-2">Confirm Evolution</h2>
+                        <p className="mb-6">
+                            Your Pokémon is ready to evolve! You can proceed with the evolution, or you can stop it.
+                            Stopping an evolution resets its victory count but allows it to learn one powerful move from the next rank (Overrank).
+                        </p>
                         <div className="flex justify-center gap-4">
-                            <button onClick={() => handleOverrankChoice(true)} className="...">
+                            <button onClick={() => handleOverrankChoice(true)} className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-500 transition-colors w-1/2">
                                 Evolve Now
                             </button>
-                            <button onClick={() => handleOverrankChoice(false)} className="...">
-                                Stop Evolution (Overrank)
+                            <button onClick={() => handleOverrankChoice(false)} className="px-6 py-3 bg-poke-red text-white font-bold rounded-lg hover:bg-red-700 transition-colors w-1/2">
+                                Stop (Overrank)
                             </button>
                         </div>
                     </div>
