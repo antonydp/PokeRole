@@ -5,6 +5,7 @@ import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { Move } from '../../src/types/index.js';
 import { calculateMaxMoves } from '../../src/logic/core.js';
 import TypeBadge from '../TypeBadge.js';
+import { parseMoveRank } from '../../src/logic/formulas.js';
 
 export const MoveSelectionModal: React.FC = () => {
     const { setEvolutionStep } = useUIStore();
@@ -17,7 +18,15 @@ export const MoveSelectionModal: React.FC = () => {
 
     const learnableMoves = useMemo(() => {
         if (!teamMember) return [];
-        const learnset = new Set(teamMember.pokedexData.Moves.map(m => m.Name));
+        const pokemonRank = teamMember.sheetData.rank;
+        const learnsetForRank = teamMember.pokedexData.Moves
+            .filter(moveInLearnset => {
+                const moveRank = parseMoveRank(moveInLearnset.Learned);
+                return moveRank === pokemonRank;
+            })
+            .map(m => m.Name);
+
+        const learnset = new Set(learnsetForRank);
         return Object.values(allMoves).filter((m: Move) => learnset.has(m.Name));
     }, [teamMember, allMoves]);
 
