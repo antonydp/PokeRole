@@ -27,7 +27,7 @@ const SortablePokemonCard = ({ member, onSelect }: { member: TeamMember, onSelec
             {...listeners}
             className="touch-none"
         >
-            <PCPokemonCard pokemon={member.pokedexData} onSelect={(_dexId) => onSelect(member.pokedexData.DexID, member.instanceID)} />
+            <PCPokemonCard pokemon={member} onSelect={(_dexId) => onSelect(member.pokedexData.DexID, member.instanceID)} />
         </div>
     );
 };
@@ -116,15 +116,15 @@ const PokemonPC: React.FC = () => {
         >
             <div className="p-4 grid grid-cols-1 lg:grid-cols-4 gap-4 h-full">
                 <div className="lg:col-span-3">
-                    <PokemonContainer id="pc-container" title="Pokémon PC" items={pokemonPC} onAddClick={() => setIsSidebarOpen(true, 'pc')} onSelectPokemon={selectPokemon} />
+                    <PokemonContainer id="pc-container" title="Pokémon PC" items={pokemonPC} onAddClick={() => setIsSidebarOpen(true, 'pc')} onSelectPokemon={(dexId, instanceId) => selectPokemon(dexId, instanceId, 'pc')} />
                 </div>
                 <div className="lg:col-span-1">
-                    <PokemonContainer id="team-container" title="Pokémon Team" items={team} onSelectPokemon={selectPokemon} />
+                    <PokemonContainer id="team-container" title="Pokémon Team" items={team} onSelectPokemon={(dexId, instanceId) => selectPokemon(dexId, instanceId, 'pokemon')} />
                 </div>
             </div>
             <DragOverlay>
                 {activeMember ? (
-                    <PCPokemonCard pokemon={activeMember.pokedexData} onSelect={() => {}} />
+                    <PCPokemonCard pokemon={activeMember} onSelect={() => {}} />
                 ) : null}
             </DragOverlay>
         </DndContext>

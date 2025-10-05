@@ -365,7 +365,7 @@ const TeamBuilder: React.FC = () => {
                     <TeamSlot
                         key={teamMember ? teamMember.instanceID : index}
                         teamMember={teamMember}
-                        onSelect={selectPokemon}
+                        onSelect={(dexId, instanceId) => selectPokemon(dexId, instanceId, 'pokemon')}
                         onRemove={handleRemoveFromTeam}
                         onAddPokemonClick={openSidebar}
                         onMouseEnter={handleMouseEnter}

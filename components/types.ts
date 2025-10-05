@@ -2,8 +2,8 @@ import type { Pokedex, TeamMember, TrainerData, ItemsData, PokemonData, Move, Na
 
 
 export interface PokemonCardProps {
-    pokemon: Pokedex;
-    onSelect: (dexID: string) => void;
+    pokemon: Pokedex | TeamMember;
+    onSelect: (dexId: number | string) => void;
 }
 
 

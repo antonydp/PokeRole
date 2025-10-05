@@ -177,14 +177,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         }));
     },
     exportTeam: () => {
-        const { team, trainerData } = get();
+        const { team, trainerData, pokemonPC } = get();
         const { unitSettings } = useUIStore.getState();
         if (team.length === 0 && !trainerData.name) {
             alert("Your team and trainer sheet are empty!");
             return;
         }
         try {
-            const dataStr = JSON.stringify({ team, trainer: trainerData, unitSettings }, null, 2);
+            const dataStr = JSON.stringify({ team, pokemonPC, trainer: trainerData, unitSettings }, null, 2);
             const dataBlob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
@@ -210,6 +210,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                 
                 const loadedData = JSON.parse(content);
                 const loadedTeam: TeamMember[] = loadedData.team || [];
+                const loadedPC: TeamMember[] = loadedData.pokemonPC || [];
                 const loadedSettings: { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' } | undefined = loadedData.unitSettings;
                 const loadedTrainer: TrainerData | undefined = loadedData.trainer;
 
@@ -252,7 +253,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                     set({ trainerData: createInitialTrainerData() });
                 }
 
-                const teamWithUpdatedWeaknesses = loadedTeam.map(member => ({
+                const processLoadedMembers = (members: TeamMember[]): TeamMember[] => members.map(member => ({
                     ...member,
                     instanceID: member.instanceID || crypto.randomUUID(),
                     sheetData: {
@@ -261,7 +262,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                     }
                 }));
 
-                set({ team: teamWithUpdatedWeaknesses.slice(0, 6) });
+                const teamWithUpdatedWeaknesses = processLoadedMembers(loadedTeam);
+                const pcWithUpdatedWeaknesses = processLoadedMembers(loadedPC);
+
+
+                set({ team: teamWithUpdatedWeaknesses.slice(0, 6), pokemonPC: pcWithUpdatedWeaknesses });
                 useUIStore.getState().clearSelection();
             } catch (err) {
                 console.error("Failed to load data:", err);
