@@ -54,13 +54,30 @@ const StatCalculationDisplay: React.FC<{ label: string; base: number; attributeV
 );
 
 const TrainerSheetHeader: React.FC<TrainerSheetHeaderProps> = ({ trainerData, onDataChange, onOpenNatureModal }) => {
+    const handleImageClick = () => {
+        const newUrl = window.prompt("Enter the URL for the trainer's image:", trainerData.imageUrl ?? '');
+        if (newUrl !== null) {
+            onDataChange('imageUrl', newUrl);
+        }
+    };
+
     return (
         <div className="bg-gradient-to-b from-stone-800 to-stone-900 p-1.5 rounded-xl border-2 border-stone-900 shadow-2xl font-primary relative mb-4">
-            <div className="absolute top-2 left-3 w-12 h-12 bg-cyan-400 rounded-full border-4 border-white shadow-lg flex items-center justify-center z-10">
-                <div className="w-8 h-8 bg-cyan-200 rounded-full shadow-inner"></div>
+            <div
+                className="absolute top-1/2 -translate-y-1/2 left-4 w-28 h-28 bg-gray-700 rounded-full border-4 border-white shadow-lg flex items-center justify-center z-10 overflow-hidden cursor-pointer"
+                onClick={handleImageClick}
+                title="Click to change image"
+            >
+                {trainerData.imageUrl ? (
+                    <img src={trainerData.imageUrl} alt={trainerData.name} className="w-full h-full object-cover" />
+                ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/50" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                )}
             </div>
             
-            <div className="bg-[#B2483D] p-3 rounded-lg border-2 border-[#3A3A3A] grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3 relative md:pl-20">
+            <div className="bg-[#B2483D] p-3 rounded-lg border-2 border-[#3A3A3A] grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3 relative md:pl-36">
                 {/* Column 1: ID Panel */}
                 <div className="flex flex-col justify-between h-full pt-12 md:pt-0">
                      <input

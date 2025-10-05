@@ -257,6 +257,7 @@ export interface TrainerData {
   nature: string;
   confidence: string;
   money: string;
+  imageUrl: string;
 
   // Core Attributes
   strength: number;

@@ -104,6 +104,7 @@ export const createInitialTrainerData = (): TrainerData => {
         nature: 'Brave',
         confidence: '9',
         money: '1500',
+        imageUrl: '',
 
         // Core Attributes (start at 1)
         strength: 1,
