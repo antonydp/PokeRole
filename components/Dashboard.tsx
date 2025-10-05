@@ -4,7 +4,7 @@ import TrainerSheet from './TrainerSheet.js';
 
 
 const Dashboard: React.FC = (props) => {
-    const [activeView, setActiveView] = useState<'team' | 'trainer'>('team');
+    const [activeView, setActiveView] = useState<'team' | 'trainer'>('trainer');
 
 
     const getTabClassName = (view: 'team' | 'trainer') => {
@@ -18,24 +18,24 @@ const Dashboard: React.FC = (props) => {
     return (
         <div className="flex flex-col h-full animate-fade-in">
             <div className="flex justify-center border-b-2 border-slate-700/80 -mx-4 -mt-4">
-                <button 
-                    onClick={() => setActiveView('team')} 
-                    className={getTabClassName('team')}
-                    aria-current={activeView === 'team'}
-                >
-                    Pokémon Team
-                </button>
-                <button 
-                    onClick={() => setActiveView('trainer')} 
+                <button
+                    onClick={() => setActiveView('trainer')}
                     className={getTabClassName('trainer')}
                      aria-current={activeView === 'trainer'}
                 >
                     Trainer Sheet
                 </button>
+                <button
+                    onClick={() => setActiveView('team')}
+                    className={getTabClassName('team')}
+                    aria-current={activeView === 'team'}
+                >
+                    Pokémon Team
+                </button>
             </div>
             <div className="flex-grow pt-4 overflow-y-auto">
-                {activeView === 'team' && <TeamBuilder />}
                 {activeView === 'trainer' && <TrainerSheet />}
+                {activeView === 'team' && <TeamBuilder />}
             </div>
         </div>
     );
