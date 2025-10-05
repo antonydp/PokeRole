@@ -36,7 +36,7 @@ const PokemonContainer = ({ id, title, items, onAddClick, onSelectPokemon }: { i
     const { setNodeRef } = useDroppable({ id });
     const isTeam = id === 'team-container';
     const containerClasses = isTeam
-        ? 'grid grid-cols-3 grid-rows-2 gap-2'
+        ? 'grid grid-cols-2 grid-rows-3 gap-2'
         : 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2';
     
     const sortableStrategy = rectSortingStrategy;
@@ -52,7 +52,7 @@ const PokemonContainer = ({ id, title, items, onAddClick, onSelectPokemon }: { i
                 )}
             </div>
             <SortableContext items={items.map(item => item.instanceID)} strategy={sortableStrategy}>
-                <div className={`${containerClasses} min-h-[150px]`}>
+                <div className={`${containerClasses} min-h-[250px]`}>
                     {items.map(member => (
                         <SortablePokemonCard key={member.instanceID} member={member} onSelect={onSelectPokemon} />
                     ))}
