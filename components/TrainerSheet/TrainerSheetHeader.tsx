@@ -1,6 +1,6 @@
 import React from 'react';
 import { TrainerData, Rank } from '../../src/types/index.js';
-import { RANKS } from '../../src/constants/gameConstants.js';
+import { AGE_GROUPS, RANKS, AgeGroup } from '../../src/constants/gameConstants.js';
 import { ChevronDownIcon } from '../Icons.js';
 import NatureDisplay from '../shared/NatureDisplay.js';
 
@@ -91,8 +91,22 @@ const TrainerSheetHeader: React.FC<TrainerSheetHeaderProps> = ({ trainerData, on
                          <InfoField label="Concept" value={trainerData.concept} onChange={v => onDataChange('concept', v)} placeholder="To be the very best"/>
                     </div>
                      <div className="grid grid-cols-2 gap-x-4 mt-2">
-                        <InfoField label="Hometown" value={trainerData.hometown} onChange={v => onDataChange('hometown', v)} placeholder="Pallet Town"/>
-                        <InfoField label="Age" value={trainerData.age} onChange={v => onDataChange('age', v)} placeholder="10"/>
+                       <InfoField label="Hometown" value={trainerData.hometown} onChange={v => onDataChange('hometown', v)} placeholder="Pallet Town"/>
+                       <div className="flex-1 min-w-[120px]">
+                           <label className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Age</label>
+                           <div className="relative">
+                               <select
+                                   value={trainerData.age}
+                                   onChange={e => onDataChange('age', e.target.value as AgeGroup)}
+                                   className="w-full bg-transparent text-white font-primary text-lg p-0 focus:outline-none border-b border-transparent focus:border-poke-yellow transition-colors appearance-none"
+                               >
+                                   {Object.keys(AGE_GROUPS).map(ageGroup => (
+                                       <option key={ageGroup} value={ageGroup} className="bg-stone-800">{ageGroup}</option>
+                                   ))}
+                               </select>
+                               <ChevronDownIcon className="w-4 h-4 text-white/50 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" />
+                           </div>
+                       </div>
                     </div>
                 </div>
 

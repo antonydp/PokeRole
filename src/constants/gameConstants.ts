@@ -193,3 +193,14 @@ import { PokemonData, Pokedex } from '../types/index.js';
 
 // Add this export
 export const POKEMON_SKILL_FIELDS: (keyof PokemonData)[] = ['brawl', 'channel', 'clash', 'evasion', 'alert', 'athletic', 'nature', 'stealth', 'allure', 'etiquette', 'intimidate', 'perform', 'extraSkillValue'];
+/**
+ * Defines the age groups for a Trainer and the bonus points they provide.
+ */
+export const AGE_GROUPS = {
+    Kids: { physical: 0, social: 0 },
+    Teens: { physical: 2, social: 2 },
+    Adults: { physical: 4, social: 4 },
+    Seniors: { physical: 3, social: 6 },
+} as const;
+
+export type AgeGroup = keyof typeof AGE_GROUPS;

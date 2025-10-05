@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { PokemonData, Pokedex, TrainerData, Rank } from '../types/index.js';
+import { AGE_GROUPS } from '../constants/gameConstants.js';
 import {
     RANK_ATTRIBUTE_POINTS,
     RANK_SOCIAL_ATTRIBUTE_POINTS,
@@ -40,8 +41,8 @@ export function usePointCalculations(data: SheetData | null, basePokemon?: Poked
         const isTrainer = !basePokemon;
         const rank = ('trainerRank' in data ? data.trainerRank : data.rank) as Rank;
 
-        const totalAttributePoints = RANK_ATTRIBUTE_POINTS[rank];
-        const totalSocialAttributePoints = RANK_SOCIAL_ATTRIBUTE_POINTS[rank];
+        let totalAttributePoints = RANK_ATTRIBUTE_POINTS[rank];
+        let totalSocialAttributePoints = RANK_SOCIAL_ATTRIBUTE_POINTS[rank];
         const totalSkillPoints = RANK_SKILL_POINTS[rank];
 
         let spentAttributePoints = 0;
@@ -50,6 +51,12 @@ export function usePointCalculations(data: SheetData | null, basePokemon?: Poked
 
         if (isTrainer) {
             const trainerData = data as TrainerData;
+            const ageGroup = trainerData.age || 'Kids';
+            const ageBonus = AGE_GROUPS[ageGroup];
+
+            totalAttributePoints += ageBonus.physical;
+            totalSocialAttributePoints += ageBonus.social;
+
             spentAttributePoints = ((trainerData.strength ?? 1) - 1) + ((trainerData.dexterity ?? 1) - 1) + ((trainerData.vitality ?? 1) - 1) + ((trainerData.insight ?? 1) - 1);
             spentSocialAttributePoints = ((trainerData.tough ?? 1) - 1) + ((trainerData.cool ?? 1) - 1) + ((trainerData.beauty ?? 1) - 1) + ((trainerData.clever ?? 1) - 1) + ((trainerData.cute ?? 1) - 1);
             spentSkillPoints = TRAINER_SKILL_FIELDS.reduce((acc, field) => acc + (trainerData[field] || 0), 0) +

@@ -3,7 +3,7 @@
  * Centralizing type definitions ensures consistency and improves maintainability.
  */
 
-import { RANKS } from '../constants/gameConstants.js';
+import { RANKS, AgeGroup } from '../constants/gameConstants.js';
 
 /** Represents the possible ranks for a Trainer or Pokémon. */
 export type Rank = typeof RANKS[number];
@@ -249,7 +249,7 @@ export interface ItemInstance {
 export interface TrainerData {
   // Trainer Card
   name: string;
-  age: string;
+  age: AgeGroup;
   hometown: string;
   trainerRank: Rank;
   playerName: string;

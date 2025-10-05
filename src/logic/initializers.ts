@@ -96,7 +96,7 @@ export const createInitialTrainerData = (): TrainerData => {
     return {
         // Trainer Card
         name: 'Ash Ketchum',
-        age: '10',
+        age: 'Teens',
         hometown: 'Pallet Town',
         trainerRank: 'Starter',
         playerName: 'Player 1',
