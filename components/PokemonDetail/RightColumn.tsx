@@ -5,15 +5,15 @@ import { Pokedex, PokemonData, Rank } from '../../src/types/index.js';
 import { LabeledInput } from '../shared/LabeledInput.js';
 import { RANKS } from '../../src/constants/gameConstants.js';
 import { RANK_ORDER } from '../../src/logic/core.js';
+import { usePokemonSheetContext } from '../../src/context/PokemonSheetContext.js';
 
-interface RightColumnProps {
-    pokemonData: PokemonData;
-    updateField: (field: keyof PokemonData, value: any) => void;
-    pokemon: Pokedex;
-    trainerRank: Rank;
-}
-
-const RightColumn: React.FC<RightColumnProps> = ({ pokemonData, updateField, pokemon, trainerRank }) => {
+const RightColumn: React.FC = () => {
+    const {
+        pokemonData,
+        handleDataChange: updateField,
+        trainerRank,
+        pokemon,
+    } = usePokemonSheetContext();
     const quickRefFields: { label: string, field: keyof PokemonData }[] = [
         { label: 'INITIATIVE:', field: 'initiative' }, { label: 'ACCURACY:', field: 'accuracy' },
         { label: 'DAMAGE:', field: 'damage' }, { label: 'EVASION:', field: 'evasionValue' },

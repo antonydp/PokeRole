@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useUIStore } from '../../src/store/useUIStore.js';
 import { useSessionStore } from '../../src/store/useSessionStore.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
+import { useActivePokemon } from '../../src/hooks/useActivePokemon.js';
 import { Rank, Move } from '../../src/types/index.js';
 import { RANK_ORDER } from '../../src/logic/core.js';
 import { parseMoveRank } from '../../src/logic/formulas.js';
@@ -9,9 +10,9 @@ import TypeBadge from '../TypeBadge.js';
 
 export const OverrankMoveSelectionModal: React.FC = () => {
     const { evolutionState, closeEvolutionModal } = useUIStore();
-    const { applyOverrank, selectedTeamMember } = useSessionStore();
+    const { applyOverrank } = useSessionStore();
     const { allMoves } = useGameDataStore();
-    const teamMember = selectedTeamMember();
+    const { teamMember } = useActivePokemon();
     const [searchTerm, setSearchTerm] = useState('');
 
     const availableMoves = useMemo(() => {

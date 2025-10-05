@@ -4,44 +4,26 @@ import { Pokedex, PokemonData, Ability } from '../../src/types/index.js';
 import { MinusIcon, PlusIcon } from '../Icons.js';
 import { useSessionStore } from '../../src/store/useSessionStore.js';
 import { TeamMember } from '../../src/types/index.js';
+import { usePokemonSheetContext } from '../../src/context/PokemonSheetContext.js';
 
-interface PokemonDetailHeaderProps {
-    teamMember: TeamMember | null;
-    pokemonData: PokemonData;
-    updateField: (field: keyof PokemonData, value: any) => void;
-    isInTeam: boolean;
-    teamIsFull: boolean;
-    onAddToTeam: () => void;
-    onRemoveFromTeam: () => void;
-    pokemon: Pokedex;
-    availableAbilities: string[];
-    onAbilityClick: () => void;
-    onShowTooltip: (e: React.MouseEvent<HTMLElement>, content: { name: string; description: string } | null) => void;
-    onHideTooltip: () => void;
-    selectedAbility: Ability | undefined;
-    onEvolveClick: () => void;
-    isEvolveEligible: boolean;
-    isInTemporaryForm: boolean;
-}
-
-const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
-    teamMember,
-    pokemonData, // Keep this prop for displaying data
-    updateField,
-    isInTeam,
-    teamIsFull,
-    onAddToTeam,
-    onRemoveFromTeam,
-    onEvolveClick,
-    isEvolveEligible,
-    isInTemporaryForm,
-    availableAbilities,
-    onAbilityClick,
-    onShowTooltip,
-    onHideTooltip,
-    selectedAbility,
-    pokemon,
-}) => {
+const PokemonDetailHeader: React.FC = () => {
+    const {
+        teamMember,
+        pokemonData,
+        handleDataChange: updateField,
+        isInTeam,
+        teamIsFull,
+        onAddToTeam,
+        onRemoveFromTeam,
+        onEvolveClick,
+        isEvolveEligible,
+        isInTemporaryForm,
+        onAbilityClick,
+        onShowTooltip,
+        onHideTooltip,
+        selectedAbility,
+        pokemon,
+    } = usePokemonSheetContext();
     const { changeForm } = useSessionStore();
 
     if (isInTemporaryForm && !teamMember) return null; // If in temp form, must be a team member

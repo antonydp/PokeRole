@@ -5,21 +5,18 @@ import { AttributeBlock } from '../shared/AttributeBlock.js';
 import { POKEMON_SKILLS, POKEMON_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 import { LabeledInput } from '../shared/LabeledInput.js';
 import { PointsDisplay } from '../shared/Points.js';
+import { usePokemonSheetContext } from '../../src/context/PokemonSheetContext.js';
 
-interface LeftColumnProps {
-    pokemon: Pokedex;
-    pokemonData: PokemonData;
-    onDataChange: (field: keyof PokemonData, value: any) => void;
-    skillLimit: number;
-    points: {
-        attributes: { spent: number; total: number; };
-        skills: { spent: number; total: number; };
-    };
-    isAttributePoolExhausted: boolean;
-    isSkillPoolExhausted: boolean;
-}
-
-const LeftColumn: React.FC<LeftColumnProps> = ({ pokemon, pokemonData, onDataChange, skillLimit, points, isAttributePoolExhausted, isSkillPoolExhausted }) => {
+const LeftColumn: React.FC = () => {
+    const {
+        pokemon,
+        pokemonData,
+        handleDataChange: onDataChange,
+        skillLimit,
+        points,
+        isAttributePoolExhausted,
+        isSkillPoolExhausted
+    } = usePokemonSheetContext();
     const championBonus = useMemo(() => pokemonData.rank === 'Champion' ? 2 : 0, [pokemonData.rank]);
 
     const attributes = POKEMON_ATTRIBUTES.map(attr => ({

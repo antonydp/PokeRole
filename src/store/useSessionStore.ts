@@ -46,8 +46,6 @@ interface SessionState {
     quickImport: (importString: string) => void;
     quickExport: (teamMember: TeamMember) => void;
     isPokemonInTeam: (dexId: string) => boolean;
-    selectedTeamMember: () => TeamMember | null;
-    // ... existing state
     initiatePermanentEvolution: (instanceID: string, targetPokedex: Pokedex) => void;
     finalizePermanentEvolution: (instanceID: string, finalSheetData: PokemonData) => void;
     applyOverrank: (instanceID: string, moveId: string) => void;
@@ -60,24 +58,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     isPokemonInTeam: (dexId: string) => {
         const { team } = get();
         return team.some(member => member.pokedexData.DexID === dexId);
-    },
-    selectedTeamMember: () => {
-        const selectedPokemonId = useUIStore.getState().selectedPokemonId;
-        const { team } = get();
-        if (!selectedPokemonId?.instanceID) return null;
-        const member = team.find(m => m.instanceID === selectedPokemonId.instanceID);
-        if (!member) return null;
-
-        // Return the current form data if a form is active
-        if (member.currentFormName && member.forms?.[member.currentFormName]) {
-            const form = member.forms[member.currentFormName];
-            return {
-                ...member,
-                pokedexData: form.pokedexData,
-                sheetData: form.sheetData,
-            };
-        }
-        return member;
     },
     addToTeam: (pokemon, sheetData) => {
         let newInstanceID: string | null = null;

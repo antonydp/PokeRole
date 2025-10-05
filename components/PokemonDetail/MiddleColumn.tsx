@@ -6,19 +6,17 @@ import { SocialAttribute } from '../shared/SocialAttribute.js';
 import NatureDisplay from '../shared/NatureDisplay.js';
 import { SOCIAL_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 import { RibbonSelector } from './RibbonSelector.js';
+import { usePokemonSheetContext } from '../../src/context/PokemonSheetContext.js';
 
-interface MiddleColumnProps {
-    pokemonData: PokemonData;
-    onDataChange: (field: keyof PokemonData, value: any) => void;
-    onOpenNatureModal: () => void;
-    points: {
-        social: { spent: number; total: number; };
-    };
-    isSocialAttributePoolExhausted: boolean;
-    ribbonsData: Ribbon[];
-}
-
-const MiddleColumn: React.FC<MiddleColumnProps> = ({ pokemonData, onDataChange, onOpenNatureModal, points, isSocialAttributePoolExhausted, ribbonsData }) => {
+const MiddleColumn: React.FC = () => {
+    const {
+        pokemonData,
+        handleDataChange: onDataChange,
+        onOpenNatureModal,
+        points,
+        isSocialAttributePoolExhausted,
+        ribbonsData
+    } = usePokemonSheetContext();
 
     return (
         <div className="lg:col-span-5 flex flex-col gap-3 h-full">

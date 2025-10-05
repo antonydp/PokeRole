@@ -4,15 +4,7 @@ import React from 'react';
 import { PokemonData, Move } from '../../src/types/index.js';
 import { PlusIcon } from '../Icons.js';
 import MoveCard from './MoveCard.js';
-
-interface MovesSectionProps {
-    pokemonData: PokemonData;
-    allMoves: Record<string, Move>;
-    openMoveModal: (index: number) => void;
-    handleClearMove: (index: number) => void;
-    expandedMoves: Set<number>;
-    onToggleMoveExpand: (index: number) => void;
-}
+import { usePokemonSheetContext } from '../../src/context/PokemonSheetContext.js';
 
 const EmptyMoveSlot: React.FC<{ index: number; onAdd: (index: number) => void }> = ({ index, onAdd }) => (
     <button
@@ -27,8 +19,15 @@ const EmptyMoveSlot: React.FC<{ index: number; onAdd: (index: number) => void }>
 
 const MemoizedEmptyMoveSlot = React.memo(EmptyMoveSlot);
 
-
-const MovesSection: React.FC<MovesSectionProps> = ({ pokemonData, allMoves, openMoveModal, handleClearMove, expandedMoves, onToggleMoveExpand }) => {
+const MovesSection: React.FC = () => {
+    const {
+        pokemonData,
+        allMoves,
+        openMoveModal,
+        handleClearMove,
+        expandedMoves,
+        handleToggleMoveExpand
+    } = usePokemonSheetContext();
     return (
         <div className="mt-4 bg-[#2DB3B3]/90 rounded-xl p-3 border-4 border-[#3A3A3A]">
             <h2 className="text-center text-lg text-white font-bold mb-3 tracking-wider font-primary">MOVES</h2>
@@ -43,7 +42,7 @@ const MovesSection: React.FC<MovesSectionProps> = ({ pokemonData, allMoves, open
                                     index={index} 
                                     onClear={handleClearMove} 
                                     isExpanded={expandedMoves.has(index)}
-                                    onToggleExpand={() => onToggleMoveExpand(index)}
+                                    onToggleExpand={() => handleToggleMoveExpand(index)}
                                 />
                             ) : (
                                 <MemoizedEmptyMoveSlot index={index} onAdd={openMoveModal} />

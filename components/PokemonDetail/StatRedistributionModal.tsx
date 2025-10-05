@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useUIStore } from '../../src/store/useUIStore.js';
 import { useSessionStore } from '../../src/store/useSessionStore.js';
+import { useActivePokemon } from '../../src/hooks/useActivePokemon.js';
 import { PokemonData, Pokedex, Rank } from '../../src/types/index.js';
 import { createInitialSheetData } from '../../src/logic/initializers.js';
 import { usePointCalculations } from '../../src/hooks/usePointCalculations.js';
@@ -14,8 +15,8 @@ import { SocialAttribute } from '../shared/SocialAttribute.js';
 
 export const StatRedistributionModal: React.FC = () => {
     const { evolutionState, setEvolutionStep } = useUIStore();
-    const { finalizePermanentEvolution, selectedTeamMember } = useSessionStore();
-    const teamMember = selectedTeamMember();
+    const { finalizePermanentEvolution } = useSessionStore();
+    const { teamMember } = useActivePokemon();
 
     if (!evolutionState.isOpen || evolutionState.step !== 'REDISTRIBUTE' || !evolutionState.bonusPoints || !evolutionState.newPokedexData || !teamMember) {
         return <div className="p-4 text-red-500">Error: Missing data for redistribution.</div>;

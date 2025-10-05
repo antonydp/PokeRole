@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useUIStore } from '../../src/store/useUIStore.js';
 import { useSessionStore } from '../../src/store/useSessionStore.js';
+import { useActivePokemon } from '../../src/hooks/useActivePokemon.js';
 import { DiceIcon } from '../Icons.js';
 import { SOCIAL_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 
@@ -16,8 +17,8 @@ const rollDice = (count: number) => {
 
 export const LoyaltyCheckModal: React.FC = () => {
     const { closeEvolutionModal } = useUIStore();
-    const { updateSheetData, selectedTeamMember } = useSessionStore();
-    const teamMember = selectedTeamMember();
+    const { updateSheetData } = useSessionStore();
+    const { teamMember } = useActivePokemon();
     const [rollResult, setRollResult] = useState<{ successes: number; lostLoyalty: boolean } | null>(null);
 
     if (!teamMember) return null;
