@@ -82,6 +82,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         }
     },
     addToPC: (pokemon, sheetData) => {
+        let newInstanceID: string | null = null;
         set(state => {
             const newMember: TeamMember = {
                 instanceID: crypto.randomUUID(),
@@ -90,8 +91,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                 forms: {},
                 currentFormName: null,
             };
+            newInstanceID = newMember.instanceID;
             return { pokemonPC: [...state.pokemonPC, newMember] };
         });
+        if (newInstanceID) {
+            useUIStore.getState().selectPokemon(pokemon.DexID, newInstanceID);
+        }
     },
     removeFromTeam: (instanceID) => {
         set(state => ({

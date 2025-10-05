@@ -1,20 +1,22 @@
-import React from 'react';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import React, { useState } from 'react';
+import { DndContext, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay, useDroppable, rectIntersection } from '@dnd-kit/core';
+import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useSessionStore } from '../src/store/useSessionStore.js';
 import { useUIStore } from '../src/store/useUIStore.js';
 import { TeamMember } from '../src/types/index.js';
 import { IMAGE_BASE_URL } from '../src/constants/config.js';
 import TypeBadge from './TypeBadge.js';
+import PCPokemonCard from './PCPokemonCard.js';
 import { PokeballIcon } from './Icons.js';
 
-const SortablePokemonItem = ({ member, onSelect }: { member: TeamMember, onSelect: (dexId: string, instanceId: string) => void }) => {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: member.instanceID });
+const SortablePokemonCard = ({ member, onSelect }: { member: TeamMember, onSelect: (dexId: string, instanceId: string) => void }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: member.instanceID });
 
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+        opacity: isDragging ? 0.5 : 1,
     };
 
     return (
@@ -23,24 +25,24 @@ const SortablePokemonItem = ({ member, onSelect }: { member: TeamMember, onSelec
             style={style}
             {...attributes}
             {...listeners}
-            onClick={() => onSelect(member.pokedexData.DexID, member.instanceID)}
-            className="bg-slate-700/80 p-2 rounded-lg flex items-center gap-4 touch-none cursor-pointer hover:bg-slate-700 transition-colors"
+            className="touch-none"
         >
-            <img src={`${IMAGE_BASE_URL}${member.pokedexData.Image}`} alt={member.pokedexData.Name} className="w-16 h-16" />
-            <div className="flex-grow">
-                <p className="font-bold text-white">{member.sheetData.pokemonName || member.pokedexData.Name}</p>
-                <div className="flex gap-1 mt-1">
-                    <TypeBadge type={member.pokedexData.Type1} />
-                    {member.pokedexData.Type2 && <TypeBadge type={member.pokedexData.Type2} />}
-                </div>
-            </div>
+            <PCPokemonCard pokemon={member.pokedexData} onSelect={(_dexId) => onSelect(member.pokedexData.DexID, member.instanceID)} />
         </div>
     );
 };
 
 const PokemonContainer = ({ id, title, items, onAddClick, onSelectPokemon }: { id: string, title: string, items: TeamMember[], onAddClick?: () => void, onSelectPokemon: (dexId: string, instanceId: string) => void }) => {
+    const { setNodeRef } = useDroppable({ id });
+    const isTeam = id === 'team-container';
+    const containerClasses = isTeam
+        ? 'grid grid-cols-3 grid-rows-2 gap-2'
+        : 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2';
+    
+    const sortableStrategy = rectSortingStrategy;
+
     return (
-        <div className="bg-slate-800/50 p-4 rounded-lg w-full">
+        <div ref={setNodeRef} className="bg-slate-800/50 p-4 rounded-lg w-full">
             <div className="flex justify-center items-center mb-4">
                 <h2 className="text-2xl font-bold font-primary text-poke-yellow text-center">{title}</h2>
                 {onAddClick && (
@@ -49,10 +51,13 @@ const PokemonContainer = ({ id, title, items, onAddClick, onSelectPokemon }: { i
                     </button>
                 )}
             </div>
-            <SortableContext items={items.map(item => item.instanceID)} strategy={verticalListSortingStrategy}>
-                <div className="space-y-3 min-h-[100px]">
+            <SortableContext items={items.map(item => item.instanceID)} strategy={sortableStrategy}>
+                <div className={`${containerClasses} min-h-[150px]`}>
                     {items.map(member => (
-                        <SortablePokemonItem key={member.instanceID} member={member} onSelect={onSelectPokemon} />
+                        <SortablePokemonCard key={member.instanceID} member={member} onSelect={onSelectPokemon} />
+                    ))}
+                    {isTeam && Array.from({ length: Math.max(0, 6 - items.length) }).map((_, index) => (
+                        <div key={`placeholder-${index}`} className="aspect-square border-2 border-dashed border-slate-600 rounded-lg bg-slate-800/30" />
                     ))}
                 </div>
             </SortableContext>
@@ -63,6 +68,8 @@ const PokemonContainer = ({ id, title, items, onAddClick, onSelectPokemon }: { i
 const PokemonPC: React.FC = () => {
     const { team, pokemonPC, moveFromPCToTeam, moveFromTeamToPC } = useSessionStore();
     const { setIsSidebarOpen, selectPokemon } = useUIStore();
+    const [activeMember, setActiveMember] = useState<TeamMember | null>(null);
+
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
@@ -71,8 +78,16 @@ const PokemonPC: React.FC = () => {
         })
     );
 
+    const handleDragStart = (event: DragStartEvent) => {
+        const { active } = event;
+        const activeId = active.id as string;
+        const member = team.find(p => p.instanceID === activeId) || pokemonPC.find(p => p.instanceID === activeId);
+        setActiveMember(member || null);
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
+        setActiveMember(null);
 
         if (!over) return;
 
@@ -92,15 +107,26 @@ const PokemonPC: React.FC = () => {
     };
 
     return (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
-                <div className="lg:col-span-2">
+        <DndContext
+            sensors={sensors}
+            collisionDetection={rectIntersection}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={() => setActiveMember(null)}
+        >
+            <div className="p-4 grid grid-cols-1 lg:grid-cols-4 gap-4 h-full">
+                <div className="lg:col-span-3">
                     <PokemonContainer id="pc-container" title="Pokémon PC" items={pokemonPC} onAddClick={() => setIsSidebarOpen(true, 'pc')} onSelectPokemon={selectPokemon} />
                 </div>
                 <div className="lg:col-span-1">
                     <PokemonContainer id="team-container" title="Pokémon Team" items={team} onSelectPokemon={selectPokemon} />
                 </div>
             </div>
+            <DragOverlay>
+                {activeMember ? (
+                    <PCPokemonCard pokemon={activeMember.pokedexData} onSelect={() => {}} />
+                ) : null}
+            </DragOverlay>
         </DndContext>
     );
 };

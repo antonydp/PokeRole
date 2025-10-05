@@ -28,8 +28,8 @@ const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onSelect }) => {
                     </svg>
                 </div>
             )}
-            <img 
-                src={imageUrl} 
+            <img
+                src={imageUrl}
                 alt={pokemon.Name}
                 className="w-16 h-16 object-contain group-hover:animate-wobble"
                 loading="lazy"
