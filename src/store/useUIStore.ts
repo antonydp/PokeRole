@@ -22,6 +22,7 @@ interface UIState {
     isSettingsOpen: boolean;
     isSuggestModalOpen: boolean;
     selectedPokemonId: SelectedPokemon | null;
+    activeView: 'trainer' | 'pokemon';
     unitSettings: UnitSettings;
     evolutionState: EvolutionState;
     openEvolutionModal: (instanceId: string) => void;
@@ -33,6 +34,7 @@ interface UIState {
     selectPokemon: (dexID: string, instanceID?: string) => void;
     clearSelection: () => void;
     setUnitSettings: (settings: UnitSettings) => void;
+    setActiveView: (view: 'trainer' | 'pokemon') => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -40,6 +42,7 @@ export const useUIStore = create<UIState>((set) => ({
     isSettingsOpen: false,
     isSuggestModalOpen: false,
     selectedPokemonId: null,
+    activeView: 'trainer',
     evolutionState: { isOpen: false },
     unitSettings: (() => {
         try {
@@ -80,7 +83,7 @@ export const useUIStore = create<UIState>((set) => ({
         set({ selectedPokemonId: { dexID, instanceID }, isSidebarOpen: false });
     },
     clearSelection: () => {
-        set({ selectedPokemonId: null });
+        set({ selectedPokemonId: null, activeView: 'pokemon' });
     },
     setUnitSettings: (settings) => {
         try {
@@ -90,4 +93,5 @@ export const useUIStore = create<UIState>((set) => ({
             console.error("Failed to save unit settings to localStorage", e);
         }
     },
+    setActiveView: (view) => set({ activeView: view }),
 }));
