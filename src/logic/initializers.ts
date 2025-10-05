@@ -3,7 +3,7 @@
  * These are used to generate fresh character sheets for Pokémon and Trainers.
  */
 
-import { Pokedex, PokemonData, TrainerData, Rank } from '../types/index.js';
+import { Pokedex, PokemonData, TrainerData, Rank, Badge } from '../types/index.js';
 import { calculateClash, calculateDefSDef, calculateEvasion, calculateInitiative, calculateMaxMoves, calculatePokemonHP, calculatePokemonWill } from './core.js';
 import { calculateWeaknesses } from './formulas.js';
 
@@ -162,6 +162,6 @@ export const createInitialTrainerData = (): TrainerData => {
         ],
         smallPocket: [],
         mainPocket: [],
-        badges: '', // Empty to start
+        badges: [] as Badge[],
     };
 };

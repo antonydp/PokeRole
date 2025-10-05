@@ -308,7 +308,7 @@ export interface TrainerData {
   potions: PotionBottle[];
   smallPocket: ItemInstance[];
   mainPocket: ItemInstance[];
-  badges: string;
+  badges: Badge[];
 }
 
 /**

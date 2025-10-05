@@ -29,6 +29,8 @@ const TrainerSheet: React.FC = () => {
     const {
         isItemModalOpen,
         setIsItemModalOpen,
+        isBadgeModalOpen,
+        setIsBadgeModalOpen,
         tooltipData,
         handleFieldChange,
         handlePointFieldChange,
@@ -40,6 +42,7 @@ const TrainerSheet: React.FC = () => {
         handleAddAchievement,
         handleRemoveAchievement,
         handleAddItem,
+        handleAddBadge,
         itemMap
     } = useTrainerSheet(trainerData, updateTrainerData, allItems);
 
@@ -116,6 +119,10 @@ const TrainerSheet: React.FC = () => {
                         points={points}
                         isSocialAttributePoolExhausted={isSocialAttributePoolExhausted}
                         allBadges={allBadges}
+                        isBadgeModalOpen={isBadgeModalOpen}
+                        onOpenBadgeModal={() => setIsBadgeModalOpen(true)}
+                        onCloseBadgeModal={() => setIsBadgeModalOpen(false)}
+                        onSelectBadge={handleAddBadge}
                     />
                 </div>
             </div>

@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { TrainerData, Item, ItemsData, HealingItemsSubCategory, ItemInstance } from '../types/index.js';
+import type { TrainerData, Item, ItemsData, HealingItemsSubCategory, ItemInstance, Badge } from '../types/index.js';
 import { TooltipData } from '../../components/shared/GlobalTooltip.js';
 
 export function useTrainerSheet(
@@ -8,6 +8,7 @@ export function useTrainerSheet(
     allItems: ItemsData | null
 ) {
     const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+    const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
 
     const handleFieldChange = useCallback((field: keyof TrainerData, value: any) => {
@@ -124,6 +125,26 @@ export function useTrainerSheet(
         });
     }, [onDataChange]);
 
+    const handleAddBadge = useCallback((badge: Badge) => {
+        onDataChange((currentTrainerData: TrainerData) => {
+            const currentBadges: Badge[] = currentTrainerData.badges || [];
+            const isDuplicate = currentBadges.some(b => b.name.toLowerCase() === badge.name.toLowerCase());
+
+            if (isDuplicate) {
+                alert('You already have this badge.');
+                return currentTrainerData;
+            }
+
+            if (currentBadges.length >= 8) {
+                alert('You cannot have more than 8 badges.');
+                return currentTrainerData;
+            }
+
+            const newBadges = [...currentBadges, badge];
+            return { ...currentTrainerData, badges: newBadges };
+        });
+    }, [onDataChange]);
+
     const itemMap = useMemo(() => {
         const map = new Map<string, Item>();
         if (!allItems) return map;
@@ -143,6 +164,8 @@ export function useTrainerSheet(
     return {
         isItemModalOpen,
         setIsItemModalOpen,
+        isBadgeModalOpen,
+        setIsBadgeModalOpen,
         tooltipData,
         setTooltipData,
         handleFieldChange,
@@ -155,6 +178,7 @@ export function useTrainerSheet(
         handleAddAchievement,
         handleRemoveAchievement,
         handleAddItem,
+        handleAddBadge,
         itemMap
     };
 }
