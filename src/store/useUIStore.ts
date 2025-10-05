@@ -5,7 +5,7 @@ import { AvailableEvolution } from '../hooks/useEvolution.js';
 type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
 type SelectedPokemon = { dexID: string; instanceID?: string };
 
-type EvolutionStep = 'CHOICE' | 'OVERRANK_CHOICE' | 'OVERRANK_MOVESET' | 'REDISTRIBUTE' | 'MOVESET' | 'LOYALTY_CHECK';
+type EvolutionStep = 'CHOICE' | 'OVERRANK_CHOICE' | 'OVERRANK_MOVESET' | 'REDISTRIBUTE' | 'MOVESET';
 
 type EvolutionState = {
     isOpen: true;

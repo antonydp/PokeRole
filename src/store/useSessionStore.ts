@@ -51,8 +51,7 @@ interface SessionState {
     initiatePermanentEvolution: (instanceID: string, targetPokedex: Pokedex) => void;
     finalizePermanentEvolution: (instanceID: string, finalSheetData: PokemonData) => void;
     applyOverrank: (instanceID: string, moveId: string) => void;
-    applyTemporaryForm: (instanceID: string, formPokedex: Pokedex) => void;
-    revertTemporaryForm: (instanceID: string) => void;
+    changeForm: (instanceID: string, formPokedex: Pokedex | null, currentSheetData?: PokemonData) => void;
 }
 
 export const useSessionStore = create<SessionState>((set, get) => ({
@@ -66,7 +65,19 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         const selectedPokemonId = useUIStore.getState().selectedPokemonId;
         const { team } = get();
         if (!selectedPokemonId?.instanceID) return null;
-        return team.find(m => m.instanceID === selectedPokemonId.instanceID) || null;
+        const member = team.find(m => m.instanceID === selectedPokemonId.instanceID);
+        if (!member) return null;
+
+        // Return the current form data if a form is active
+        if (member.currentFormName && member.forms?.[member.currentFormName]) {
+            const form = member.forms[member.currentFormName];
+            return {
+                ...member,
+                pokedexData: form.pokedexData,
+                sheetData: form.sheetData,
+            };
+        }
+        return member;
     },
     addToTeam: (pokemon, sheetData) => {
         let newInstanceID: string | null = null;
@@ -76,6 +87,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                     instanceID: crypto.randomUUID(),
                     pokedexData: pokemon,
                     sheetData: sheetData,
+                    forms: {},
+                    currentFormName: null,
                 };
                 newInstanceID = newMember.instanceID; // Capture the new ID
 
@@ -98,11 +111,25 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     },
     updateSheetData: (instanceID, newSheetData) => {
         set(state => ({
-            team: state.team.map(member =>
-                member.instanceID === instanceID
-                    ? { ...member, sheetData: newSheetData }
-                    : member
-            )
+            team: state.team.map(member => {
+                if (member.instanceID === instanceID) {
+                    // If a form is active, update that form's sheetData
+                    if (member.currentFormName && member.forms?.[member.currentFormName]) {
+                        const formName = member.currentFormName;
+                        const updatedForms = {
+                            ...member.forms,
+                            [formName]: {
+                                ...member.forms[formName],
+                                sheetData: newSheetData,
+                            },
+                        };
+                        return { ...member, forms: updatedForms };
+                    }
+                    // Otherwise, update the base sheetData
+                    return { ...member, sheetData: newSheetData };
+                }
+                return member;
+            }),
         }));
     },
     updateTrainerData: (updater) => {
@@ -214,6 +241,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                 instanceID: crypto.randomUUID(),
                 pokedexData: pokemon,
                 sheetData: sheetData,
+                forms: {},
+                currentFormName: null,
             };
             set(state => ({ team: [...state.team, newMember] }));
         }
@@ -333,28 +362,58 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         useUIStore.getState().closeEvolutionModal();
     },
 
-    applyTemporaryForm: (instanceID, formPokedex) => {
-        // This handles Mega Evolution
-        set(state => ({
-            team: state.team.map(m =>
-                m.instanceID === instanceID ? { ...m, temporaryForm: formPokedex } : m
-            )
-        }));
-        
-        // In a real game, you wouldn't close the modal, but for this app it makes sense.
-        // The UI will now re-render with the new stats.
-        useUIStore.getState().closeEvolutionModal();
-    },
+    changeForm: (instanceID, formPokedex: Pokedex | null, currentSheetData?: PokemonData) => {
+        const { trainerData } = get();
+        const { unitSettings } = useUIStore.getState();
 
-    revertTemporaryForm: (instanceID) => {
-        set(state => ({
-            team: state.team.map(m => {
-                if (m.instanceID === instanceID) {
-                    const { temporaryForm, ...rest } = m; // Destructure to remove the temporary form
-                    return rest;
+        set(state => {
+            const team = state.team.map(member => {
+                if (member.instanceID !== instanceID) return member;
+
+                const updatedMember = { ...member };
+
+                // If there's a current form and sheet data is provided, save it before switching
+                if (updatedMember.currentFormName && currentSheetData) {
+                    const formToSaveName = updatedMember.currentFormName;
+                    if (updatedMember.forms?.[formToSaveName]) {
+                        updatedMember.forms[formToSaveName].sheetData = currentSheetData;
+                    }
                 }
-                return m;
-            })
-        }));
+
+                // Reverting to base form
+                if (formPokedex === null) {
+                    updatedMember.currentFormName = null;
+                    return updatedMember;
+                }
+
+                const formName = formPokedex.Name;
+                const existingForms = updatedMember.forms || {};
+                let formExists = !!existingForms[formName];
+
+                // Create form if it doesn't exist
+                const newForms = { ...existingForms };
+                if (!formExists) {
+                    const newSheetData = createInitialSheetData(formPokedex, unitSettings, trainerData.trainerRank);
+                    newForms[formName] = {
+                        pokedexData: formPokedex,
+                        sheetData: newSheetData,
+                    };
+                }
+
+                // Open moveset modal only if the form is brand new, otherwise close the evolution modal
+                if (!formExists) {
+                    useUIStore.getState().setEvolutionStep('MOVESET');
+                } else {
+                    useUIStore.getState().closeEvolutionModal();
+                }
+
+                return {
+                    ...updatedMember,
+                    forms: newForms,
+                    currentFormName: formName,
+                };
+            });
+            return { team };
+        });
     },
 }));

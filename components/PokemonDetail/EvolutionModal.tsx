@@ -7,8 +7,13 @@ import { OverrankMoveSelectionModal } from './OverrankMoveSelectionModal.js';
 import { MoveSelectionModal } from './MoveSelectionModal.js';
 import { LoyaltyCheckModal } from './LoyaltyCheckModal.js';
 import { CloseIcon } from '../Icons.js';
+import { PokemonData } from '../../src/types/index.js';
 
-export const EvolutionModal: React.FC = () => {
+interface EvolutionModalProps {
+    pokemonData: PokemonData;
+}
+
+export const EvolutionModal: React.FC<EvolutionModalProps> = ({ pokemonData }) => {
     const { evolutionState, closeEvolutionModal, setEvolutionStep } = useUIStore();
     // Get the right member using the ID from the UI store
     const teamMemberInstanceId = evolutionState.isOpen ? evolutionState.teamMemberInstanceId : undefined;
@@ -18,7 +23,7 @@ export const EvolutionModal: React.FC = () => {
         state.team.find(m => m.instanceID === teamMemberInstanceId)
     );
     // Get the actions from the session store
-    const { initiatePermanentEvolution, applyTemporaryForm } = useSessionStore();
+    const { initiatePermanentEvolution, changeForm } = useSessionStore();
     const { availableEvolutions } = useEvolution(teamMember);
 
     // ... guard clauses
@@ -31,7 +36,7 @@ export const EvolutionModal: React.FC = () => {
 
         if (evolution.Kind === 'Mega' || evolution.Kind === 'Form') {
             // This now calls the correct action to apply a temporary change
-            applyTemporaryForm(teamMember.instanceID, evolution.targetPokedex);
+            changeForm(teamMember.instanceID, evolution.targetPokedex, pokemonData);
         } else {
             // For permanent evolutions, show the overrank choice
             setEvolutionStep('OVERRANK_CHOICE', { selectedEvolution: evolution });
@@ -111,8 +116,6 @@ export const EvolutionModal: React.FC = () => {
                 return <OverrankMoveSelectionModal />;
             case 'MOVESET':
                 return <MoveSelectionModal />;
-            case 'LOYALTY_CHECK':
-                return <LoyaltyCheckModal />;
             default:
                 return null;
         }

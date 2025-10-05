@@ -3,8 +3,10 @@ import React from 'react';
 import { Pokedex, PokemonData, Ability } from '../../src/types/index.js';
 import { MinusIcon, PlusIcon } from '../Icons.js';
 import { useSessionStore } from '../../src/store/useSessionStore.js';
+import { TeamMember } from '../../src/types/index.js';
 
 interface PokemonDetailHeaderProps {
+    teamMember: TeamMember | null;
     pokemonData: PokemonData;
     updateField: (field: keyof PokemonData, value: any) => void;
     isInTeam: boolean;
@@ -23,6 +25,7 @@ interface PokemonDetailHeaderProps {
 }
 
 const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
+    teamMember,
     pokemonData, // Keep this prop for displaying data
     updateField,
     isInTeam,
@@ -37,9 +40,9 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
     onShowTooltip,
     onHideTooltip,
     selectedAbility,
+    pokemon,
 }) => {
-    const { revertTemporaryForm, selectedTeamMember } = useSessionStore();
-    const teamMember = selectedTeamMember();
+    const { changeForm } = useSessionStore();
 
     if (isInTemporaryForm && !teamMember) return null; // If in temp form, must be a team member
 
@@ -81,7 +84,7 @@ const PokemonDetailHeader: React.FC<PokemonDetailHeaderProps> = ({
                      {/* ADD THIS CONDITIONAL BUTTON */}
                      {isInTemporaryForm && (
                         <button
-                           onClick={() => revertTemporaryForm(teamMember!.instanceID)}
+                           onClick={() => changeForm(teamMember!.instanceID, null, pokemonData)}
                            className="h-full flex items-center justify-center px-4 py-2 bg-cyan-500 text-white hover:bg-cyan-600 rounded-lg font-bold transition-colors text-sm w-full"
                        >
                             REVERT FORM

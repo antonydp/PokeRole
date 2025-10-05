@@ -205,13 +205,22 @@ export interface LearnableMove {
 }
 
 /**
+ * Represents a specific form of a Pokémon (e.g., Mega, Alolan) with its own data.
+ */
+export interface PokemonForm {
+    pokedexData: Pokedex;
+    sheetData: PokemonData;
+}
+
+/**
  * Represents a member of the user's team, combining Pokédex data with sheet data.
  */
 export interface TeamMember {
   instanceID: string;
-  pokedexData: Pokedex;
-  sheetData: PokemonData;
-  temporaryForm?: Pokedex;
+  pokedexData: Pokedex; // This is the base form
+  sheetData: PokemonData; // This is the base form's sheet
+  forms: Record<string, PokemonForm>; // Keyed by form name (e.g., "Charizard-Mega-X")
+  currentFormName: string | null; // The name of the currently active form, null for base form
 }
 
 /**

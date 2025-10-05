@@ -8,7 +8,7 @@ import TypeBadge from '../TypeBadge.js';
 import { parseMoveRank } from '../../src/logic/formulas.js';
 
 export const MoveSelectionModal: React.FC = () => {
-    const { setEvolutionStep } = useUIStore();
+    const { closeEvolutionModal } = useUIStore();
     const { updateSheetData, selectedTeamMember } = useSessionStore();
     const { allMoves } = useGameDataStore();
     const teamMember = selectedTeamMember();
@@ -53,7 +53,7 @@ export const MoveSelectionModal: React.FC = () => {
         if (!teamMember) return;
         const newSheet = { ...teamMember.sheetData, moves: selectedMoves };
         updateSheetData(teamMember.instanceID, newSheet);
-        setEvolutionStep('LOYALTY_CHECK');
+        closeEvolutionModal();
     };
 
     if (!teamMember) return null;

@@ -30,15 +30,21 @@ const PokemonDetail: React.FC = () => {
         return team.find(m => m.instanceID === selectedPokemonId.instanceID) || null;
     }, [selectedPokemonId, team]);
 
-    const pokemon = useMemo(() => {
-        if (teamMember) {
-            return teamMember.temporaryForm || teamMember.pokedexData;
+    const activeForm = useMemo(() => {
+        if (teamMember?.currentFormName && teamMember.forms?.[teamMember.currentFormName]) {
+            return teamMember.forms[teamMember.currentFormName];
         }
+        return null;
+    }, [teamMember]);
+
+    const pokemon = useMemo(() => {
+        if (activeForm) return activeForm.pokedexData;
+        if (teamMember) return teamMember.pokedexData;
         if (selectedPokemonId) {
             return allPokemon.find(p => p.DexID === selectedPokemonId.dexID) || null;
         }
         return null;
-    }, [teamMember, selectedPokemonId, allPokemon]);
+    }, [teamMember, activeForm, selectedPokemonId, allPokemon]);
     const { availableEvolutions } = useEvolution(teamMember);
 
     const [isAbilityModalOpen, setIsAbilityModalOpen] = useState(false);
@@ -73,7 +79,16 @@ const PokemonDetail: React.FC = () => {
         isConfirmationModalOpen, confirmOverRankMove, cancelOverRankMove, selectedMove,
         points, isAttributePoolExhausted, isSocialAttributePoolExhausted, isSkillPoolExhausted,
         skillLimit
-    } = usePokemonSheet(pokemon, teamMember?.sheetData, unitSettings, trainerData.trainerRank, isInTeam, updateSheetData, allMoves, teamMember?.instanceID);
+    } = usePokemonSheet(
+        pokemon,
+        activeForm ? activeForm.sheetData : teamMember?.sheetData,
+        unitSettings,
+        trainerData.trainerRank,
+        isInTeam,
+        updateSheetData,
+        allMoves,
+        teamMember?.instanceID
+    );
  
     const {
         isNatureModalOpen, closeNatureModal, openNatureModal,
@@ -106,7 +121,7 @@ const PokemonDetail: React.FC = () => {
         <div className="relative w-full max-w-7xl mx-auto p-4 rounded-xl font-primary animate-fade-in-scale" style={{ backgroundColor: '#E46243' }}>
             <GlobalTooltip tooltipData={tooltipData} />
             {evolutionState.isOpen && teamMember?.instanceID === evolutionState.teamMemberInstanceId && (
-                <EvolutionModal />
+                <EvolutionModal pokemonData={pokemonData} />
             )}
             <AbilityModal
                 isOpen={isAbilityModalOpen}
@@ -150,6 +165,7 @@ const PokemonDetail: React.FC = () => {
             </button>
 
             <PokemonDetailHeader
+                teamMember={teamMember}
                 pokemonData={pokemonData}
                 updateField={handleDataChange}
                 isInTeam={isInTeam}
@@ -158,7 +174,7 @@ const PokemonDetail: React.FC = () => {
                 onRemoveFromTeam={() => removeFromTeam(teamMember!.instanceID)}
                 onEvolveClick={() => openEvolutionModal(teamMember!.instanceID)}
                 isEvolveEligible={availableEvolutions.some(e => e.isEligible)}
-                isInTemporaryForm={!!teamMember?.temporaryForm} // Add this prop
+                isInTemporaryForm={!!teamMember?.currentFormName}
                 pokemon={pokemon}
                 availableAbilities={availableAbilities}
                 onAbilityClick={() => setIsAbilityModalOpen(true)}

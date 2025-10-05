@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { Pokedex, PokemonData, Move, Rank, LearnableMove } from '../types/index.js';
 import { createInitialSheetData } from '../logic/initializers.js';
 import { parseMoveRank } from '../logic/formulas.js';
@@ -18,7 +18,7 @@ import { usePointCalculations } from './usePointCalculations.js';
 import { useSessionStore } from '../store/useSessionStore.js';
 
 export function usePokemonSheet(
-    pokemon: Pokedex, // This is the base form
+    pokemon: Pokedex,
     sheetData: PokemonData | undefined,
     unitSettings: { height: 'imperial' | 'metric', weight: 'imperial' | 'metric' },
     trainerRank: Rank,
@@ -27,8 +27,7 @@ export function usePokemonSheet(
     allMoves: Record<string, Move>,
     instanceID: string | undefined
 ) {
-    const teamMember = useSessionStore(state => state.team.find(m => m.instanceID === instanceID));
-    const activePokemon = teamMember?.temporaryForm || pokemon;
+    const activePokemon = pokemon;
 
     const [pokemonData, setPokemonData] = useState<PokemonData>(() => sheetData || createInitialSheetData(activePokemon, unitSettings, trainerRank));
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
@@ -38,12 +37,14 @@ export function usePokemonSheet(
     const [showTutorMoves, setShowTutorMoves] = useState(false);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
     const [selectedMove, setSelectedMove] = useState<Move | null>(null);
+    const hasInitialized = useRef(false);
 
     // Update the local sheet data if the active Pokémon form changes (e.g., Mega Evolution)
     useEffect(() => {
+        hasInitialized.current = false; // Flag that a reset is happening
         setPokemonData(sheetData || createInitialSheetData(activePokemon, unitSettings, trainerRank));
         setExpandedMoves(new Set());
-    }, [activePokemon, sheetData, unitSettings, trainerRank]);
+    }, [activePokemon.DexID, instanceID]);
 
     const {
         points,
@@ -55,6 +56,12 @@ export function usePokemonSheet(
     const skillLimit = useMemo(() => RANK_SKILL_LIMITS[pokemonData.rank as Rank], [pokemonData.rank]);
 
     useEffect(() => {
+        // If the sheet has not been "initialized" for the current pokemon, don't save.
+        // This prevents the reset effect from overwriting persisted data.
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            return;
+        }
         if (isInTeam && instanceID) {
             onSheetDataChange(instanceID, pokemonData);
         }
