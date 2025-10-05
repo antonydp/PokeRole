@@ -3,7 +3,7 @@ import React from 'react';
 import { Pokedex, PokemonData, Ability } from '../../src/types/index.js';
 import { MinusIcon, PlusIcon } from '../Icons.js';
 import { useSessionStore } from '../../src/store/useSessionStore.js';
-import { TeamMember } from '../../src/types/index.js';
+import { IMAGE_BASE_URL } from '../../src/constants/config.js';
 import { usePokemonSheetContext } from '../../src/context/PokemonSheetContext.js';
 
 const PokemonDetailHeader: React.FC = () => {
@@ -31,10 +31,11 @@ const PokemonDetailHeader: React.FC = () => {
 
     return (
         <div className="flex justify-between items-center mb-4 flex-wrap gap-4 font-primary">
-            {/* Left side: Name and Pokedex # */}
-            <div className="flex-grow min-w-[250px]">
-                <input 
-                    id="pokemonName"
+            <div className="flex items-center">
+                <img src={`${IMAGE_BASE_URL}${pokemon.Image}`} alt={pokemon.Name} className="w-24 h-24 mr-4" />
+                <div className="flex-grow min-w-[250px]">
+                    <input
+                        id="pokemonName"
                     type="text"
                     value={pokemonData.pokemonName}
                     onChange={e => updateField('pokemonName', e.target.value)}
@@ -42,11 +43,11 @@ const PokemonDetailHeader: React.FC = () => {
                     placeholder="Pokémon Name"
                     aria-label="Pokémon Name"
                 />
-                <p className="mt-1 font-primary text-sm text-white/80 tracking-wider">
-                    POKÉDEX #: {pokemonData.pokemonNumber}
-                </p>
+                    <p className="mt-1 font-primary text-sm text-white/80 tracking-wider">
+                        POKÉDEX #: {pokemonData.pokemonNumber}
+                    </p>
+                </div>
             </div>
-
             {/* Right side: Ability and Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 items-stretch flex-shrink-0 w-full sm:w-auto">
                 <button
