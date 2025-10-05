@@ -17,6 +17,7 @@ const PokemonDetailHeader: React.FC = () => {
         onRemoveFromTeam,
         onEvolveClick,
         isEvolveEligible,
+        evolutionReason,
         isInTemporaryForm,
         onAbilityClick,
         onShowTooltip,
@@ -81,13 +82,22 @@ const PokemonDetailHeader: React.FC = () => {
                             <PlusIcon className="w-5 h-5 mr-2" /> ADD TO TEAM
                         </button>
                     )}
-                    <button
-                        onClick={onEvolveClick}
-                        disabled={!isEvolveEligible || isInTemporaryForm} // Disable Evolve when in temp form
-                        className="h-full flex items-center justify-center px-4 py-2 bg-poke-yellow text-slate-900 hover:bg-yellow-300 rounded-lg font-bold transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed text-sm w-full"
+                    <div className="w-full"
+                        onMouseEnter={(e) => {
+                            if (!isEvolveEligible && evolutionReason) {
+                                onShowTooltip(e, { name: 'Evolution Blocked', description: evolutionReason });
+                            }
+                        }}
+                        onMouseLeave={onHideTooltip}
                     >
-                        EVOLVE
-                    </button>
+                        <button
+                            onClick={onEvolveClick}
+                            disabled={!isEvolveEligible || isInTemporaryForm}
+                            className="h-full flex items-center justify-center px-4 py-2 bg-poke-yellow text-slate-900 hover:bg-yellow-300 rounded-lg font-bold transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed text-sm w-full"
+                        >
+                            EVOLVE
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

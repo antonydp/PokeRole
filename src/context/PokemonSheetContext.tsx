@@ -45,6 +45,7 @@ export interface PokemonSheetContextType {
     onRemoveFromTeam: () => void;
     onEvolveClick: () => void;
     isEvolveEligible: boolean;
+    evolutionReason: string;
     isInTemporaryForm: boolean;
     onAbilityClick: () => void;
     onShowTooltip: (e: React.MouseEvent<HTMLElement>, content: { name: string; description: string } | null) => void;

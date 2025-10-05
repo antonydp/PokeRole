@@ -21,7 +21,7 @@ import { useSessionStore } from '../src/store/useSessionStore.js';
 import { useEvolution } from '../src/hooks/useEvolution.js';
 import { useActivePokemon } from '../src/hooks/useActivePokemon.js';
 import { EvolutionModal } from './PokemonDetail/EvolutionModal.js';
-
+ 
 const PokemonDetail: React.FC = () => {
     const { allMoves, allAbilities, ribbonsData } = useGameDataStore();
     const { unitSettings, clearSelection, evolutionState, openEvolutionModal } = useUIStore();
@@ -29,7 +29,7 @@ const PokemonDetail: React.FC = () => {
     const { teamMember, pokedexData: pokemon, sheetData, activeForm } = useActivePokemon();
 
     const { availableEvolutions } = useEvolution(teamMember);
-
+ 
     const [isAbilityModalOpen, setIsAbilityModalOpen] = useState(false);
     
     type TooltipData = {
@@ -89,6 +89,20 @@ const PokemonDetail: React.FC = () => {
         return allAbilitiesArray.find(a => a.Name === pokemonSheet.pokemonData.ability);
     }, [allAbilitiesArray, pokemonSheet.pokemonData.ability]);
 
+    const isEvolveEligible = availableEvolutions.some(e => e.isEligible);
+    const evolutionReason = useMemo(() => {
+        if (isEvolveEligible) {
+            return '';
+        }
+        if (availableEvolutions.length === 0) {
+            return 'This Pokémon does not evolve.';
+        }
+        return availableEvolutions
+            .filter(e => !e.isEligible)
+            .map(e => `${e.To}: ${e.reason}`)
+            .join('\n');
+    }, [availableEvolutions, isEvolveEligible]);
+
     const contextValue = {
         pokemon,
         teamMember,
@@ -101,7 +115,8 @@ const PokemonDetail: React.FC = () => {
         onAddToTeam: () => addToTeam(pokemon, pokemonSheet.pokemonData),
         onRemoveFromTeam: () => removeFromTeam(teamMember!.instanceID),
         onEvolveClick: () => openEvolutionModal(teamMember!.instanceID),
-        isEvolveEligible: availableEvolutions.some(e => e.isEligible),
+        isEvolveEligible,
+        evolutionReason,
         isInTemporaryForm: !!teamMember?.currentFormName,
         onAbilityClick: () => setIsAbilityModalOpen(true),
         onShowTooltip: handleShowTooltip,
