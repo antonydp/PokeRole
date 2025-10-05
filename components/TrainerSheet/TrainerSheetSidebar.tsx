@@ -121,6 +121,8 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
                         className="w-full aspect-square bg-black/10 border-2 border-black/40 rounded-full cursor-pointer"
                         aria-label={`Badge Slot ${i + 1}`}
                         onClick={onOpenBadgeModal}
+                        onMouseEnter={(e) => onItemMouseEnter({ name: badge.name, description: badge.description }, e.currentTarget)}
+                        onMouseLeave={onItemMouseLeave}
                     >
                         <img src={badge.image_url} alt={badge.name} title={badge.name} className="w-full h-full object-contain p-1" />
                     </div>
