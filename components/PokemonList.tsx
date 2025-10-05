@@ -40,10 +40,12 @@ const STAT_FIELDS: (keyof typeof initialStatFilters)[] = ['BaseHP', 'Strength', 
 
 import { useGameDataStore } from '../src/store/useGameDataStore.js';
 import { useUIStore } from '../src/store/useUIStore.js';
+import { useSessionStore } from '../src/store/useSessionStore.js';
+import { createInitialSheetData } from '../src/logic/initializers.js';
 
 type PokemonRowData = {
     pokemonList: Pokedex[];
-    onSelectPokemon: (dexID: string, instanceID?: string) => void;
+    onSelectPokemon: (pokemon: Pokedex) => void;
 };
 
 const PokemonRow = ({ index, style, pokemonList, onSelectPokemon }: {
@@ -56,7 +58,7 @@ const PokemonRow = ({ index, style, pokemonList, onSelectPokemon }: {
         <div style={style} className="px-2 pb-2">
             <PokemonCard
                 pokemon={pokemon}
-                onSelect={() => onSelectPokemon(pokemon.DexID)}
+                onSelect={() => onSelectPokemon(pokemon)}
             />
         </div>
     );
@@ -64,7 +66,9 @@ const PokemonRow = ({ index, style, pokemonList, onSelectPokemon }: {
 
 const PokemonList: React.FC = () => {
     const { allPokemon } = useGameDataStore();
-    const { selectPokemon: onSelectPokemon } = useUIStore();
+    const { addPokemonTarget } = useUIStore();
+    const { addToTeam, addToPC, trainerData } = useSessionStore();
+    const { unitSettings } = useUIStore();
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<string | null>(null);
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -73,6 +77,14 @@ const PokemonList: React.FC = () => {
     const [abilityFilter, setAbilityFilter] = useState('');
     const [legendaryFilter, setLegendaryFilter] = useState<'all' | 'yes' | 'no'>('all');
 
+    const handleSelectPokemon = (pokemon: Pokedex) => {
+        const sheetData = createInitialSheetData(pokemon, unitSettings, trainerData.trainerRank);
+        if (addPokemonTarget === 'team') {
+            addToTeam(pokemon, sheetData);
+        } else {
+            addToPC(pokemon, sheetData);
+        }
+    };
 
     const handleStatChange = (stat: keyof typeof initialStatFilters, bound: 'min' | 'max', value: string) => {
         setStatFilters(prev => ({
@@ -240,7 +252,7 @@ const PokemonList: React.FC = () => {
                         rowComponent={PokemonRow}
                         rowProps={{
                             pokemonList: filteredPokemon,
-                            onSelectPokemon: onSelectPokemon
+                            onSelectPokemon: handleSelectPokemon
                         }}
                     />
                 ) : (

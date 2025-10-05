@@ -1,12 +1,13 @@
 import React from 'react';
 import TeamBuilder from './TeamBuilder.js';
 import TrainerSheet from './TrainerSheet.js';
+import PokemonPC from './PokemonPC.js';
 import { useUIStore } from '../src/store/useUIStore.js';
 
 const Dashboard: React.FC = () => {
     const { activeView, setActiveView } = useUIStore();
 
-    const getTabClassName = (view: 'pokemon' | 'trainer') => {
+    const getTabClassName = (view: 'pokemon' | 'trainer' | 'pc') => {
         const base = "px-6 py-3 font-primary text-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-poke-yellow focus:z-10";
         if (activeView === view) {
             return `${base} bg-slate-700/80 text-poke-yellow border-b-4 border-poke-yellow`;
@@ -31,10 +32,18 @@ const Dashboard: React.FC = () => {
                 >
                     Pokémon Team
                 </button>
+                <button
+                    onClick={() => setActiveView('pc')}
+                    className={getTabClassName('pc')}
+                    aria-current={activeView === 'pc'}
+                >
+                    Pokémon PC
+                </button>
             </div>
             <div className="flex-grow pt-4 overflow-y-auto">
                 {activeView === 'trainer' && <TrainerSheet />}
                 {activeView === 'pokemon' && <TeamBuilder />}
+                {activeView === 'pc' && <PokemonPC />}
             </div>
         </div>
     );

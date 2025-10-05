@@ -14,12 +14,13 @@ interface ActivePokemonResult {
 export const useActivePokemon = (): ActivePokemonResult => {
   const selectedPokemonId = useUIStore(state => state.selectedPokemonId);
   const team = useSessionStore(state => state.team);
+  const pokemonPC = useSessionStore(state => state.pokemonPC);
   const allPokemon = useGameDataStore(state => state.allPokemon);
 
   const teamMember = useMemo(() => {
     if (!selectedPokemonId?.instanceID) return null;
-    return team.find(m => m.instanceID === selectedPokemonId.instanceID) || null;
-  }, [selectedPokemonId, team]);
+    return team.find(m => m.instanceID === selectedPokemonId.instanceID) || pokemonPC.find(m => m.instanceID === selectedPokemonId.instanceID) || null;
+  }, [selectedPokemonId, team, pokemonPC]);
 
   const activeForm = useMemo(() => {
     if (teamMember?.currentFormName && teamMember.forms?.[teamMember.currentFormName]) {

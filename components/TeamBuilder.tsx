@@ -313,7 +313,7 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onA
 const TeamBuilder: React.FC = () => {
     const { team, removeFromTeam, quickImport, quickExport } = useSessionStore();
     const { selectPokemon, setIsSuggestModalOpen, setIsSidebarOpen } = useUIStore();
-    const openSidebar = () => setIsSidebarOpen(true);
+    const openSidebar = () => setIsSidebarOpen(true, 'team');
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const teamCoverage = useMemo(() => calculateTeamTypeCoverage(team), [team]);
 

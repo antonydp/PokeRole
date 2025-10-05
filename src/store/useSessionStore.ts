@@ -35,9 +35,14 @@ const removeItemFromPockets = (pockets: { smallPocket: ItemInstance[], mainPocke
 
 interface SessionState {
     team: TeamMember[];
+    pokemonPC: TeamMember[];
     trainerData: TrainerData;
     addToTeam: (pokemon: Pokedex, sheetData: PokemonData) => void;
+    addToPC: (pokemon: Pokedex, sheetData: PokemonData) => void;
     removeFromTeam: (instanceID: string) => void;
+    removeFromPC: (instanceID: string) => void;
+    moveFromPCToTeam: (instanceID: string) => void;
+    moveFromTeamToPC: (instanceID: string) => void;
     updateSheetData: (instanceID: string, updater: PokemonData | ((prev: PokemonData) => PokemonData)) => void;
     updateTrainerData: (updater: ((prev: TrainerData) => TrainerData) | TrainerData) => void;
     exportTeam: () => void;
@@ -53,6 +58,7 @@ interface SessionState {
 
 export const useSessionStore = create<SessionState>((set, get) => ({
     team: [],
+    pokemonPC: [],
     trainerData: createInitialTrainerData(),
     addToTeam: (pokemon, sheetData) => {
         let newInstanceID: string | null = null;
@@ -75,6 +81,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             useUIStore.getState().selectPokemon(pokemon.DexID, newInstanceID);
         }
     },
+    addToPC: (pokemon, sheetData) => {
+        set(state => {
+            const newMember: TeamMember = {
+                instanceID: crypto.randomUUID(),
+                pokedexData: pokemon,
+                sheetData: sheetData,
+                forms: {},
+                currentFormName: null,
+            };
+            return { pokemonPC: [...state.pokemonPC, newMember] };
+        });
+    },
     removeFromTeam: (instanceID) => {
         set(state => ({
             team: state.team.filter(member => member.instanceID !== instanceID)
@@ -84,32 +102,69 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             useUIStore.getState().clearSelection();
         }
     },
-    updateSheetData: (instanceID, updater) => {
+    removeFromPC: (instanceID) => {
         set(state => ({
-            team: state.team.map(member => {
-                if (member.instanceID === instanceID) {
-                    // If a form is active, update that form's sheetData
-                    if (member.currentFormName && member.forms?.[member.currentFormName]) {
-                        const formName = member.currentFormName;
-                        const currentSheet = member.forms[formName].sheetData;
-                        const newSheetData = typeof updater === 'function' ? updater(currentSheet) : updater;
-                        const updatedForms = {
-                            ...member.forms,
-                            [formName]: {
-                                ...member.forms[formName],
-                                sheetData: newSheetData,
-                            },
-                        };
-                        return { ...member, forms: updatedForms };
-                    }
-                    // Otherwise, update the base sheetData
-                    const currentSheet = member.sheetData;
-                    const newSheetData = typeof updater === 'function' ? updater(currentSheet) : updater;
-                    return { ...member, sheetData: newSheetData };
-                }
-                return member;
-            }),
+            pokemonPC: state.pokemonPC.filter(member => member.instanceID !== instanceID)
         }));
+    },
+    moveFromPCToTeam: (instanceID) => {
+        set(state => {
+            if (state.team.length >= 6) {
+                // Optionally, provide feedback to the user that the team is full.
+                return state;
+            }
+            const memberToMove = state.pokemonPC.find(member => member.instanceID === instanceID);
+            if (memberToMove) {
+                return {
+                    team: [...state.team, memberToMove],
+                    pokemonPC: state.pokemonPC.filter(member => member.instanceID !== instanceID),
+                };
+            }
+            return state;
+        });
+    },
+    moveFromTeamToPC: (instanceID) => {
+        set(state => {
+            const memberToMove = state.team.find(member => member.instanceID === instanceID);
+            if (memberToMove) {
+                return {
+                    team: state.team.filter(member => member.instanceID !== instanceID),
+                    pokemonPC: [...state.pokemonPC, memberToMove],
+                };
+            }
+            return state;
+        });
+    },
+    updateSheetData: (instanceID, updater) => {
+        set(state => {
+            const updateMember = (member: TeamMember) => {
+                if (member.instanceID !== instanceID) return member;
+
+                // If a form is active, update that form's sheetData
+                if (member.currentFormName && member.forms?.[member.currentFormName]) {
+                    const formName = member.currentFormName;
+                    const currentSheet = member.forms[formName].sheetData;
+                    const newSheetData = typeof updater === 'function' ? updater(currentSheet) : updater;
+                    const updatedForms = {
+                        ...member.forms,
+                        [formName]: {
+                            ...member.forms[formName],
+                            sheetData: newSheetData,
+                        },
+                    };
+                    return { ...member, forms: updatedForms };
+                }
+                // Otherwise, update the base sheetData
+                const currentSheet = member.sheetData;
+                const newSheetData = typeof updater === 'function' ? updater(currentSheet) : updater;
+                return { ...member, sheetData: newSheetData };
+            };
+
+            return {
+                team: state.team.map(updateMember),
+                pokemonPC: state.pokemonPC.map(updateMember),
+            };
+        });
     },
     updateTrainerData: (updater) => {
         set(state => ({

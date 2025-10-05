@@ -12,9 +12,11 @@ const PokemonDetailHeader: React.FC = () => {
         pokemonData,
         handleDataChange: updateField,
         isInTeam,
+        isInPC,
         teamIsFull,
         onAddToTeam,
         onRemoveFromTeam,
+        onRemoveFromPC,
         onEvolveClick,
         isEvolveEligible,
         evolutionReason,
@@ -74,9 +76,13 @@ const PokemonDetailHeader: React.FC = () => {
                             REVERT FORM
                         </button>
                     )}
-                    {isInTeam && !isInTemporaryForm ? ( // Hide remove/add when in temp form
+                    {isInTeam && !isInPC && !isInTemporaryForm ? (
                         <button onClick={onRemoveFromTeam} className="h-full flex items-center justify-center px-4 py-2 bg-poke-red hover:bg-red-700 rounded-lg font-bold text-white transition-colors text-sm w-full">
-                            <MinusIcon className="w-5 h-5 mr-2" /> REMOVE
+                            <MinusIcon className="w-5 h-5 mr-2" /> REMOVE FROM TEAM
+                        </button>
+                    ) : isInPC && !isInTemporaryForm ? (
+                        <button onClick={onRemoveFromPC} className="h-full flex items-center justify-center px-4 py-2 bg-poke-red hover:bg-red-700 rounded-lg font-bold text-white transition-colors text-sm w-full">
+                            <MinusIcon className="w-5 h-5 mr-2" /> REMOVE FROM PC
                         </button>
                     ) : !isInTemporaryForm && (
                         <button onClick={onAddToTeam} disabled={teamIsFull} className="h-full flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-white transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed text-sm w-full">

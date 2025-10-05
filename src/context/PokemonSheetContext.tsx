@@ -40,9 +40,11 @@ export interface PokemonSheetContextType {
     trainerRank: Rank;
     ribbonsData: Ribbon[];
     isInTeam: boolean;
+    isInPC: boolean;
     teamIsFull: boolean;
     onAddToTeam: () => void;
     onRemoveFromTeam: () => void;
+    onRemoveFromPC: () => void;
     onEvolveClick: () => void;
     isEvolveEligible: boolean;
     evolutionReason: string;

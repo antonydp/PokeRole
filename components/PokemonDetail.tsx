@@ -25,7 +25,7 @@ import { EvolutionModal } from './PokemonDetail/EvolutionModal.js';
 const PokemonDetail: React.FC = () => {
     const { allMoves, allAbilities, ribbonsData } = useGameDataStore();
     const { unitSettings, clearSelection, evolutionState, openEvolutionModal } = useUIStore();
-    const { team, trainerData, addToTeam, removeFromTeam, updateSheetData } = useSessionStore();
+    const { team, pokemonPC, trainerData, addToTeam, removeFromTeam, removeFromPC, updateSheetData } = useSessionStore();
     const { teamMember, pokedexData: pokemon, sheetData, activeForm } = useActivePokemon();
 
     const { availableEvolutions } = useEvolution(teamMember);
@@ -48,7 +48,12 @@ const PokemonDetail: React.FC = () => {
         );
     }
     
-    const isInTeam = !!teamMember;
+    const { isInTeam, isInPC } = useMemo(() => {
+        if (!teamMember) return { isInTeam: false, isInPC: false };
+        const inTeam = team.some(m => m.instanceID === teamMember.instanceID);
+        const inPC = pokemonPC.some(m => m.instanceID === teamMember.instanceID);
+        return { isInTeam: inTeam || inPC, isInPC: inPC };
+    }, [team, pokemonPC, teamMember]);
     const allAbilitiesArray = useMemo(() => Object.values(allAbilities), [allAbilities]);
 
     const pokemonSheet = usePokemonSheet(
@@ -111,9 +116,11 @@ const PokemonDetail: React.FC = () => {
         trainerRank: trainerData.trainerRank,
         ribbonsData,
         isInTeam,
+        isInPC,
         teamIsFull: team.length >= 6,
         onAddToTeam: () => addToTeam(pokemon, pokemonSheet.pokemonData),
         onRemoveFromTeam: () => removeFromTeam(teamMember!.instanceID),
+        onRemoveFromPC: () => removeFromPC(teamMember!.instanceID),
         onEvolveClick: () => openEvolutionModal(teamMember!.instanceID),
         isEvolveEligible,
         evolutionReason,

@@ -19,26 +19,28 @@ type EvolutionState = {
 
 interface UIState {
     isSidebarOpen: boolean;
+    addPokemonTarget: 'team' | 'pc';
     isSettingsOpen: boolean;
     isSuggestModalOpen: boolean;
     selectedPokemonId: SelectedPokemon | null;
-    activeView: 'trainer' | 'pokemon';
+    activeView: 'trainer' | 'pokemon' | 'pc';
     unitSettings: UnitSettings;
     evolutionState: EvolutionState;
     openEvolutionModal: (instanceId: string) => void;
     setEvolutionStep: (step: EvolutionStep, data?: Partial<Omit<EvolutionState, 'isOpen' | 'step'>>) => void;
     closeEvolutionModal: () => void;
-    setIsSidebarOpen: (isOpen: boolean) => void;
+    setIsSidebarOpen: (isOpen: boolean, target?: 'team' | 'pc') => void;
     setIsSettingsOpen: (isOpen: boolean) => void;
     setIsSuggestModalOpen: (isOpen: boolean) => void;
     selectPokemon: (dexID: string, instanceID?: string) => void;
     clearSelection: () => void;
     setUnitSettings: (settings: UnitSettings) => void;
-    setActiveView: (view: 'trainer' | 'pokemon') => void;
+    setActiveView: (view: 'trainer' | 'pokemon' | 'pc') => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
     isSidebarOpen: false,
+    addPokemonTarget: 'team',
     isSettingsOpen: false,
     isSuggestModalOpen: false,
     selectedPokemonId: null,
@@ -76,11 +78,11 @@ export const useUIStore = create<UIState>((set) => ({
     }),
 
     closeEvolutionModal: () => set({ evolutionState: { isOpen: false } }),
-    setIsSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
+    setIsSidebarOpen: (isOpen, target = 'team') => set({ isSidebarOpen: isOpen, addPokemonTarget: target }),
     setIsSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
     setIsSuggestModalOpen: (isOpen) => set({ isSuggestModalOpen: isOpen }),
     selectPokemon: (dexID, instanceID) => {
-        set({ selectedPokemonId: { dexID, instanceID }, isSidebarOpen: false });
+        set({ selectedPokemonId: { dexID, instanceID }, isSidebarOpen: false, activeView: 'pokemon' });
     },
     clearSelection: () => {
         set({ selectedPokemonId: null, activeView: 'pokemon' });
