@@ -45,7 +45,6 @@ interface SessionState {
     addSuggestionToTeam: (pokemon: Pokedex) => void;
     quickImport: (importString: string) => void;
     quickExport: (teamMember: TeamMember) => void;
-    isPokemonInTeam: (dexId: string) => boolean;
     initiatePermanentEvolution: (instanceID: string, targetPokedex: Pokedex) => void;
     finalizePermanentEvolution: (instanceID: string, finalSheetData: PokemonData) => void;
     applyOverrank: (instanceID: string, moveId: string) => void;
@@ -55,10 +54,6 @@ interface SessionState {
 export const useSessionStore = create<SessionState>((set, get) => ({
     team: [],
     trainerData: createInitialTrainerData(),
-    isPokemonInTeam: (dexId: string) => {
-        const { team } = get();
-        return team.some(member => member.pokedexData.DexID === dexId);
-    },
     addToTeam: (pokemon, sheetData) => {
         let newInstanceID: string | null = null;
         set(state => {

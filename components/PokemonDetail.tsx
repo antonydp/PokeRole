@@ -25,7 +25,7 @@ import { EvolutionModal } from './PokemonDetail/EvolutionModal.js';
 const PokemonDetail: React.FC = () => {
     const { allMoves, allAbilities, ribbonsData } = useGameDataStore();
     const { unitSettings, clearSelection, evolutionState, openEvolutionModal } = useUIStore();
-    const { team, trainerData, addToTeam, removeFromTeam, updateSheetData, isPokemonInTeam } = useSessionStore();
+    const { team, trainerData, addToTeam, removeFromTeam, updateSheetData } = useSessionStore();
     const { teamMember, pokedexData: pokemon, sheetData, activeForm } = useActivePokemon();
 
     const { availableEvolutions } = useEvolution(teamMember);
@@ -48,7 +48,7 @@ const PokemonDetail: React.FC = () => {
         );
     }
     
-    const isInTeam = isPokemonInTeam(pokemon.DexID);
+    const isInTeam = !!teamMember;
     const allAbilitiesArray = useMemo(() => Object.values(allAbilities), [allAbilities]);
 
     const pokemonSheet = usePokemonSheet(
