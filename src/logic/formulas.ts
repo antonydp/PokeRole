@@ -4,7 +4,7 @@
  */
 
 import { TYPE_CHART, RANKS } from '../constants/gameConstants.js';
-import type { TeamMember, TeamTypeCoverageData, Rank } from '../types/index.js';
+import type { TeamMember, TeamTypeCoverageData, Rank, PokemonData } from '../types/index.js';
 
 /**
  * Calculates the damage multiplier for an attacking type against a defending type.
@@ -114,4 +114,56 @@ export const parseMoveRank = (learnString: string): Rank | null => {
         return rankStr as Rank;
     }
     return null;
+};
+/**
+ * Calculates the final value of a move's accuracy or damage based on Pokémon stats.
+ * @param valueString The string from the move data (e.g., "Strength + 2", "Dexterity", "--").
+ * @param stats The Pokémon's sheet data containing its stats.
+ * @returns A formatted string like "Strength + 2 (4 + 2 = 6)" or "--".
+ */
+export const calculateMoveValue = (valueString: string, stats: PokemonData): string => {
+    if (!valueString || valueString === '--') {
+        return '--';
+    }
+
+    const parts = valueString.split('+').map(part => part.trim());
+    let total = 0;
+    const calculationParts: string[] = [];
+
+    parts.forEach(part => {
+        const statName = part.match(/[a-zA-Z]+/);
+        const numericValue = parseInt(part.match(/\d+/)?.toString() || '0', 10);
+
+        if (statName) {
+            const statKey = statName[0].toLowerCase();
+            const statsAsAny = stats as any;
+            const statValue = typeof statsAsAny[statKey] === 'number' ? (statsAsAny[statKey] as number) : 0;
+            total += statValue;
+            calculationParts.push(statValue.toString());
+        }
+        
+        if (!isNaN(numericValue) && numericValue > 0) {
+            total += numericValue;
+            if (!statName) {
+                calculationParts.push(numericValue.toString());
+            }
+        }
+    });
+
+    if (calculationParts.length > 1) {
+        return `${valueString} (${calculationParts.join(' + ')} = ${total})`;
+    }
+    
+    if (calculationParts.length === 1 && valueString.includes('+')) {
+         return `${valueString} (${calculationParts[0]} + ${valueString.split('+')[1].trim()} = ${total})`;
+    }
+
+    if (calculationParts.length === 1) {
+        const statName = parts[0].match(/[a-zA-Z]+/);
+        if (statName) {
+            return `${parts[0]} (${total})`
+        }
+    }
+
+    return valueString;
 };

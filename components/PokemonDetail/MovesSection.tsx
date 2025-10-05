@@ -37,10 +37,11 @@ const MovesSection: React.FC = () => {
                     return (
                         <div key={index}>
                             {move ? (
-                                <MoveCard 
-                                    move={move} 
-                                    index={index} 
-                                    onClear={handleClearMove} 
+                                <MoveCard
+                                    move={move}
+                                    pokemonStats={pokemonData}
+                                    index={index}
+                                    onClear={handleClearMove}
                                     isExpanded={expandedMoves.has(index)}
                                     onToggleExpand={() => handleToggleMoveExpand(index)}
                                 />

@@ -1,12 +1,14 @@
 
 
 import React from 'react';
-import { Move, AddedEffects } from '../../src/types/index.js';
+import { Move, AddedEffects, PokemonData } from '../../src/types/index.js';
 import { CloseIcon, DiceIcon, ChevronDownIcon } from '../Icons.js';
 import TypeBadge from '../TypeBadge.js';
+import { calculateMoveValue } from '../../src/logic/formulas.js';
 
 interface MoveCardProps {
     move: Move;
+    pokemonStats: PokemonData;
     index: number;
     onClear: (index: number) => void;
     isExpanded: boolean;
@@ -98,9 +100,9 @@ const AddedEffectsDisplay: React.FC<{ effects: AddedEffects; effectString: strin
 };
 
 
-const MoveCard: React.FC<MoveCardProps> = ({ move, index, onClear, isExpanded, onToggleExpand }) => {
-    const damageString = [move.Damage1, move.Power > 0 ? move.Power : null].filter(Boolean).join(' + ') || '--';
-    const accuracyString = [move.Accuracy1, move.Accuracy2].filter(Boolean).join(' + ') || '--';
+const MoveCard: React.FC<MoveCardProps> = ({ move, pokemonStats, index, onClear, isExpanded, onToggleExpand }) => {
+    const damageString = calculateMoveValue([move.Damage1, move.Power > 0 ? move.Power : null].filter(Boolean).join(' + ') || '--', pokemonStats);
+    const accuracyString = calculateMoveValue([move.Accuracy1, move.Accuracy2].filter(Boolean).join(' + ') || '--', pokemonStats);
     const hasAddedEffects = move.AddedEffects && Object.keys(move.AddedEffects).length > 0;
 
     return (
