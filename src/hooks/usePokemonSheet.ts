@@ -44,7 +44,7 @@ export function usePokemonSheet(
         hasInitialized.current = false; // Flag that a reset is happening
         setPokemonData(sheetData || createInitialSheetData(activePokemon, unitSettings, trainerRank));
         setExpandedMoves(new Set());
-    }, [activePokemon.DexID, instanceID]);
+    }, [activePokemon.DexID, instanceID, sheetData]);
 
     const {
         points,

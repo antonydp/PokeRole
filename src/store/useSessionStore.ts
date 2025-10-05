@@ -38,7 +38,7 @@ interface SessionState {
     trainerData: TrainerData;
     addToTeam: (pokemon: Pokedex, sheetData: PokemonData) => void;
     removeFromTeam: (instanceID: string) => void;
-    updateSheetData: (instanceID: string, newSheetData: PokemonData) => void;
+    updateSheetData: (instanceID: string, updater: PokemonData | ((prev: PokemonData) => PokemonData)) => void;
     updateTrainerData: (updater: ((prev: TrainerData) => TrainerData) | TrainerData) => void;
     exportTeam: () => void;
     loadTeam: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -109,13 +109,15 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             useUIStore.getState().clearSelection();
         }
     },
-    updateSheetData: (instanceID, newSheetData) => {
+    updateSheetData: (instanceID, updater) => {
         set(state => ({
             team: state.team.map(member => {
                 if (member.instanceID === instanceID) {
                     // If a form is active, update that form's sheetData
                     if (member.currentFormName && member.forms?.[member.currentFormName]) {
                         const formName = member.currentFormName;
+                        const currentSheet = member.forms[formName].sheetData;
+                        const newSheetData = typeof updater === 'function' ? updater(currentSheet) : updater;
                         const updatedForms = {
                             ...member.forms,
                             [formName]: {
@@ -126,6 +128,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                         return { ...member, forms: updatedForms };
                     }
                     // Otherwise, update the base sheetData
+                    const currentSheet = member.sheetData;
+                    const newSheetData = typeof updater === 'function' ? updater(currentSheet) : updater;
                     return { ...member, sheetData: newSheetData };
                 }
                 return member;
@@ -303,6 +307,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         useUIStore.getState().setEvolutionStep('REDISTRIBUTE', {
             bonusPoints: totalPointsFromRank,
             newPokedexData: targetPokedex,
+            oldMoves: member.sheetData.moves, // Pass current moves
         });
     },
 
@@ -333,7 +338,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                         pokedexData: evolutionState.newPokedexData!,
                         sheetData: {
                             ...finalSheetData,
-                            victories: '0'
+                            victories: '0',
+                            moves: finalSheetData.moves.map((_, i) => evolutionState.oldMoves?.[i] || null),
                         }
                       }
                     : m

@@ -1,34 +1,73 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useUIStore } from '../../src/store/useUIStore.js';
 import { useSessionStore } from '../../src/store/useSessionStore.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
-import { Move } from '../../src/types/index.js';
+import { Move, Rank } from '../../src/types/index.js';
 import { calculateMaxMoves } from '../../src/logic/core.js';
 import TypeBadge from '../TypeBadge.js';
 import { parseMoveRank } from '../../src/logic/formulas.js';
+import { RANKS } from '../../src/constants/gameConstants.js';
 
 export const MoveSelectionModal: React.FC = () => {
-    const { closeEvolutionModal } = useUIStore();
-    const { updateSheetData, selectedTeamMember } = useSessionStore();
-    const { allMoves } = useGameDataStore();
-    const teamMember = selectedTeamMember();
+    const evolutionState = useUIStore(state => state.evolutionState);
+    const closeEvolutionModal = useUIStore(state => state.closeEvolutionModal);
+    const updateSheetData = useSessionStore(state => state.updateSheetData);
+    const team = useSessionStore(state => state.team);
+    const allMoves = useGameDataStore(state => state.allMoves);
+
+    // Bug Fix: Directly access the evolving member to avoid stale state from selectedTeamMember()
+    const teamMember = useMemo(() => {
+        if (!evolutionState.isOpen) return null;
+        return team.find(m => m.instanceID === evolutionState.teamMemberInstanceId);
+    }, [team, evolutionState]);
     
     const maxMoves = useMemo(() => teamMember ? calculateMaxMoves(teamMember.sheetData.insight) : 0, [teamMember]);
-    const [selectedMoves, setSelectedMoves] = useState<(string | null)[]>(() => Array(maxMoves).fill(null));
+    const [selectedMoves, setSelectedMoves] = useState<(string | null)[]>([]);
 
     const learnableMoves = useMemo(() => {
         if (!teamMember) return [];
-        const pokemonRank = teamMember.sheetData.rank;
+        const pokemonRank = teamMember.sheetData.rank as Rank;
+        const pokemonRankIndex = RANKS.indexOf(pokemonRank);
+
         const learnsetForRank = teamMember.pokedexData.Moves
             .filter(moveInLearnset => {
                 const moveRank = parseMoveRank(moveInLearnset.Learned);
-                return moveRank === pokemonRank;
+                if (!moveRank) return false;
+                const moveRankIndex = RANKS.indexOf(moveRank);
+                return moveRankIndex !== -1 && moveRankIndex <= pokemonRankIndex;
             })
             .map(m => m.Name);
 
         const learnset = new Set(learnsetForRank);
         return Object.values(allMoves).filter((m: Move) => learnset.has(m.Name));
     }, [teamMember, allMoves]);
+
+    useEffect(() => {
+        if (!teamMember || !evolutionState.isOpen || !evolutionState.oldMoves) {
+            setSelectedMoves(Array(maxMoves).fill(null));
+            return;
+        };
+
+        const oldMoveNames = evolutionState.oldMoves
+            .map(id => id ? allMoves[id]?.Name : null)
+            .filter(Boolean);
+        
+        const learnableMoveNames = new Set(learnableMoves.map(m => m.Name));
+
+        const preSelected = learnableMoves
+            .filter(move => oldMoveNames.includes(move.Name) && learnableMoveNames.has(move.Name))
+            .map(move => move._id);
+        
+        // Pad with nulls up to maxMoves
+        const initialSelection = [...preSelected];
+        while (initialSelection.length < maxMoves) {
+            initialSelection.push(null);
+        }
+
+        setSelectedMoves(initialSelection.slice(0, maxMoves));
+
+    }, [teamMember, learnableMoves, maxMoves, evolutionState]);
+
 
     const handleToggleMove = (moveId: string) => {
         setSelectedMoves(prev => {
@@ -51,8 +90,10 @@ export const MoveSelectionModal: React.FC = () => {
 
     const handleConfirm = () => {
         if (!teamMember) return;
-        const newSheet = { ...teamMember.sheetData, moves: selectedMoves };
-        updateSheetData(teamMember.instanceID, newSheet);
+        updateSheetData(teamMember.instanceID, (prevSheet) => ({
+            ...prevSheet,
+            moves: selectedMoves,
+        }));
         closeEvolutionModal();
     };
 

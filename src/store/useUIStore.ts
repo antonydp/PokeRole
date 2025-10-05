@@ -14,6 +14,7 @@ type EvolutionState = {
     selectedEvolution?: AvailableEvolution; // The chosen evolution path
     bonusPoints?: { attributes: number; social: number; skills: number }; // Points to be redistributed
     newPokedexData?: Pokedex; // Data for the evolved form
+    oldMoves?: (string | null)[]; // The moveset before evolution
 } | { isOpen: false };
 
 interface UIState {
