@@ -17,13 +17,18 @@ type EvolutionState = {
     oldMoves?: (string | null)[]; // The moveset before evolution
 } | { isOpen: false };
 
+// Define new types for clarity
+type ActiveDashboardView = 'trainer' | 'team' | 'pc';
+type MainView = 'dashboard' | 'gm';
+
 interface UIState {
     isSidebarOpen: boolean;
     addPokemonTarget: 'team' | 'pc';
     isSettingsOpen: boolean;
     isSuggestModalOpen: boolean;
     selectedPokemonId: SelectedPokemon | null;
-    activeView: 'trainer' | 'team' | 'pc' | 'gm';
+    activeView: ActiveDashboardView; // Changed type
+    mainView: MainView; // New state
     pokemonDetailReturnView: 'team' | 'pc';
     unitSettings: UnitSettings;
     evolutionState: EvolutionState;
@@ -36,7 +41,8 @@ interface UIState {
     selectPokemon: (dexID: string, instanceID?: string, returnView?: 'team' | 'pc') => void;
     clearSelection: () => void;
     setUnitSettings: (settings: UnitSettings) => void;
-    setActiveView: (view: 'trainer' | 'team' | 'pc' | 'gm') => void;
+    setActiveView: (view: ActiveDashboardView) => void; // Changed type
+    setMainView: (view: MainView) => void; // New action
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -46,6 +52,7 @@ export const useUIStore = create<UIState>((set) => ({
     isSuggestModalOpen: false,
     selectedPokemonId: null,
     activeView: 'trainer',
+    mainView: 'dashboard', // New state initialized
     pokemonDetailReturnView: 'team',
     evolutionState: { isOpen: false },
     unitSettings: (() => {
@@ -87,13 +94,15 @@ export const useUIStore = create<UIState>((set) => ({
         set({
             selectedPokemonId: { dexID, instanceID },
             isSidebarOpen: false,
-            pokemonDetailReturnView: returnView
+            pokemonDetailReturnView: returnView,
+            mainView: 'dashboard', // Ensure we are on dashboard view
         });
     },
     clearSelection: () => {
         set(state => ({
             selectedPokemonId: null,
-            activeView: state.pokemonDetailReturnView
+            activeView: state.pokemonDetailReturnView,
+            mainView: 'dashboard', // Ensure we return to dashboard view
         }));
     },
     setUnitSettings: (settings) => {
@@ -105,4 +114,9 @@ export const useUIStore = create<UIState>((set) => ({
         }
     },
     setActiveView: (view) => set({ activeView: view }),
+    setMainView: (view) => set(state => ({
+        mainView: view,
+        // When switching to GM view, close any open Pokémon detail sheet
+        selectedPokemonId: view === 'gm' ? null : state.selectedPokemonId,
+    })),
 }));

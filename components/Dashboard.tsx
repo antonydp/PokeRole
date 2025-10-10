@@ -2,14 +2,12 @@ import React from 'react';
 import TeamBuilder from './TeamBuilder.js';
 import TrainerSheet from './TrainerSheet.js';
 import PokemonPC from './PokemonPC.js';
-import GMTools from './GMTools.js'; 
 import { useUIStore } from '../src/store/useUIStore.js';
-import { DiceIcon } from './Icons.js'; // Import the DiceIcon
 
 const Dashboard: React.FC = () => {
     const { activeView, setActiveView } = useUIStore();
 
-    const getTabClassName = (view: 'team' | 'trainer' | 'pc' | 'gm') => { // Add 'gm'
+    const getTabClassName = (view: 'team' | 'trainer' | 'pc') => {
         const base = "px-4 sm:px-6 py-3 font-primary text-base sm:text-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-poke-yellow focus:z-10 flex items-center gap-2";
         if (activeView === view) {
             return `${base} bg-slate-700/80 text-poke-yellow border-b-4 border-poke-yellow`;
@@ -41,21 +39,11 @@ const Dashboard: React.FC = () => {
                 >
                     Pokémon PC
                 </button>
-                {/* New GM Tools Button */}
-                <button
-                    onClick={() => setActiveView('gm')}
-                    className={getTabClassName('gm')}
-                    aria-current={activeView === 'gm'}
-                >
-                    <DiceIcon className="w-5 h-5" />
-                    <span className="hidden sm:inline">GM Tools</span>
-                </button>
             </div>
             <div className="flex-grow pt-4 overflow-y-auto">
                 {activeView === 'trainer' && <TrainerSheet />}
                 {activeView === 'team' && <TeamBuilder />}
                 {activeView === 'pc' && <PokemonPC />}
-                {activeView === 'gm' && <GMTools />}
             </div>
         </div>
     );
