@@ -7,6 +7,7 @@ import SuggestTeamModal from './components/SuggestTeamModal.js';
 import { useGameDataStore } from './src/store/useGameDataStore.js';
 import { useUIStore } from './src/store/useUIStore.js';
 import { useSessionStore } from './src/store/useSessionStore.js';
+import NotificationContainer from './components/shared/NotificationContainer.js';
 
 /**
  * @typedef {object} UnitSettings
@@ -138,6 +139,7 @@ const App: React.FC = () => {
     
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col font-sans">
+            <NotificationContainer />
              <SuggestTeamModal
                 isOpen={isSuggestModalOpen}
                 onClose={() => setIsSuggestModalOpen(false)}

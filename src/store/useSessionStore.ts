@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 import React from 'react';
-import { Pokedex, TeamMember, PokemonData, TrainerData, ItemInstance, Rank } from '../types/index.js';
-import { createInitialTrainerData, createInitialSheetData } from '../logic/initializers.js';
-import { calculateWeaknesses } from '../logic/formulas.js';
+import { Pokedex, TeamMember, PokemonData, TrainerData, ItemInstance, Rank } from '../types/index.ts';
+import { createInitialTrainerData, createInitialSheetData } from '../logic/initializers.ts';
+import { calculateWeaknesses } from '../logic/formulas.ts';
 import pako from 'pako';
-import { useUIStore } from './useUIStore.js';
-import { useGameDataStore } from './useGameDataStore.js';
-import { RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../logic/core.js';
+import { useUIStore } from './useUIStore.ts';
+import { useGameDataStore } from './useGameDataStore.ts';
+import { RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../logic/core.ts';
 import { POKEMON_SKILL_FIELDS } from '../constants/gameConstants.js'; // You'll need to export this
+import useNotificationStore from './useNotificationStore.js';
 
 
 // Helper function to remove one instance of an item from a pocket
@@ -73,6 +74,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             currentFormName: null,
         };
         set({ team: [...team, newMember] });
+        useNotificationStore.getState().addNotification({
+            message: `${pokemon.Name} has been added to the team!`,
+            type: 'success',
+        });
         return newMember;
     },
     addToPC: (pokemon, sheetData) => {
@@ -84,30 +89,55 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             currentFormName: null,
         };
         set(state => ({ pokemonPC: [...state.pokemonPC, newMember] }));
+        useNotificationStore.getState().addNotification({
+            message: `${pokemon.Name} has been sent to the PC.`,
+            type: 'success',
+        });
         return newMember;
     },
     removeFromTeam: (instanceID) => {
+        const memberToRemove = get().team.find(member => member.instanceID === instanceID);
         set(state => ({
             team: state.team.filter(member => member.instanceID !== instanceID)
         }));
+        if (memberToRemove) {
+            useNotificationStore.getState().addNotification({
+                message: `${memberToRemove.pokedexData.Name} has been removed from the team.`,
+                type: 'success',
+            });
+        }
         const selectedPokemonId = useUIStore.getState().selectedPokemonId;
         if (selectedPokemonId?.instanceID === instanceID) {
             useUIStore.getState().clearSelection();
         }
     },
     removeFromPC: (instanceID) => {
+        const memberToRemove = get().pokemonPC.find(member => member.instanceID === instanceID);
         set(state => ({
             pokemonPC: state.pokemonPC.filter(member => member.instanceID !== instanceID)
         }));
+        if (memberToRemove) {
+            useNotificationStore.getState().addNotification({
+                message: `${memberToRemove.pokedexData.Name} has been removed from the PC.`,
+                type: 'success',
+            });
+        }
     },
     moveFromPCToTeam: (instanceID) => {
         set(state => {
             if (state.team.length >= 6) {
-                // Optionally, provide feedback to the user that the team is full.
+                useNotificationStore.getState().addNotification({
+                    message: "Your team is full!",
+                    type: 'warning',
+                });
                 return state;
             }
             const memberToMove = state.pokemonPC.find(member => member.instanceID === instanceID);
             if (memberToMove) {
+                useNotificationStore.getState().addNotification({
+                    message: `${memberToMove.pokedexData.Name} moved to the team.`,
+                    type: 'success',
+                });
                 return {
                     team: [...state.team, memberToMove],
                     pokemonPC: state.pokemonPC.filter(member => member.instanceID !== instanceID),
@@ -120,6 +150,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         set(state => {
             const memberToMove = state.team.find(member => member.instanceID === instanceID);
             if (memberToMove) {
+                useNotificationStore.getState().addNotification({
+                    message: `${memberToMove.pokedexData.Name} moved to the PC.`,
+                    type: 'success',
+                });
                 return {
                     team: state.team.filter(member => member.instanceID !== instanceID),
                     pokemonPC: [...state.pokemonPC, memberToMove],
@@ -168,7 +202,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         const { team, trainerData, pokemonPC } = get();
         const { unitSettings } = useUIStore.getState();
         if (team.length === 0 && !trainerData.name) {
-            alert("Your team and trainer sheet are empty!");
+            useNotificationStore.getState().addNotification({
+                message: "Your team and trainer sheet are empty!",
+                type: 'warning',
+            });
             return;
         }
         try {
@@ -182,8 +219,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
+            useNotificationStore.getState().addNotification({
+                message: 'Session data exported successfully!',
+                type: 'success',
+            });
         } catch (err) {
             console.error('Export error:', err);
+            useNotificationStore.getState().addNotification({
+                message: `Export failed: ${err.message}`,
+                type: 'error',
+            });
         }
     },
     loadTeam: (event) => {
@@ -256,8 +301,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
                 set({ team: teamWithUpdatedWeaknesses.slice(0, 6), pokemonPC: pcWithUpdatedWeaknesses });
                 useUIStore.getState().clearSelection();
+                useNotificationStore.getState().addNotification({
+                    message: 'Session data loaded successfully!',
+                    type: 'success',
+                });
             } catch (err) {
                 console.error("Failed to load data:", err);
+                useNotificationStore.getState().addNotification({
+                    message: `Failed to load data: ${err.message}`,
+                    type: 'error',
+                });
             }
         };
         reader.onerror = () => console.error("Failed to read the selected file.");
@@ -302,11 +355,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                     else newTeam.push(newMember);
                     return { team: newTeam.slice(0, 6) };
                 });
+                useNotificationStore.getState().addNotification({
+                    message: `${newMember.pokedexData.Name} imported successfully!`,
+                    type: 'success',
+                });
             } else {
                 throw new Error("Invalid imported data structure.");
             }
         } catch (e) {
-            alert("Invalid import string.");
+            useNotificationStore.getState().addNotification({
+                message: 'Invalid import string.',
+                type: 'error',
+            });
             console.error("Quick import error:", e);
         }
     },
@@ -316,9 +376,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             const compressed = pako.deflate(dataStr);
             const base64Str = btoa(String.fromCharCode.apply(null, compressed as unknown as number[]));
             navigator.clipboard.writeText(base64Str);
-            alert(`${teamMember.pokedexData.Name} export data copied to clipboard!`);
+            useNotificationStore.getState().addNotification({
+                message: `${teamMember.pokedexData.Name} export data copied to clipboard!`,
+                type: 'success',
+            });
         } catch (err) {
             console.error('Export error:', err);
+            useNotificationStore.getState().addNotification({
+                message: `Quick export failed: ${err.message}`,
+                type: 'error',
+            });
         }
     },
     initiatePermanentEvolution: (instanceID, targetPokedex) => {
@@ -374,6 +441,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             )
         }));
 
+        useNotificationStore.getState().addNotification({
+            message: `The Pokémon evolved into ${evolutionState.newPokedexData.Name}!`,
+            type: 'success',
+        });
         useUIStore.getState().setEvolutionStep('MOVESET');
     },
 
@@ -440,6 +511,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                 } else {
                     useUIStore.getState().closeEvolutionModal();
                 }
+
+                useNotificationStore.getState().addNotification({
+                    message: `Form changed to ${formName}.`,
+                    type: 'success',
+                });
 
                 return {
                     ...updatedMember,
