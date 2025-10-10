@@ -99,7 +99,7 @@ const EncounterPokemonCard: React.FC<{ pokemon: TeamMember; onUpdatePokemon: (up
                 </button>
             </div>
 
-            <div className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[60vh] opacity-100 overflow-y-auto' : 'max-h-0 opacity-0'}`}>
                 <div className="px-3 pb-3 space-y-2">
                     <div>
                         <label htmlFor={`rank-${pokemon.instanceID}`} className="text-xs font-bold text-poke-yellow">Adjust Rank</label>
