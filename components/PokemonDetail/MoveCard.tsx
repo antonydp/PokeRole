@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Move, AddedEffects, PokemonData } from '../../src/types/index.js';
 import { CloseIcon, DiceIcon, ChevronDownIcon } from '../Icons.js';
@@ -13,6 +11,7 @@ interface MoveCardProps {
     onClear: (index: number) => void;
     isExpanded: boolean;
     onToggleExpand: () => void;
+    showClearButton?: boolean; // Add this new optional prop
 }
 
 const TriangleIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -100,23 +99,34 @@ const AddedEffectsDisplay: React.FC<{ effects: AddedEffects; effectString: strin
 };
 
 
-const MoveCard: React.FC<MoveCardProps> = ({ move, pokemonStats, index, onClear, isExpanded, onToggleExpand }) => {
+const MoveCard: React.FC<MoveCardProps> = ({ 
+    move, 
+    pokemonStats, 
+    index, 
+    onClear, 
+    isExpanded, 
+    onToggleExpand,
+    showClearButton = true // Default to true for backward compatibility
+}) => {
     const damageString = calculateMoveValue([move.Damage1, move.Power > 0 ? move.Power : null].filter(Boolean).join(' + ') || '--', pokemonStats);
     const accuracyString = calculateMoveValue([move.Accuracy1, move.Accuracy2].filter(Boolean).join(' + ') || '--', pokemonStats);
     const hasAddedEffects = move.AddedEffects && Object.keys(move.AddedEffects).length > 0;
 
     return (
         <div className="relative bg-stone-200 text-stone-900 rounded-md border-4 border-stone-900 font-sans shadow-lg flex flex-col animate-fade-in">
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onClear(index);
-                }}
-                className="absolute top-1 right-1 z-10 p-1 rounded-full bg-stone-400/50 hover:bg-poke-red hover:text-white transition-colors"
-                aria-label="Clear move"
-            >
-                <CloseIcon className="w-4 h-4" />
-            </button>
+            {/* Conditionally render the clear button */}
+            {showClearButton && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onClear(index);
+                    }}
+                    className="absolute top-1 right-1 z-10 p-1 rounded-full bg-stone-400/50 hover:bg-poke-red hover:text-white transition-colors"
+                    aria-label="Clear move"
+                >
+                    <CloseIcon className="w-4 h-4" />
+                </button>
+            )}
             
             <button
                 onClick={onToggleExpand}

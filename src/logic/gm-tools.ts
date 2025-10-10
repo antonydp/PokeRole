@@ -61,23 +61,29 @@ export function applyRandomBonusPoints(basePokedex: Pokedex, initialSheet: Pokem
         }
     }
 
-    // 3. Apply Skill Points
+    // 3. NEW: Apply Skill Points
     const skillLimit = RANK_SKILL_LIMITS[rank];
     let skillPointsToSpend = RANK_SKILL_POINTS[rank];
+    // Create a mutable copy of skill fields we can spend points on
     let availableSkills = [...POKEMON_SKILL_FIELDS];
 
     while (skillPointsToSpend > 0 && availableSkills.length > 0) {
         const randomIndex = Math.floor(Math.random() * availableSkills.length);
-        const randomSkill = availableSkills[randomIndex];
+        const randomSkillField = availableSkills[randomIndex];
 
-        // Ensure we don't apply points to the extra skill name
-        if (randomSkill === 'extraSkillName') continue;
+        // Ensure we don't try to increment the 'extraSkillValue' string
+        if (randomSkillField === 'extraSkillValue') {
+            availableSkills.splice(randomIndex, 1); // Remove it and try again
+            continue;
+        }
 
-        const currentValue = finalSheet[randomSkill];
-        if (typeof currentValue === 'number' && currentValue < skillLimit) {
-            (finalSheet as any)[randomSkill] = currentValue + 1;
+        const currentSkillValue = finalSheet[randomSkillField] as number;
+
+        if (currentSkillValue < skillLimit) {
+            (finalSheet[randomSkillField] as number)++;
             skillPointsToSpend--;
         } else {
+            // This skill is at its limit for this rank, remove it from the pool
             availableSkills.splice(randomIndex, 1);
         }
     }
