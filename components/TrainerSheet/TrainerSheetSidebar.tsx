@@ -24,6 +24,8 @@ interface TrainerSheetSidebarProps {
     onOpenBadgeModal: () => void;
     onCloseBadgeModal: () => void;
     onSelectBadge: (badge: Badge) => void;
+    onRemoveItem: (itemId: string) => void;
+    onRemoveMainPocketItem: (itemId: string) => void;
 }
 
 const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
@@ -42,7 +44,9 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
     isBadgeModalOpen,
     onOpenBadgeModal,
     onCloseBadgeModal,
-    onSelectBadge
+    onSelectBadge,
+    onRemoveItem,
+    onRemoveMainPocketItem
 }) => {
 
     const handlePotionsChange = (newPotions: PotionBottle[]) => {
@@ -91,21 +95,23 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
                 </button>
             </div>
 
-            <Pocket 
+            <Pocket
                 title="Small Pocket"
                 items={trainerData.smallPocket}
                 itemMap={itemMap}
                 onUpdate={(updatedItems) => onPocketUpdate('smallPocket', updatedItems)}
                 onItemMouseEnter={onItemMouseEnter}
                 onItemMouseLeave={onItemMouseLeave}
+                onRemoveItem={onRemoveItem}
             />
-            <Pocket 
+            <Pocket
                 title="Main Pocket"
                 items={trainerData.mainPocket}
                 itemMap={itemMap}
                 onUpdate={(updatedItems) => onPocketUpdate('mainPocket', updatedItems)}
                 onItemMouseEnter={onItemMouseEnter}
                 onItemMouseLeave={onItemMouseLeave}
+                onRemoveItem={onRemoveMainPocketItem}
             />
         </div>
         

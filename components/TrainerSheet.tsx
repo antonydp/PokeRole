@@ -14,7 +14,7 @@ import { useSessionStore } from '../src/store/useSessionStore.js';
 import { useGameDataStore } from '../src/store/useGameDataStore.js';
 
 const TrainerSheet: React.FC = () => {
-    const { trainerData, updateTrainerData } = useSessionStore();
+    const { trainerData, updateTrainerData, addItemToPockets, removeItemFromPockets } = useSessionStore();
     const { allItems, allBadges } = useGameDataStore();
 
     const {
@@ -41,7 +41,6 @@ const TrainerSheet: React.FC = () => {
         handleAchievementChange,
         handleAddAchievement,
         handleRemoveAchievement,
-        handleAddItem,
         handleAddBadge,
         itemMap
     } = useTrainerSheet(trainerData, updateTrainerData, allItems);
@@ -81,7 +80,7 @@ const TrainerSheet: React.FC = () => {
                         isOpen={isItemModalOpen}
                         onClose={() => setIsItemModalOpen(false)}
                         itemsData={allItems}
-                        onSelectItem={handleAddItem}
+                        onSelectItem={addItemToPockets}
                     />
                 )}
                 
@@ -116,6 +115,8 @@ const TrainerSheet: React.FC = () => {
                         onPocketUpdate={handlePocketUpdate}
                         onItemMouseEnter={onItemMouseEnter}
                         onItemMouseLeave={onItemMouseLeave}
+                        onRemoveItem={(itemId) => removeItemFromPockets(itemId, 'smallPocket')}
+                        onRemoveMainPocketItem={(itemId) => removeItemFromPockets(itemId, 'mainPocket')}
                         points={points}
                         isSocialAttributePoolExhausted={isSocialAttributePoolExhausted}
                         allBadges={allBadges}

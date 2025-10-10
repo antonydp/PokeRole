@@ -102,28 +102,10 @@ export function useTrainerSheet(
         });
     }, [onDataChange]);
 
+    // This function is now handled by the session store
     const handleAddItem = useCallback((item: Item) => {
-        const pocketName = item.usable_in_battle ? 'smallPocket' : 'mainPocket';
-        onDataChange((currentTrainerData: TrainerData) => {
-            const currentPocket: ItemInstance[] = currentTrainerData[pocketName] || [];
-            const existingItemIndex = currentPocket.findIndex(i => i.name.toLowerCase() === item.name.toLowerCase());
-            let newPocket: ItemInstance[];
-
-            if (existingItemIndex > -1) {
-                newPocket = [...currentPocket];
-                const existingItem = newPocket[existingItemIndex];
-                newPocket[existingItemIndex] = { ...existingItem, quantity: existingItem.quantity + 1 };
-            } else {
-                newPocket = [...currentPocket, {
-                    id: `${item.name.replace(/\s+/g, '-')}-${Date.now()}`,
-                    name: item.name,
-                    quantity: 1,
-                    description: item.description,
-                }];
-            }
-            return { ...currentTrainerData, [pocketName]: newPocket };
-        });
-    }, [onDataChange]);
+        // The actual logic is in useSessionStore.addItemToPockets
+    }, []);
 
     const handleAddBadge = useCallback((badge: Badge) => {
         onDataChange((currentTrainerData: TrainerData) => {
@@ -177,7 +159,6 @@ export function useTrainerSheet(
         handleAchievementChange,
         handleAddAchievement,
         handleRemoveAchievement,
-        handleAddItem,
         handleAddBadge,
         itemMap
     };

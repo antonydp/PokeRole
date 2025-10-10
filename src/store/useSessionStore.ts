@@ -34,6 +34,8 @@ const removeItemFromPockets = (pockets: { smallPocket: ItemInstance[], mainPocke
 };
 
 
+import { Item } from '../types/index.js';
+
 interface SessionState {
     team: TeamMember[];
     pokemonPC: TeamMember[];
@@ -55,6 +57,8 @@ interface SessionState {
     finalizePermanentEvolution: (instanceID: string, finalSheetData: PokemonData) => void;
     applyOverrank: (instanceID: string, moveId: string) => void;
     changeForm: (instanceID: string, formPokedex: Pokedex | null, currentSheetData?: PokemonData) => void;
+    addItemToPockets: (item: Item) => void;
+    removeItemFromPockets: (itemId: string, pocket: 'smallPocket' | 'mainPocket') => void;
 }
 
 export const useSessionStore = create<SessionState>((set, get) => ({
@@ -422,6 +426,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             );
             newTrainerData.smallPocket = smallPocket;
             newTrainerData.mainPocket = mainPocket;
+            useNotificationStore.getState().addNotification({
+                message: `${evolutionMethod.Item} was used.`,
+                type: 'success',
+            });
         }
 
         set(state => ({
@@ -524,6 +532,60 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                 };
             });
             return { team };
+        });
+    },
+    addItemToPockets: (item) => {
+        set(state => {
+            const pocketName = item.usable_in_battle ? 'smallPocket' : 'mainPocket';
+            const pocket = state.trainerData[pocketName];
+            const existingItemIndex = pocket.findIndex(i => i.name === item.name);
+            let newPocket;
+
+            if (existingItemIndex > -1) {
+                newPocket = pocket.map((i, index) =>
+                    index === existingItemIndex ? { ...i, quantity: i.quantity + 1 } : i
+                );
+            } else {
+                const newItemInstance: ItemInstance = {
+                    id: crypto.randomUUID(),
+                    name: item.name,
+                    quantity: 1,
+                };
+                newPocket = [...pocket, newItemInstance];
+            }
+
+            useNotificationStore.getState().addNotification({
+                message: `${item.name} added to ${pocketName === 'smallPocket' ? 'Small Pocket' : 'Main Pocket'}.`,
+                type: 'success',
+            });
+
+            return {
+                trainerData: {
+                    ...state.trainerData,
+                    [pocketName]: newPocket,
+                }
+            };
+        });
+    },
+    removeItemFromPockets: (itemId, pocketName) => {
+        set(state => {
+            const pocket = state.trainerData[pocketName];
+            const itemToRemove = pocket.find(i => i.id === itemId);
+            if (!itemToRemove) return state;
+
+            const newPocket = pocket.filter(i => i.id !== itemId);
+
+            useNotificationStore.getState().addNotification({
+                message: `${itemToRemove.name} removed from ${pocketName === 'smallPocket' ? 'Small Pocket' : 'Main Pocket'}.`,
+                type: 'success',
+            });
+
+            return {
+                trainerData: {
+                    ...state.trainerData,
+                    [pocketName]: newPocket,
+                }
+            };
         });
     },
 }));

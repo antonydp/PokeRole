@@ -9,24 +9,20 @@ interface PocketProps {
     onUpdate: (updatedItems: ItemInstance[]) => void;
     onItemMouseEnter: (content: { name: string; description: string }, element: HTMLElement) => void;
     onItemMouseLeave: () => void;
+    onRemoveItem: (itemId: string) => void;
 }
 
-const Pocket: React.FC<PocketProps> = ({ title, items, itemMap, onUpdate, onItemMouseEnter, onItemMouseLeave }) => {
+const Pocket: React.FC<PocketProps> = ({ title, items, itemMap, onUpdate, onItemMouseEnter, onItemMouseLeave, onRemoveItem }) => {
     
     const handleQuantityChange = (itemId: string, newQuantity: number) => {
         if (newQuantity <= 0) {
-            handleRemoveItem(itemId);
+            onRemoveItem(itemId);
         } else {
             const updatedItems = items.map(item =>
                 item.id === itemId ? { ...item, quantity: newQuantity } : item
             );
             onUpdate(updatedItems);
         }
-    };
-
-    const handleRemoveItem = (itemId: string) => {
-        const updatedItems = items.filter(item => item.id !== itemId);
-        onUpdate(updatedItems);
     };
 
     return (
@@ -42,7 +38,7 @@ const Pocket: React.FC<PocketProps> = ({ title, items, itemMap, onUpdate, onItem
                             itemInstance={itemInstance}
                             itemDetails={itemMap.get(itemInstance.name)}
                             onQuantityChange={handleQuantityChange}
-                            onRemove={handleRemoveItem}
+                            onRemove={onRemoveItem}
                             onMouseEnter={onItemMouseEnter}
                             onMouseLeave={onItemMouseLeave}
                         />
