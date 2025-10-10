@@ -7,7 +7,7 @@ import { useUIStore } from '../src/store/useUIStore.js';
 const Dashboard: React.FC = () => {
     const { activeView, setActiveView } = useUIStore();
 
-    const getTabClassName = (view: 'pokemon' | 'trainer' | 'pc') => {
+    const getTabClassName = (view: 'team' | 'trainer' | 'pc') => {
         const base = "px-6 py-3 font-primary text-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-poke-yellow focus:z-10";
         if (activeView === view) {
             return `${base} bg-slate-700/80 text-poke-yellow border-b-4 border-poke-yellow`;
@@ -26,9 +26,9 @@ const Dashboard: React.FC = () => {
                     Trainer Sheet
                 </button>
                 <button
-                    onClick={() => setActiveView('pokemon')}
-                    className={getTabClassName('pokemon')}
-                    aria-current={activeView === 'pokemon'}
+                    onClick={() => setActiveView('team')}
+                    className={getTabClassName('team')}
+                    aria-current={activeView === 'team'}
                 >
                     Pokémon Team
                 </button>
@@ -42,7 +42,7 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="flex-grow pt-4 overflow-y-auto">
                 {activeView === 'trainer' && <TrainerSheet />}
-                {activeView === 'pokemon' && <TeamBuilder />}
+                {activeView === 'team' && <TeamBuilder />}
                 {activeView === 'pc' && <PokemonPC />}
             </div>
         </div>

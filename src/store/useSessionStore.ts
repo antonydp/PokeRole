@@ -37,8 +37,8 @@ interface SessionState {
     team: TeamMember[];
     pokemonPC: TeamMember[];
     trainerData: TrainerData;
-    addToTeam: (pokemon: Pokedex, sheetData: PokemonData) => void;
-    addToPC: (pokemon: Pokedex, sheetData: PokemonData) => void;
+    addToTeam: (pokemon: Pokedex, sheetData: PokemonData) => TeamMember | null;
+    addToPC: (pokemon: Pokedex, sheetData: PokemonData) => TeamMember;
     removeFromTeam: (instanceID: string) => void;
     removeFromPC: (instanceID: string) => void;
     moveFromPCToTeam: (instanceID: string) => void;
@@ -61,42 +61,30 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     pokemonPC: [],
     trainerData: createInitialTrainerData(),
     addToTeam: (pokemon, sheetData) => {
-        let newInstanceID: string | null = null;
-        set(state => {
-            if (state.team.length < 6) {
-                const newMember: TeamMember = {
-                    instanceID: crypto.randomUUID(),
-                    pokedexData: pokemon,
-                    sheetData: sheetData,
-                    forms: {},
-                    currentFormName: null,
-                };
-                newInstanceID = newMember.instanceID; // Capture the new ID
-
-                return { team: [...state.team, newMember] };
-            }
-            return {};
-        });
-        if (newInstanceID) {
-            useUIStore.getState().selectPokemon(pokemon.DexID, newInstanceID);
+        const { team } = get();
+        if (team.length >= 6) {
+            return null;
         }
+        const newMember: TeamMember = {
+            instanceID: crypto.randomUUID(),
+            pokedexData: pokemon,
+            sheetData: sheetData,
+            forms: {},
+            currentFormName: null,
+        };
+        set({ team: [...team, newMember] });
+        return newMember;
     },
     addToPC: (pokemon, sheetData) => {
-        let newInstanceID: string | null = null;
-        set(state => {
-            const newMember: TeamMember = {
-                instanceID: crypto.randomUUID(),
-                pokedexData: pokemon,
-                sheetData: sheetData,
-                forms: {},
-                currentFormName: null,
-            };
-            newInstanceID = newMember.instanceID;
-            return { pokemonPC: [...state.pokemonPC, newMember] };
-        });
-        if (newInstanceID) {
-            useUIStore.getState().selectPokemon(pokemon.DexID, newInstanceID);
-        }
+        const newMember: TeamMember = {
+            instanceID: crypto.randomUUID(),
+            pokedexData: pokemon,
+            sheetData: sheetData,
+            forms: {},
+            currentFormName: null,
+        };
+        set(state => ({ pokemonPC: [...state.pokemonPC, newMember] }));
+        return newMember;
     },
     removeFromTeam: (instanceID) => {
         set(state => ({

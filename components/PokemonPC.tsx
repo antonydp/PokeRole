@@ -119,7 +119,7 @@ const PokemonPC: React.FC = () => {
                     <PokemonContainer id="pc-container" title="Pokémon PC" items={pokemonPC} onAddClick={() => setIsSidebarOpen(true, 'pc')} onSelectPokemon={(dexId, instanceId) => selectPokemon(dexId, instanceId, 'pc')} />
                 </div>
                 <div className="lg:col-span-1">
-                    <PokemonContainer id="team-container" title="Pokémon Team" items={team} onSelectPokemon={(dexId, instanceId) => selectPokemon(dexId, instanceId, 'pokemon')} />
+                    <PokemonContainer id="team-container" title="Pokémon Team" items={team} onSelectPokemon={(dexId, instanceId) => selectPokemon(dexId, instanceId, 'team')} />
                 </div>
             </div>
             <DragOverlay>

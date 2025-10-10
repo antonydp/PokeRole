@@ -23,8 +23,8 @@ interface UIState {
     isSettingsOpen: boolean;
     isSuggestModalOpen: boolean;
     selectedPokemonId: SelectedPokemon | null;
-    activeView: 'trainer' | 'pokemon' | 'pc';
-    pokemonDetailReturnView: 'pokemon' | 'pc';
+    activeView: 'trainer' | 'team' | 'pc';
+    pokemonDetailReturnView: 'team' | 'pc';
     unitSettings: UnitSettings;
     evolutionState: EvolutionState;
     openEvolutionModal: (instanceId: string) => void;
@@ -33,10 +33,10 @@ interface UIState {
     setIsSidebarOpen: (isOpen: boolean, target?: 'team' | 'pc') => void;
     setIsSettingsOpen: (isOpen: boolean) => void;
     setIsSuggestModalOpen: (isOpen: boolean) => void;
-    selectPokemon: (dexID: string, instanceID?: string, returnView?: 'pokemon' | 'pc') => void;
+    selectPokemon: (dexID: string, instanceID?: string, returnView?: 'team' | 'pc') => void;
     clearSelection: () => void;
     setUnitSettings: (settings: UnitSettings) => void;
-    setActiveView: (view: 'trainer' | 'pokemon' | 'pc') => void;
+    setActiveView: (view: 'trainer' | 'team' | 'pc') => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -46,7 +46,7 @@ export const useUIStore = create<UIState>((set) => ({
     isSuggestModalOpen: false,
     selectedPokemonId: null,
     activeView: 'trainer',
-    pokemonDetailReturnView: 'pokemon',
+    pokemonDetailReturnView: 'team',
     evolutionState: { isOpen: false },
     unitSettings: (() => {
         try {
@@ -83,11 +83,10 @@ export const useUIStore = create<UIState>((set) => ({
     setIsSidebarOpen: (isOpen, target = 'team') => set({ isSidebarOpen: isOpen, addPokemonTarget: target }),
     setIsSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
     setIsSuggestModalOpen: (isOpen) => set({ isSuggestModalOpen: isOpen }),
-    selectPokemon: (dexID, instanceID, returnView = 'pokemon') => {
+    selectPokemon: (dexID, instanceID, returnView = 'team') => {
         set({
             selectedPokemonId: { dexID, instanceID },
             isSidebarOpen: false,
-            activeView: 'pokemon',
             pokemonDetailReturnView: returnView
         });
     },

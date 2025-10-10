@@ -66,7 +66,7 @@ const PokemonRow = ({ index, style, pokemonList, onSelectPokemon }: {
 
 const PokemonList: React.FC = () => {
     const { allPokemon } = useGameDataStore();
-    const { addPokemonTarget } = useUIStore();
+    const { addPokemonTarget, selectPokemon } = useUIStore();
     const { addToTeam, addToPC, trainerData } = useSessionStore();
     const { unitSettings } = useUIStore();
     const [searchTerm, setSearchTerm] = useState('');
@@ -79,10 +79,15 @@ const PokemonList: React.FC = () => {
 
     const handleSelectPokemon = (pokemon: Pokedex) => {
         const sheetData = createInitialSheetData(pokemon, unitSettings, trainerData.trainerRank);
+        let newMember;
         if (addPokemonTarget === 'team') {
-            addToTeam(pokemon, sheetData);
+            newMember = addToTeam(pokemon, sheetData);
         } else {
-            addToPC(pokemon, sheetData);
+            newMember = addToPC(pokemon, sheetData);
+        }
+
+        if (newMember) {
+            selectPokemon(newMember.pokedexData.DexID, newMember.instanceID, addPokemonTarget);
         }
     };
 
