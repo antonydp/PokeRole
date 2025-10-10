@@ -23,7 +23,7 @@ interface UIState {
     isSettingsOpen: boolean;
     isSuggestModalOpen: boolean;
     selectedPokemonId: SelectedPokemon | null;
-    activeView: 'trainer' | 'team' | 'pc';
+    activeView: 'trainer' | 'team' | 'pc' | 'gm';
     pokemonDetailReturnView: 'team' | 'pc';
     unitSettings: UnitSettings;
     evolutionState: EvolutionState;
@@ -36,7 +36,7 @@ interface UIState {
     selectPokemon: (dexID: string, instanceID?: string, returnView?: 'team' | 'pc') => void;
     clearSelection: () => void;
     setUnitSettings: (settings: UnitSettings) => void;
-    setActiveView: (view: 'trainer' | 'team' | 'pc') => void;
+    setActiveView: (view: 'trainer' | 'team' | 'pc' | 'gm') => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
