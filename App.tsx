@@ -219,7 +219,7 @@ const App: React.FC = () => {
                 }>
                     <div className="h-full p-2">
                         <div className="bg-slate-800/50 rounded-lg h-full overflow-y-auto">
-                            <PokemonList />
+                            <PokemonList isOpen={isSidebarOpen} />
                         </div>
                     </div>
                 </aside>

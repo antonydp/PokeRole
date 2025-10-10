@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { List, type RowComponentProps } from "react-window";
 import { Pokedex } from '../src/types/index.js';
 import PokemonCard from './PokemonCard.js';
@@ -64,18 +64,34 @@ const PokemonRow = ({ index, style, pokemonList, onSelectPokemon }: {
     );
 };
 
-const PokemonList: React.FC = () => {
+type PokemonListProps = {
+    isOpen: boolean;
+};
+
+const PokemonList: React.FC<PokemonListProps> = ({ isOpen }) => {
     const { allPokemon } = useGameDataStore();
     const { addPokemonTarget, selectPokemon } = useUIStore();
     const { addToTeam, addToPC, trainerData } = useSessionStore();
     const { unitSettings } = useUIStore();
     const [searchTerm, setSearchTerm] = useState('');
+    const searchInputRef = useRef<HTMLInputElement>(null);
     const [typeFilter, setTypeFilter] = useState<string | null>(null);
     const [showAdvanced, setShowAdvanced] = useState(false);
     
     const [statFilters, setStatFilters] = useState(initialStatFilters);
     const [abilityFilter, setAbilityFilter] = useState('');
     const [legendaryFilter, setLegendaryFilter] = useState<'all' | 'yes' | 'no'>('all');
+
+    useEffect(() => {
+        if (isOpen) {
+            const timer = setTimeout(() => {
+                if (searchInputRef.current) {
+                    searchInputRef.current.focus();
+                }
+            }, 100); // Delay to account for sidebar transition
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
 
     const handleSelectPokemon = (pokemon: Pokedex) => {
         const sheetData = createInitialSheetData(pokemon, unitSettings, trainerData.trainerRank);
@@ -156,6 +172,7 @@ const PokemonList: React.FC = () => {
         <div className="flex flex-col h-full">
             <div className="p-2 sticky top-0 bg-slate-800 z-10">
                 <input
+                    ref={searchInputRef}
                     type="text"
                     placeholder="Search Pokémon..."
                     value={searchTerm}
