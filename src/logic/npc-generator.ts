@@ -1,6 +1,11 @@
 // src/logic/npc-generator.ts
 
 import { Pokedex, Rank, Move, NPCTrainer, NPCPokemon, Sprite } from '../types/index.js';
+
+export interface NPCTrainerOptions {
+    teamSize?: number;
+    allowLegendaries?: boolean;
+}
 import { createInitialSheetData } from './initializers.js';
 import { applyRandomBonusPoints, selectRandomMoves } from './gm-tools.js';
 import { UnitSettings } from '../store/useUIStore.js';
@@ -40,7 +45,7 @@ const TRAINER_NAMES = [
     "Vesper", "Violet", "Volt", "Wade", "Walker", "West", "Wilder",
     "Willow", "Winter", "Wolf", "Wren", "Wyatt", "Zelda", "Zephyr", "Zinnia"
 ];
-const getTeamSizeForRank = (rank: Rank): number => {
+export const getTeamSizeForRank = (rank: Rank): number => {
     switch (rank) {
         case 'Starter': return Math.floor(Math.random() * 2) + 1; // 1-2
         case 'Beginner': return Math.floor(Math.random() * 2) + 2; // 2-3
@@ -105,16 +110,19 @@ export function generateNPCTrainer(
     allPokemon: Pokedex[],
     allMoves: Record<string, Move>,
     allSprites: Sprite[],
-    unitSettings: UnitSettings
+    unitSettings: UnitSettings,
+    options: NPCTrainerOptions = {}
 ): NPCTrainer {
     const name = TRAINER_NAMES[Math.floor(Math.random() * TRAINER_NAMES.length)];
-    const teamSize = getTeamSizeForRank(rank);
+    const teamSize = options.teamSize ?? getTeamSizeForRank(rank);
     const team: NPCPokemon[] = [];
     const trainerStats = generateTrainerStats(rank);
 
-    let candidates = allPokemon.filter(p => p.RecommendedRank === rank && !p.Legendary);
+    const legendaryFilter = (p: Pokedex) => !p.Legendary || !!options.allowLegendaries;
+
+    let candidates = allPokemon.filter(p => p.RecommendedRank === rank && legendaryFilter(p));
     if (candidates.length === 0) {
-        candidates = allPokemon.filter(p => !p.Legendary);
+        candidates = allPokemon.filter(legendaryFilter);
     }
 
     for (let i = 0; i < teamSize; i++) {

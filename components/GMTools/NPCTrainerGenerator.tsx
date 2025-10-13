@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import { Rank, NPCTrainer } from '../../src/types/index.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { useUIStore } from '../../src/store/useUIStore.js';
-import { generateNPCTrainer } from '../../src/logic/npc-generator.js';
+import { generateNPCTrainer, NPCTrainerOptions } from '../../src/logic/npc-generator.js';
 import { RANKS, SKILLS, TRAINER_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 import EncounterPokemonCard from './EncounterPokemonCard.js'; // We can reuse this!
 
@@ -18,6 +18,8 @@ const StatDisplay: React.FC<{ label: string; value: number }> = ({ label, value 
 const NPCTrainerGenerator: React.FC = () => {
     const [rank, setRank] = useState<Rank>('Starter');
     const [generatedTrainer, setGeneratedTrainer] = useState<NPCTrainer | null>(null);
+    const [teamSizeOverride, setTeamSizeOverride] = useState<number | ''>('');
+    const [allowLegendaries, setAllowLegendaries] = useState<boolean>(false);
 
     const { allPokemon, allMoves, allSprites } = useGameDataStore();
     const { unitSettings } = useUIStore();
@@ -27,9 +29,13 @@ const NPCTrainerGenerator: React.FC = () => {
             alert("Sprite data is not loaded yet. Please wait a moment and try again.");
             return;
         }
-        const trainer = generateNPCTrainer(rank, allPokemon, allMoves, allSprites, unitSettings);
+        const options: NPCTrainerOptions = {
+            teamSize: teamSizeOverride === '' ? undefined : teamSizeOverride,
+            allowLegendaries,
+        };
+        const trainer = generateNPCTrainer(rank, allPokemon, allMoves, allSprites, unitSettings, options);
         setGeneratedTrainer(trainer);
-    }, [rank, allPokemon, allMoves, allSprites, unitSettings]);
+    }, [rank, allPokemon, allMoves, allSprites, unitSettings, teamSizeOverride, allowLegendaries]);
 
     return (
         <div className="p-4 bg-gray-800 rounded-lg text-white">
@@ -49,6 +55,41 @@ const NPCTrainerGenerator: React.FC = () => {
                         >
                             {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="team-size" className="block text-sm font-bold text-gray-300 mb-1">Team Size (1-6)</label>
+                        <input
+                            id="team-size"
+                            type="number"
+                            min="1"
+                            max="6"
+                            value={teamSizeOverride}
+                            onChange={e => {
+                                const val = e.target.value;
+                                if (val === '') {
+                                    setTeamSizeOverride('');
+                                } else {
+                                    const num = parseInt(val, 10);
+                                    if (!isNaN(num) && num >= 1 && num <= 6) {
+                                        setTeamSizeOverride(num);
+                                    }
+                                }
+                            }}
+                            placeholder="Auto (Rank-based)"
+                            className="w-full p-2 bg-slate-700 rounded"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-1">
+                        <input
+                            id="allow-legendaries"
+                            type="checkbox"
+                            checked={allowLegendaries}
+                            onChange={e => setAllowLegendaries(e.target.checked)}
+                            className="h-4 w-4 rounded bg-slate-700 border-gray-600 text-poke-yellow focus:ring-poke-yellow"
+                        />
+                        <label htmlFor="allow-legendaries" className="text-sm font-bold text-gray-300">Allow Legendaries</label>
                     </div>
 
                     <button
