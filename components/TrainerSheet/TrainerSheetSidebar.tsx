@@ -56,14 +56,14 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
     return (
     // Main container for the right column.
     // A gap of 4 provides clear separation between the major sections.
-    <div className="lg:col-span-5 flex flex-col gap-2">
+    <div className="lg:col-span-5 flex flex-col gap-1.5">
 
         {/* ================================================================== */}
         {/* == Social Attributes Section ===================================== */}
         {/* ================================================================== */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
             <PointsDisplay label="Social Points" spent={points.social.spent} total={points.social.total} />
-            <div className="grid grid-cols-5 gap-1.5">
+            <div className="grid grid-cols-5 gap-1">
                 {SOCIAL_ATTRIBUTES.map(attr => (
                     <SocialAttribute
                         key={attr.name}
@@ -81,15 +81,15 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
         {/* ================================================================== */}
         {/* == Inventory Management Section ================================== */}
         {/* ================================================================== */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
             <PotionManager potions={trainerData.potions} onUpdate={handlePotionsChange} />
 
             {/* Wrapper for the button for consistent styling */}
-            <div className="p-1 bg-black/10 rounded-lg border-2 border-[#3A3A3A]">
+            <div className="p-0.5 bg-black/10 rounded-lg border-2 border-[#3A3A3A]">
                 <button
                     onClick={onOpenItemModal}
                     disabled={!canAddItem}
-                    className="w-full bg-poke-blue text-white font-primary text-xs rounded-md py-1.5 border-b-2 border-blue-900 hover:bg-blue-600 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow disabled:bg-slate-600 disabled:border-slate-700 disabled:cursor-not-allowed disabled:transform-none"
+                    className="w-full bg-poke-blue text-white font-primary text-xs rounded-md py-1 border-b-2 border-blue-900 hover:bg-blue-600 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow disabled:bg-slate-600 disabled:border-slate-700 disabled:cursor-not-allowed disabled:transform-none"
                 >
                     Add Item to Pockets
                 </button>
@@ -118,9 +118,9 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
         {/* ================================================================== */}
         {/* == Gym Badges Section ============================================ */}
         {/* ================================================================== */}
-        <div className="flex flex-col gap-1.5">
-            <h3 className="text-center text-white/80 font-bold text-[10px]">GYM BADGES</h3>
-            <div className="grid grid-cols-8 gap-1.5">
+        <div className="flex flex-col gap-1">
+            <h3 className="text-center text-white/80 font-bold text-xs">GYM BADGES</h3>
+            <div className="grid grid-cols-8 gap-1">
                 {trainerData.badges?.map((badge, i) => (
                     <div
                         key={i}
@@ -130,7 +130,7 @@ const TrainerSheetSidebar: React.FC<TrainerSheetSidebarProps> = ({
                         onMouseEnter={(e) => onItemMouseEnter({ name: badge.name, description: badge.description }, e.currentTarget)}
                         onMouseLeave={onItemMouseLeave}
                     >
-                        <img src={badge.image_url} alt={badge.name} title={badge.name} className="w-full h-full object-contain p-1" />
+                        <img src={badge.image_url} alt={badge.name} title={badge.name} className="w-full h-full object-contain p-0.5" />
                     </div>
                 ))}
                 {Array.from({ length: 8 - (trainerData.badges?.length || 0) }).map((_, i) => (
