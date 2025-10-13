@@ -49,12 +49,12 @@ const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({
     return (
     // The main container is now a simple vertical stack. 
     // It's responsible for the vertical space between the Points Header and the content below.
-    <div className="lg:col-span-7 flex flex-col gap-4">
+    <div className="lg:col-span-7 flex flex-col gap-2">
 
         {/* ================================================================== */}
         {/* == Section 1: Points Header ====================================== */}
         {/* ================================================================== */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
             <div className="md:col-span-4">
                 <PointsDisplay label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
             </div>
@@ -66,13 +66,13 @@ const TrainerSheetMainContent: React.FC<TrainerSheetMainContentProps> = ({
         {/* ================================================================== */}
         {/* == Section 2: Main Content (now wrapped in a grid container) ===== */}
         {/* ================================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-start">
             
             {/* -- Left Column (8/12 width) -- */}
-            <div className="lg:col-span-8 flex flex-col gap-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="lg:col-span-8 flex flex-col gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {/* Attributes */}
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
                         {coreAttributes.map(attr => (
                             <AttributeBlock<TrainerData> key={attr.name} name={attr.name} value={attr.value} onChange={v => onAttributeChange(attr.field as keyof TrainerData, v)} isPoolExhausted={isAttributePoolExhausted} max={5} />
                         ))}

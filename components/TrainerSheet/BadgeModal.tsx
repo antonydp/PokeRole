@@ -34,44 +34,44 @@ const CustomBadgeForm: React.FC<{
     };
 
     return (
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="p-3 space-y-3">
             <div>
-                <label htmlFor="custom-badge-name" className="block text-sm font-medium text-gray-300 mb-1">Badge Name</label>
+                <label htmlFor="custom-badge-name" className="block text-xs font-medium text-gray-300 mb-1">Badge Name</label>
                 <input
                     id="custom-badge-name"
                     type="text"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                    className="w-full p-1.5 bg-slate-700 border border-slate-600 rounded-md text-white text-sm"
                     required
                 />
             </div>
             <div>
-                <label htmlFor="custom-badge-desc" className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                <label htmlFor="custom-badge-desc" className="block text-xs font-medium text-gray-300 mb-1">Description</label>
                 <textarea
                     id="custom-badge-desc"
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    rows={3}
-                    className="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                    rows={2}
+                    className="w-full p-1.5 bg-slate-700 border border-slate-600 rounded-md text-white text-sm"
                 />
             </div>
             <div>
-                <label htmlFor="custom-badge-url" className="block text-sm font-medium text-gray-300 mb-1">Image URL</label>
+                <label htmlFor="custom-badge-url" className="block text-xs font-medium text-gray-300 mb-1">Image URL</label>
                 <input
                     id="custom-badge-url"
                     type="url"
                     value={imageUrl}
                     onChange={e => setImageUrl(e.target.value)}
-                    className="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                    className="w-full p-1.5 bg-slate-700 border border-slate-600 rounded-md text-white text-sm"
                     required
                 />
             </div>
-            <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={onBack} className="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-500 transition-colors">
-                    Back to List
+            <div className="flex justify-end gap-2 pt-1">
+                <button type="button" onClick={onBack} className="px-3 py-1.5 bg-slate-600 text-white rounded-md hover:bg-slate-500 transition-colors text-sm">
+                    Back
                 </button>
-                <button type="submit" className="px-4 py-2 bg-poke-blue text-white rounded-md hover:bg-blue-600 transition-colors">
+                <button type="submit" className="px-3 py-1.5 bg-poke-blue text-white rounded-md hover:bg-blue-600 transition-colors text-sm">
                     Add Badge
                 </button>
             </div>
@@ -123,10 +123,10 @@ const BadgeModal: React.FC<BadgeModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={handleClose}>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2" onClick={handleClose}>
             <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-md max-h-[80vh] flex flex-col font-sans" onClick={e => e.stopPropagation()}>
-                <div className="p-4 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
-                    <h3 className="text-xl font-bold text-poke-yellow text-center font-primary">
+                <div className="p-3 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
+                    <h3 className="text-lg font-bold text-poke-yellow text-center font-primary">
                         {view === 'list' ? 'Select a Badge' : 'Create Custom Badge'}
                     </h3>
                     {view === 'list' && (
@@ -135,20 +135,20 @@ const BadgeModal: React.FC<BadgeModalProps> = ({
                             placeholder="Search badges..."
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            className="w-full p-2 mt-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-poke-blue"
+                            className="w-full p-1.5 mt-2 bg-slate-900 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-poke-blue text-sm"
                         />
                     )}
                 </div>
 
                 {view === 'list' ? (
                     <>
-                        <div ref={scrollContainerRef} className="overflow-y-auto p-4">
-                            <div className="grid grid-cols-6 gap-2">
+                        <div ref={scrollContainerRef} className="overflow-y-auto p-3">
+                            <div className="grid grid-cols-8 gap-1.5">
                                 {filteredBadges.map((badge, index) => (
                                     <button
                                         key={`${badge.name}-${badge.description}-${index}`}
                                         onClick={() => handleSelect(badge)}
-                                        className="p-2 bg-slate-700 rounded-lg transition-colors hover:bg-poke-blue focus:outline-none focus:ring-2 focus:ring-poke-blue aspect-square"
+                                        className="p-1 bg-slate-700 rounded-md transition-colors hover:bg-poke-blue focus:outline-none focus:ring-2 focus:ring-poke-blue aspect-square"
                                         title={`${badge.name}: ${badge.description}`}
                                     >
                                         <LazyImage
@@ -162,10 +162,10 @@ const BadgeModal: React.FC<BadgeModalProps> = ({
                                 ))}
                             </div>
                         </div>
-                        <div className="p-3 border-t border-slate-700 bg-slate-800">
+                        <div className="p-2 border-t border-slate-700 bg-slate-800">
                             <button
                                 onClick={() => setView('custom')}
-                                className="w-full py-2 bg-green-600 text-white font-bold rounded-md hover:bg-green-500 transition-colors"
+                                className="w-full py-1.5 bg-green-600 text-white font-bold rounded-md hover:bg-green-500 transition-colors text-sm"
                             >
                                 Create Custom Badge
                             </button>
@@ -180,8 +180,8 @@ const BadgeModal: React.FC<BadgeModalProps> = ({
                     </div>
                 )}
 
-                <button onClick={handleClose} className="absolute top-2 right-2 p-1 rounded-full bg-slate-700 hover:bg-red-500 transition-colors">
-                    <CloseIcon className="w-6 h-6" />
+                <button onClick={handleClose} className="absolute top-1.5 right-1.5 p-1 rounded-full bg-slate-700 hover:bg-red-500 transition-colors">
+                    <CloseIcon className="w-5 h-5" />
                 </button>
             </div>
         </div>

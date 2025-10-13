@@ -26,11 +26,11 @@ const Pocket: React.FC<PocketProps> = ({ title, items, itemMap, onUpdate, onItem
     };
 
     return (
-        <div className="bg-white rounded-lg p-2 border-2 border-[#3A3A3A] space-y-1">
-            <h3 className="font-primary text-[12px] tracking-wider uppercase text-[#3A3A3A] font-bold text-center border-b-2 border-[#3A3A3A]/50 pb-1 mb-2">
+        <div className="bg-white rounded-lg p-1.5 border-2 border-[#3A3A3A] space-y-1">
+            <h3 className="font-primary text-[10px] tracking-wider uppercase text-[#3A3A3A] font-bold text-center border-b-2 border-[#3A3A3A]/50 pb-0.5 mb-1">
                 {title}
             </h3>
-            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+            <div className="space-y-0.5 max-h-40 overflow-y-auto pr-1">
                 {items && items.length > 0 ? (
                     items.map(itemInstance => (
                         <PocketItem
@@ -44,7 +44,7 @@ const Pocket: React.FC<PocketProps> = ({ title, items, itemMap, onUpdate, onItem
                         />
                     ))
                 ) : (
-                    <p className="text-center text-sm text-gray-500 py-4">This pocket is empty.</p>
+                    <p className="text-center text-xs text-gray-500 py-3">This pocket is empty.</p>
                 )}
             </div>
         </div>
