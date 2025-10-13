@@ -177,7 +177,9 @@ export interface PokemonData {
     type: string;
     weakness: string;
     hp: string;
+    currentHP?: number;
     will: string;
+    currentWill?: number;
     item: string;
     status: string;
     initiative: string;
@@ -258,6 +260,8 @@ export interface TrainerData {
   confidence: string;
   money: string;
   imageUrl: string;
+  currentHP?: number;
+  currentWill?: number;
 
   // Core Attributes
   strength: number;

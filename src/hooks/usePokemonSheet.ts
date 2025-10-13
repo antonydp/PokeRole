@@ -74,19 +74,27 @@ export function usePokemonSheet(
             
             if (field === 'rank') {
                 const newRank = value as Rank;
-                newData.hp = String(calculatePokemonHP(activePokemon.BaseHP, newData.vitality, newRank));
-                newData.will = String(calculatePokemonWill(newData.insight, newRank));
+                const newHP = calculatePokemonHP(activePokemon.BaseHP, newData.vitality, newRank);
+                newData.hp = String(newHP);
+                newData.currentHP = Math.min(prev.currentHP ?? newHP, newHP);
+                const newWill = calculatePokemonWill(newData.insight, newRank);
+                newData.will = String(newWill);
+                newData.currentWill = Math.min(prev.currentWill ?? newWill, newWill);
                 newData.initiative = String(calculateInitiative(newData.dexterity, newData.alert, newRank));
                 newData.defSDef = calculateDefSDef(newData.vitality, newData.insight, newRank);
             } else {
                 const currentRank = newData.rank as Rank;
                 switch (field) {
                     case 'vitality':
-                        newData.hp = String(calculatePokemonHP(activePokemon.BaseHP, numericValue, currentRank));
+                        const newHP = calculatePokemonHP(activePokemon.BaseHP, numericValue, currentRank);
+                        newData.hp = String(newHP);
+                        newData.currentHP = Math.min(prev.currentHP ?? newHP, newHP);
                         newData.defSDef = calculateDefSDef(numericValue, newData.insight, currentRank);
                         break;
                     case 'insight':
-                        newData.will = String(calculatePokemonWill(numericValue, currentRank));
+                        const newWill = calculatePokemonWill(numericValue, currentRank);
+                        newData.will = String(newWill);
+                        newData.currentWill = Math.min(prev.currentWill ?? newWill, newWill);
                         const maxMoves = calculateMaxMoves(numericValue);
                         if (prev.moves.length !== maxMoves) {
                             newData.moves = Array.from({ length: maxMoves }, (_, i) => prev.moves[i] || null);

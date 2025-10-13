@@ -8,10 +8,11 @@ export const LabeledInput: React.FC<{
   id: string;
   containerClassName?: string;
   inputClassName?: string;
+  labelClassName?: string;
   placeholder?: string;
-}> = ({ label, id, value, onChange, isReadOnly = false, containerClassName = "", inputClassName = "", placeholder = "" }) => (
+}> = ({ label, id, value, onChange, isReadOnly = false, containerClassName = "", inputClassName = "", labelClassName = "", placeholder = "" }) => (
     <div className={`relative w-full bg-white rounded-xl px-2 py-1.5 border-2 border-[#3A3A3A] flex justify-between items-center ${containerClassName}`}>
-        <label htmlFor={id} className="font-primary text-[10px] tracking-wider uppercase text-[#3A3A3A] font-bold">
+        <label htmlFor={id} className={`font-primary text-[10px] tracking-wider uppercase text-[#3A3A3A] font-bold ${labelClassName}`}>
             {label}
         </label>
         <input

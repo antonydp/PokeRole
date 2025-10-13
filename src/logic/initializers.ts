@@ -44,6 +44,8 @@ export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSetti
         : `${pokemon.Weight.Kilograms}kg`;
         
     const weaknessString = calculateWeaknesses(pokemon.Type1, pokemon.Type2);
+    const maxHP = calculatePokemonHP(pokemon.BaseHP, pokemon.Vitality, trainerRank);
+    const maxWill = calculatePokemonWill(pokemon.Insight, trainerRank);
 
     return {
         pokemonNumber: String(pokemon.Number).padStart(4, '0'),
@@ -68,8 +70,10 @@ export const createInitialSheetData = (pokemon: Pokedex, unitSettings: UnitSetti
         accessory: '',
         type: [pokemon.Type1, pokemon.Type2].filter(Boolean).join(' / '),
         weakness: weaknessString,
-        hp: String(calculatePokemonHP(pokemon.BaseHP, pokemon.Vitality, trainerRank)),
-        will: String(calculatePokemonWill(pokemon.Insight, trainerRank)),
+        hp: String(maxHP),
+        currentHP: maxHP,
+        will: String(maxWill),
+        currentWill: maxWill,
         item: '',
         status: 'Healthy',
         initiative: String(calculateInitiative(pokemon.Dexterity, 0, trainerRank)),
@@ -146,9 +150,6 @@ export const createInitialTrainerData = (): TrainerData => {
         // Progression & Records
         achievements: [
             { text: 'Goal: Win a gym badge.', completed: false },
-            { text: '', completed: false },
-            { text: '', completed: false },
-            { text: '', completed: false },
             { text: '', completed: false },
         ],
         pokedexCaught: '0',

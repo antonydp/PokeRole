@@ -6,6 +6,7 @@ import { LabeledInput } from '../shared/LabeledInput.js';
 import { RANKS } from '../../src/constants/gameConstants.js';
 import { RANK_ORDER } from '../../src/logic/core.js';
 import { usePokemonSheetContext } from '../../src/context/PokemonSheetContext.js';
+import { StatDisplay } from '../shared/StatDisplay.js';
 
 const RightColumn: React.FC = () => {
     const {
@@ -15,9 +16,9 @@ const RightColumn: React.FC = () => {
         pokemon,
     } = usePokemonSheetContext();
     const quickRefFields: { label: string, field: keyof PokemonData }[] = [
-        { label: 'INITIATIVE:', field: 'initiative' }, { label: 'ACCURACY:', field: 'accuracy' },
-        { label: 'DAMAGE:', field: 'damage' }, { label: 'EVASION:', field: 'evasionValue' },
-        { label: 'CLASH:', field: 'clashValue' }, { label: 'DEF/S.DEF', field: 'defSDef' },
+        { label: 'INITIATIVE', field: 'initiative' }, { label: 'ACCURACY', field: 'accuracy' },
+        { label: 'DAMAGE', field: 'damage' }, { label: 'EVASION', field: 'evasionValue' },
+        { label: 'CLASH', field: 'clashValue' }, { label: 'DEF/S.DEF', field: 'defSDef' },
     ];
     
     const isOverleveled = useMemo(() => {
@@ -28,41 +29,40 @@ const RightColumn: React.FC = () => {
 
     return (
         <div className="lg:col-span-2 space-y-2">
-            <div className="bg-[#3A3A3A] rounded-xl p-1.5 w-full flex items-center gap-1.5">
-                <label className="text-white font-bold text-xs w-12 flex-shrink-0 font-primary">HP</label>
-                <div
-                    id="hp"
-                    className="w-full bg-white rounded-md px-1.5 py-1 text-black text-center font-bold text-xs border-2 border-[#3A3A3A]"
-                    aria-label={`Current HP: ${pokemonData.hp}`}
-                >
-                    {pokemonData.hp}
-                </div>
-            </div>
-            <div className="bg-[#3A3A3A] rounded-xl p-1.5 w-full flex items-center gap-1.5">
-                <label className="text-white font-bold text-xs w-12 flex-shrink-0 font-primary">WILL</label>
-                <div
-                    id="will"
-                    className="w-full bg-white rounded-md px-1.5 py-1 text-black text-center font-bold text-xs border-2 border-[#3A3A3A]"
-                    aria-label={`Current Will: ${pokemonData.will}`}
-                >
-                    {pokemonData.will}
-                </div>
-            </div>
+            <StatDisplay
+                label="HP"
+                currentValue={pokemonData.currentHP ?? parseInt(pokemonData.hp, 10)}
+                maxValue={parseInt(pokemonData.hp, 10)}
+                onValueChange={v => updateField('currentHP', v)}
+                circleColorClass="bg-green-500"
+            />
+            <StatDisplay
+                label="Will"
+                currentValue={pokemonData.currentWill ?? parseInt(pokemonData.will, 10)}
+                maxValue={parseInt(pokemonData.will, 10)}
+                onValueChange={v => updateField('currentWill', v)}
+                circleColorClass="bg-blue-500"
+            />
 
-            <LabeledInput id="item" label="ITEM:" value={pokemonData.item} onChange={v => updateField('item', v)} />
-            <LabeledInput id="status" label="STATUS:" value={pokemonData.status} onChange={v => updateField('status', v)} />
+            <LabeledInput id="item" label="ITEM" value={pokemonData.item} onChange={v => updateField('item', v)} />
+            <LabeledInput id="status" label="STATUS" value={pokemonData.status} onChange={v => updateField('status', v)} />
 
-            <div className="space-y-1 pt-1.5">
-                <h3 className="text-center text-[#B2483D] font-bold text-[10px]">QUICK REFERENCES</h3>
-                {quickRefFields.map(({ label, field }) => (
-                    <LabeledInput
-                        key={field}
-                        id={field}
-                        label={label}
-                        value={pokemonData[field] as string}
-                        onChange={(value) => updateField(field, value)}
-                    />
-                ))}
+            <div className="bg-black/40 rounded-lg p-1.5 border-2 border-black/50 shadow-inner">
+                <h3 className="text-cyan-200/70 text-[10px] font-bold uppercase tracking-widest text-center block mb-1">Live Stats</h3>
+                <div className="grid grid-cols-1 gap-1">
+                    {quickRefFields.map(({ label, field }) => (
+                        <LabeledInput
+                            key={field}
+                            id={field}
+                            label={label}
+                            value={pokemonData[field] as string}
+                            onChange={(value) => updateField(field, value)}
+                            containerClassName="bg-black/20 border-black/40 rounded-md flex-col py-0.5 px-1"
+                            inputClassName="w-full text-center font-bold text-lg"
+                            labelClassName="text-xs"
+                        />
+                    ))}
+                </div>
             </div>
 
             <div className={`bg-[#3A3A3A] rounded-xl p-1.5 font-primary flex items-stretch gap-1.5 mt-1.5 transition-all ${isOverleveled ? 'ring-1 ring-yellow-400' : ''}`}>
