@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { Pokedex } from '../types/index.js';
 import { AvailableEvolution } from '../hooks/useEvolution.js';
 
-type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
+export type UnitSettings = { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' };
 type SelectedPokemon = { dexID: string; instanceID?: string };
 
 type EvolutionStep = 'CHOICE' | 'OVERRANK_CHOICE' | 'OVERRANK_MOVESET' | 'REDISTRIBUTE' | 'MOVESET';

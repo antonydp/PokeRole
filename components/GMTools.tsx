@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import RandomEncounterGenerator from './GMTools/RandomEncounterGenerator.js';
+import NPCTrainerGenerator from './GMTools/NPCTrainerGenerator.js';
 
-type Tool = 'encounter';
+type Tool = 'encounter' | 'npc';
 
 const GMTools: React.FC = () => {
     const [activeTool, setActiveTool] = useState<Tool>('encounter');
@@ -22,11 +23,17 @@ const GMTools: React.FC = () => {
                 Game Master Tools
             </h2>
             <div className="flex justify-center gap-4 mb-6 border-b border-slate-700 pb-4">
-                <button 
+                <button
                     onClick={() => setActiveTool('encounter')}
                     className={getTabClassName('encounter')}
                 >
-                    Random Encounter Generator
+                    Random Encounter
+                </button>
+                <button
+                    onClick={() => setActiveTool('npc')}
+                    className={getTabClassName('npc')}
+                >
+                    NPC Trainer Generator
                 </button>
                 {/* Add buttons for future tools here */}
                 <button className="px-4 py-2 rounded-lg font-bold bg-slate-800 text-gray-500 cursor-not-allowed">
@@ -35,6 +42,7 @@ const GMTools: React.FC = () => {
             </div>
             <div className="flex-grow">
                 {activeTool === 'encounter' && <RandomEncounterGenerator />}
+                {activeTool === 'npc' && <NPCTrainerGenerator />}
                 {/* Render other tools based on activeTool state here */}
             </div>
         </div>

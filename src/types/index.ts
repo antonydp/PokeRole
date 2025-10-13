@@ -385,3 +385,39 @@ export interface TeamTypeCoverageData {
   resistances: { [type: string]: number };
   immunities: { [type: string]: number };
 }
+
+/** Represents a generated NPC Trainer. */
+export interface NPCTrainer {
+  name: string;
+  rank: Rank;
+  team: NPCPokemon[];
+  spriteUrl: string;
+  // Core Attributes
+  strength: number;
+  dexterity: number;
+  vitality: number;
+  insight: number;
+  // Skills
+  brawl: number;
+  throw: number;
+  evasion: number;
+  weapons: number;
+  alert: number;
+  athletic: number;
+  natureSurvival: number;
+  stealth: number;
+  allure: number;
+  etiquette: number;
+  intimidate: number;
+  perform: number;
+  crafts: number;
+  lore: number;
+  medicine: number;
+  science: number;
+}
+
+/** Represents a Pokémon on an NPC Trainer's team. */
+export interface NPCPokemon {
+  pokedexData: Pokedex;
+  sheetData: PokemonData;
+}
