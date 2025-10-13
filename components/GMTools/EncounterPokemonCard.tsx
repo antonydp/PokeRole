@@ -87,7 +87,7 @@ const EncounterPokemonCard: React.FC<{ pokemon: TeamMember; onUpdatePokemon: (up
     return (
         <div className="bg-slate-800 rounded-lg shadow-md overflow-hidden animate-fade-in-scale border border-slate-700/50">
             {/* --- Ultra-Compact Header --- */}
-            <div className="p-2 flex items-center gap-3 bg-slate-900/50">
+            <div className="p-2 flex items-center gap-3 bg-slate-900/50 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
                 <img src={`${IMAGE_BASE_URL}${pokedexData.Image}`} alt={pokedexData.Name} className="w-12 h-12 object-contain bg-slate-800 rounded-full" />
                 <div className="flex-grow">
                     <h4 className="font-bold text-base text-white leading-tight">{pokedexData.Name}</h4>
@@ -96,9 +96,9 @@ const EncounterPokemonCard: React.FC<{ pokemon: TeamMember; onUpdatePokemon: (up
                         {pokedexData.Type2 && <TypeBadge type={pokedexData.Type2} />}
                     </div>
                 </div>
-                <button onClick={() => setIsExpanded(!isExpanded)} className="p-1.5 rounded-full text-gray-400 hover:text-white hover:bg-slate-700 transition-colors">
+                <div className="p-1.5 rounded-full text-gray-400">
                     <ChevronDownIcon className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                </button>
+                </div>
             </div>
 
             {/* --- Collapsible Body --- */}
