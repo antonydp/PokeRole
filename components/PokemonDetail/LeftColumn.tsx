@@ -32,11 +32,11 @@ const LeftColumn: React.FC = () => {
     };
 
     return (
-        <div className="lg:col-span-5 flex items-stretch gap-3">
+        <div className="lg:col-span-5 flex items-stretch gap-2">
             {/* Attributes */}
-            <div className="flex-grow flex flex-col justify-between">
+            <div className="flex-grow flex flex-col justify-between gap-2">
                 <PointsDisplay label="Attribute Points" spent={points.attributes.spent} total={points.attributes.total} />
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1.5">
                     {attributes.map(attr => {
                         const baseStatKey = (attr.name.charAt(0) + attr.name.slice(1).toLowerCase()) as keyof Pokedex;
                         const baseValue = pokemon[baseStatKey] as number;
@@ -53,14 +53,14 @@ const LeftColumn: React.FC = () => {
                         );
                     })}
                 </div>
-                <div className="flex gap-3 pt-1">
+                <div className="flex gap-2">
                     <LabeledInput id="size" label="SIZE:" value={pokemonData.size} onChange={v => onDataChange('size', v)} isReadOnly={true} />
                     <LabeledInput id="weight" label="WEIGHT:" value={pokemonData.weight} onChange={v => onDataChange('weight', v)} isReadOnly={true} />
                 </div>
             </div>
 
             {/* Skills */}
-            <div className="flex flex-col w-48 flex-shrink-0 gap-3">
+            <div className="flex flex-col w-44 flex-shrink-0 gap-2">
                 <PointsDisplay label="Skill Points" spent={points.skills.spent} total={points.skills.total} />
                 <div className="flex flex-col flex-grow">
                     <CurvedSkillBlock<PokemonData> title="FIGHT" skills={skills.FIGHT} onSkillChange={onDataChange} skillLimit={skillLimit} isPoolExhausted={isSkillPoolExhausted} position="top" />

@@ -100,37 +100,37 @@ export const MoveSelectionModal: React.FC = () => {
     if (!teamMember) return null;
 
     return (
-        <div className="p-6 bg-slate-800 text-white rounded-lg w-full max-w-2xl max-h-[80vh] flex flex-col">
-            <h2 className="text-2xl font-primary text-poke-yellow mb-2 text-center">Select New Moveset</h2>
-            <p className="text-center text-gray-400 mb-4">Choose up to {maxMoves} moves for {teamMember.pokedexData.Name}. Moves from the previous form are lost.</p>
-            <div className="grid grid-cols-2 gap-4 flex-grow overflow-hidden">
-                <div className="flex flex-col space-y-2 pr-2 overflow-y-auto">
-                    <h3 className="font-bold text-lg text-poke-yellow">Available Moves</h3>
+        <div className="p-4 bg-slate-800 text-white rounded-lg w-full max-w-xl max-h-[80vh] flex flex-col">
+            <h2 className="text-xl font-primary text-poke-yellow mb-2 text-center">Select New Moveset</h2>
+            <p className="text-center text-gray-400 mb-3 text-sm">Choose up to {maxMoves} moves for {teamMember.pokedexData.Name}. Moves from the previous form are lost.</p>
+            <div className="grid grid-cols-2 gap-3 flex-grow overflow-hidden">
+                <div className="flex flex-col space-y-1.5 pr-2 overflow-y-auto">
+                    <h3 className="font-bold text-base text-poke-yellow">Available Moves</h3>
                     {learnableMoves.map(move => {
                         const isSelected = selectedMoves.includes(move._id);
                         return (
-                            <button key={move._id} onClick={() => handleToggleMove(move._id)} className={`p-3 rounded-lg text-left transition-colors ${isSelected ? 'bg-poke-blue ring-2 ring-poke-yellow' : 'bg-slate-700 hover:bg-slate-600'}`}>
-                                <p className="font-bold">{move.Name}</p>
-                                <p className="text-xs text-gray-300">{move.Effect}</p>
+                            <button key={move._id} onClick={() => handleToggleMove(move._id)} className={`p-2 rounded-md text-left transition-colors ${isSelected ? 'bg-poke-blue ring-1 ring-poke-yellow' : 'bg-slate-700 hover:bg-slate-600'}`}>
+                                <p className="font-bold text-sm">{move.Name}</p>
+                                <p className="text-xs text-gray-300 leading-tight">{move.Effect}</p>
                             </button>
                         );
                     })}
                 </div>
-                <div className="flex flex-col space-y-2">
-                    <h3 className="font-bold text-lg text-poke-yellow">Selected Moves ({selectedMoves.filter(m => m).length}/{maxMoves})</h3>
+                <div className="flex flex-col space-y-1.5">
+                    <h3 className="font-bold text-base text-poke-yellow">Selected Moves ({selectedMoves.filter(m => m).length}/{maxMoves})</h3>
                     {selectedMoves.map((moveId, index) => {
                          const move = moveId ? allMoves[moveId] : null;
                          return (
-                            <div key={index} className="p-3 bg-slate-900 border border-slate-700 rounded-lg min-h-[60px] flex items-center justify-between">
-                               {move ? <p className="font-bold">{move.Name}</p> : <p className="text-gray-500">Empty Slot</p>}
+                            <div key={index} className="p-2 bg-slate-900 border border-slate-700 rounded-md min-h-[48px] flex items-center justify-between">
+                               {move ? <p className="font-bold text-sm">{move.Name}</p> : <p className="text-gray-500 text-sm">Empty Slot</p>}
                                {move && <TypeBadge type={move.Type} />}
                             </div>
                          );
                     })}
                 </div>
             </div>
-             <div className="mt-4 flex justify-end pt-4 border-t border-slate-700">
-                <button onClick={handleConfirm} className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-500">Confirm Moveset</button>
+             <div className="mt-3 flex justify-end pt-3 border-t border-slate-700">
+                <button onClick={handleConfirm} className="px-4 py-1.5 bg-green-600 text-white font-bold rounded-md hover:bg-green-500 text-sm">Confirm Moveset</button>
             </div>
         </div>
     );

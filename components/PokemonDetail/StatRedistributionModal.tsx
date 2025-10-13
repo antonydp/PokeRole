@@ -19,7 +19,7 @@ export const StatRedistributionModal: React.FC = () => {
     const { teamMember } = useActivePokemon();
 
     if (!evolutionState.isOpen || evolutionState.step !== 'REDISTRIBUTE' || !evolutionState.bonusPoints || !evolutionState.newPokedexData || !teamMember) {
-        return <div className="p-4 text-red-500">Error: Missing data for redistribution.</div>;
+        return <div className="p-3 text-red-500 text-sm">Error: Missing data for redistribution.</div>;
     }
 
     const { bonusPoints, newPokedexData } = evolutionState;
@@ -64,21 +64,21 @@ export const StatRedistributionModal: React.FC = () => {
     };
 
     return (
-        <div className="p-4 bg-slate-800 text-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
-            <h2 className="text-2xl font-primary text-poke-yellow mb-2 text-center">Redistribute Bonus Points</h2>
-            <p className="text-center text-gray-300 mb-4">Re-assign the points your Pokémon earned. You must spend all points to continue.</p>
+        <div className="p-3 bg-slate-800 text-white rounded-lg w-full max-w-3xl max-h-[90vh] flex flex-col">
+            <h2 className="text-xl font-primary text-poke-yellow mb-1.5 text-center">Redistribute Bonus Points</h2>
+            <p className="text-center text-gray-300 mb-3 text-sm">Re-assign the points your Pokémon earned. You must spend all points to continue.</p>
 
-            <div className="flex-grow overflow-y-auto pr-2 space-y-4">
-                <div className="grid grid-cols-3 gap-4 sticky top-0 bg-slate-800 py-2 z-10">
+            <div className="flex-grow overflow-y-auto pr-2 space-y-3">
+                <div className="grid grid-cols-3 gap-3 sticky top-0 bg-slate-800 py-1.5 z-10">
                     <PointsDisplay label="Attribute Points Left" spent={0} total={remainingPoints.attributes} />
                     <PointsDisplay label="Skill Points Left" spent={0} total={remainingPoints.skills} />
                     <PointsDisplay label="Social Points Left" spent={0} total={remainingPoints.social} />
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {/* Attributes */}
-                    <div className="lg:col-span-1 space-y-2">
-                        <h3 className="font-bold text-center text-poke-yellow">Attributes</h3>
+                    <div className="lg:col-span-1 space-y-1.5">
+                        <h3 className="font-bold text-center text-poke-yellow text-base">Attributes</h3>
                         {POKEMON_ATTRIBUTES.map(attr => (
                             <AttributeBlock<PokemonData>
                                 key={attr.name}
@@ -100,7 +100,7 @@ export const StatRedistributionModal: React.FC = () => {
 
                     {/* Skills */}
                     <div className="lg:col-span-1 flex flex-col">
-                         <h3 className="font-bold text-center text-poke-yellow">Skills</h3>
+                         <h3 className="font-bold text-center text-poke-yellow text-base">Skills</h3>
                         <CurvedSkillBlock<PokemonData> title="FIGHT" skills={POKEMON_SKILLS.FIGHT.map(s => ({...s, value: tempSheet[s.field as keyof PokemonData] as number}))} onSkillChange={handleDataChange} skillLimit={RANK_SKILL_LIMITS[tempSheet.rank as Rank]} isPoolExhausted={remainingPoints.skills <= 0} position="top" />
                         <CurvedSkillBlock<PokemonData> title="SURVIVAL" skills={POKEMON_SKILLS.SURVIVAL.map(s => ({...s, value: tempSheet[s.field as keyof PokemonData] as number}))} onSkillChange={handleDataChange} skillLimit={RANK_SKILL_LIMITS[tempSheet.rank as Rank]} isPoolExhausted={remainingPoints.skills <= 0} position="middle" />
                          <CurvedSkillBlock<PokemonData> title="SOCIAL" skills={POKEMON_SKILLS.SOCIAL.map(s => ({...s, value: tempSheet[s.field as keyof PokemonData] as number}))} onSkillChange={handleDataChange} skillLimit={RANK_SKILL_LIMITS[tempSheet.rank as Rank]} isPoolExhausted={remainingPoints.skills <= 0} position="middle" />
@@ -108,8 +108,8 @@ export const StatRedistributionModal: React.FC = () => {
                     </div>
 
                     {/* *** ADD THIS SECTION FOR SOCIAL ATTRIBUTES *** */}
-                    <div className="lg:col-span-1 space-y-2">
-                        <h3 className="font-bold text-center text-poke-yellow">Social Attributes</h3>
+                    <div className="lg:col-span-1 space-y-1.5">
+                        <h3 className="font-bold text-center text-poke-yellow text-base">Social Attributes</h3>
                         {SOCIAL_ATTRIBUTES.map(attr => (
                             <SocialAttribute
                                 key={attr.name}
@@ -131,11 +131,11 @@ export const StatRedistributionModal: React.FC = () => {
                 </div>
             </div>
 
-            <div className="mt-4 flex justify-end pt-4 border-t border-slate-700">
+            <div className="mt-3 flex justify-end pt-3 border-t border-slate-700">
                 <button
                     onClick={handleConfirm}
                     disabled={!canConfirm}
-                    className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-500 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-1.5 bg-green-600 text-white font-bold rounded-md hover:bg-green-500 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors text-sm"
                 >
                     {canConfirm ? 'Confirm & Continue' : `Spend All Points`}
                 </button>

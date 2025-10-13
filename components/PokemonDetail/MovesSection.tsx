@@ -10,10 +10,10 @@ const EmptyMoveSlot: React.FC<{ index: number; onAdd: (index: number) => void }>
     <button
         onClick={() => onAdd(index)}
         aria-label="Add a move"
-        className="h-full w-full min-h-[125px] bg-black/10 border-4 border-dashed border-black/20 rounded-md flex flex-col items-center justify-center group hover:bg-black/20 hover:border-white/50 transition-colors duration-200"
+        className="h-full w-full min-h-[100px] bg-black/10 border-2 border-dashed border-black/20 rounded-md flex flex-col items-center justify-center group hover:bg-black/20 hover:border-white/50 transition-colors duration-200"
     >
-        <PlusIcon className="w-10 h-10 text-white/50 group-hover:text-white transition-colors" />
-        <span className="mt-2 font-bold text-white/50 group-hover:text-white transition-colors">Add Move</span>
+        <PlusIcon className="w-8 h-8 text-white/50 group-hover:text-white transition-colors" />
+        <span className="mt-1.5 font-bold text-white/50 group-hover:text-white transition-colors text-sm">Add Move</span>
     </button>
 );
 
@@ -29,9 +29,9 @@ const MovesSection: React.FC = () => {
         handleToggleMoveExpand
     } = usePokemonSheetContext();
     return (
-        <div className="mt-4 bg-[#2DB3B3]/90 rounded-xl p-3 border-4 border-[#3A3A3A]">
-            <h2 className="text-center text-lg text-white font-bold mb-3 tracking-wider font-primary">MOVES</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="mt-2 bg-[#2DB3B3]/90 rounded-lg p-2 border-2 border-[#3A3A3A]">
+            <h2 className="text-center text-base text-white font-bold mb-2 tracking-wider font-primary">MOVES</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {pokemonData.moves.map((moveId, index) => {
                     const move = moveId ? allMoves[moveId] : null;
                     return (

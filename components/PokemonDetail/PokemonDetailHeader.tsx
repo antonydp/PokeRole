@@ -32,61 +32,61 @@ const PokemonDetailHeader: React.FC = () => {
     if (isInTemporaryForm && !teamMember) return null; // If in temp form, must be a team member
 
     return (
-        <div className="flex justify-between items-center mb-4 flex-wrap gap-4 font-primary">
+        <div className="flex justify-between items-center mb-3 flex-wrap gap-3 font-primary">
             <div className="flex items-center">
-                <img src={`${IMAGE_BASE_URL}${pokemon.Image}`} alt={pokemon.Name} className="w-24 h-24 mr-4" />
-                <div className="flex-grow min-w-[250px]">
+                <img src={`${IMAGE_BASE_URL}${pokemon.Image}`} alt={pokemon.Name} className="w-20 h-20 mr-3" />
+                <div className="flex-grow min-w-[200px]">
                     <input
                         id="pokemonName"
                     type="text"
                     value={pokemonData.pokemonName}
                     onChange={e => updateField('pokemonName', e.target.value)}
-                    className="w-full bg-transparent p-0 text-4xl font-primary text-white border-none focus:ring-0 focus:outline-none placeholder:text-white/50"
+                    className="w-full bg-transparent p-0 text-3xl font-primary text-white border-none focus:ring-0 focus:outline-none placeholder:text-white/50"
                     placeholder="Pokémon Name"
                     aria-label="Pokémon Name"
                 />
-                    <p className="mt-1 font-primary text-sm text-white/80 tracking-wider">
+                    <p className="mt-0.5 font-primary text-xs text-white/80 tracking-wider">
                         POKÉDEX #: {pokemonData.pokemonNumber}
                     </p>
                 </div>
             </div>
             {/* Right side: Ability and Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 items-stretch flex-shrink-0 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch flex-shrink-0 w-full sm:w-auto">
                 <button
                     onClick={onAbilityClick}
                     onMouseEnter={(e) => onShowTooltip(e, selectedAbility ? { name: selectedAbility.Name, description: selectedAbility.Description } : null)}
                     onMouseLeave={onHideTooltip}
-                    className="relative w-full sm:w-48 bg-[#B2483D] rounded-xl px-2 pt-1 pb-1.5 border-2 border-[#3A3A3A] flex flex-col justify-center text-left hover:bg-red-800 transition-colors"
+                    className="relative w-full sm:w-40 bg-[#B2483D] rounded-lg px-1.5 pt-0.5 pb-1 border-2 border-[#3A3A3A] flex flex-col justify-center text-left hover:bg-red-800 transition-colors"
                 >
-                    <label className="font-primary text-[10px] tracking-wider uppercase text-white/90 font-bold">
+                    <label className="font-primary text-[9px] tracking-wider uppercase text-white/90 font-bold">
                         ABILITY
                     </label>
-                    <div className="w-full bg-transparent text-white font-sans text-sm focus:outline-none p-0 truncate">
+                    <div className="w-full bg-transparent text-white font-sans text-xs focus:outline-none p-0 truncate">
                         {pokemonData.ability || 'Select Ability'}
                     </div>
                 </button>
 
-                <div className="flex-grow flex gap-2">
+                <div className="flex-grow flex gap-1.5">
                      {/* ADD THIS CONDITIONAL BUTTON */}
                      {isInTemporaryForm && (
                         <button
                            onClick={() => changeForm(teamMember!.instanceID, null, pokemonData)}
-                           className="h-full flex items-center justify-center px-4 py-2 bg-cyan-500 text-white hover:bg-cyan-600 rounded-lg font-bold transition-colors text-sm w-full"
+                           className="h-full flex items-center justify-center px-3 py-1.5 bg-cyan-500 text-white hover:bg-cyan-600 rounded-md font-bold transition-colors text-xs w-full"
                        >
                             REVERT FORM
                         </button>
                     )}
                     {isInTeam && !isInPC && !isInTemporaryForm ? (
-                        <button onClick={onRemoveFromTeam} className="h-full flex items-center justify-center px-4 py-2 bg-poke-red hover:bg-red-700 rounded-lg font-bold text-white transition-colors text-sm w-full">
-                            <MinusIcon className="w-5 h-5 mr-2" /> REMOVE FROM TEAM
+                        <button onClick={onRemoveFromTeam} className="h-full flex items-center justify-center px-3 py-1.5 bg-poke-red hover:bg-red-700 rounded-md font-bold text-white transition-colors text-xs w-full">
+                            <MinusIcon className="w-4 h-4 mr-1.5" /> REMOVE FROM TEAM
                         </button>
                     ) : isInPC && !isInTemporaryForm ? (
-                        <button onClick={onRemoveFromPC} className="h-full flex items-center justify-center px-4 py-2 bg-poke-red hover:bg-red-700 rounded-lg font-bold text-white transition-colors text-sm w-full">
-                            <MinusIcon className="w-5 h-5 mr-2" /> REMOVE FROM PC
+                        <button onClick={onRemoveFromPC} className="h-full flex items-center justify-center px-3 py-1.5 bg-poke-red hover:bg-red-700 rounded-md font-bold text-white transition-colors text-xs w-full">
+                            <MinusIcon className="w-4 h-4 mr-1.5" /> REMOVE FROM PC
                         </button>
                     ) : !isInTemporaryForm && (
-                        <button onClick={onAddToTeam} disabled={teamIsFull} className="h-full flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-white transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed text-sm w-full">
-                            <PlusIcon className="w-5 h-5 mr-2" /> ADD TO TEAM
+                        <button onClick={onAddToTeam} disabled={teamIsFull} className="h-full flex items-center justify-center px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded-md font-bold text-white transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed text-xs w-full">
+                            <PlusIcon className="w-4 h-4 mr-1.5" /> ADD TO TEAM
                         </button>
                     )}
                     <div className="w-full"
@@ -100,7 +100,7 @@ const PokemonDetailHeader: React.FC = () => {
                         <button
                             onClick={onEvolveClick}
                             disabled={!isEvolveEligible || isInTemporaryForm}
-                            className="h-full flex items-center justify-center px-4 py-2 bg-poke-yellow text-slate-900 hover:bg-yellow-300 rounded-lg font-bold transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed text-sm w-full"
+                            className="h-full flex items-center justify-center px-3 py-1.5 bg-poke-yellow text-slate-900 hover:bg-yellow-300 rounded-md font-bold transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed text-xs w-full"
                         >
                             EVOLVE
                         </button>

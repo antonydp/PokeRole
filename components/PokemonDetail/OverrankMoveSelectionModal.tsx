@@ -44,26 +44,26 @@ export const OverrankMoveSelectionModal: React.FC = () => {
     };
     
     return (
-        <div className="p-6 bg-slate-800 text-white rounded-lg w-full max-w-lg max-h-[80vh] flex flex-col">
-            <h2 className="text-2xl font-primary text-poke-yellow mb-2 text-center">Select an Overrank Move</h2>
-            <p className="text-center text-gray-400 mb-4">Choose one move from the next rank to learn.</p>
+        <div className="p-4 bg-slate-800 text-white rounded-lg w-full max-w-md max-h-[80vh] flex flex-col">
+            <h2 className="text-xl font-primary text-poke-yellow mb-2 text-center">Select an Overrank Move</h2>
+            <p className="text-center text-gray-400 mb-3 text-sm">Choose one move from the next rank to learn.</p>
             <input
                 type="text"
                 placeholder="Search moves..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full p-2 mb-4 bg-slate-900 border border-slate-600 rounded-lg"
+                className="w-full p-1.5 mb-3 bg-slate-900 border border-slate-600 rounded-md text-sm"
             />
-            <div className="flex-grow overflow-y-auto pr-2 space-y-2">
+            <div className="flex-grow overflow-y-auto pr-2 space-y-1.5">
                 {availableMoves.length > 0 ? availableMoves.map(move => (
-                    <button key={move._id} onClick={() => handleSelectMove(move)} className="w-full flex justify-between items-center p-3 bg-slate-700 rounded-lg hover:bg-poke-blue transition-colors text-left">
+                    <button key={move._id} onClick={() => handleSelectMove(move)} className="w-full flex justify-between items-center p-2 bg-slate-700 rounded-md hover:bg-poke-blue transition-colors text-left">
                         <div>
-                            <p className="font-bold text-white">{move.Name}</p>
-                            <p className="text-sm text-gray-400 mt-1">{move.Effect}</p>
+                            <p className="font-bold text-white text-sm">{move.Name}</p>
+                            <p className="text-xs text-gray-400 mt-0.5 leading-tight">{move.Effect}</p>
                         </div>
                         <TypeBadge type={move.Type} />
                     </button>
-                )) : <p className="text-gray-400 text-center">No overrank moves available for this Pokémon.</p>}
+                )) : <p className="text-gray-400 text-center text-sm">No overrank moves available for this Pokémon.</p>}
             </div>
         </div>
     );

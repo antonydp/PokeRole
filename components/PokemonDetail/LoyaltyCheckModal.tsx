@@ -37,24 +37,24 @@ export const LoyaltyCheckModal: React.FC = () => {
     };
 
     return (
-        <div className="p-6 bg-slate-800 text-white rounded-lg w-full max-w-lg text-center">
-            <h2 className="text-2xl font-primary text-poke-yellow mb-2">Loyalty Check</h2>
-            <p className="mb-4">The sudden change from evolution can affect a Pokémon's loyalty. Roll your highest Social Attribute ({highestSocial}) to see how it reacts.</p>
+        <div className="p-4 bg-slate-800 text-white rounded-lg w-full max-w-md text-center">
+            <h2 className="text-xl font-primary text-poke-yellow mb-2">Loyalty Check</h2>
+            <p className="mb-3 text-sm">The sudden change from evolution can affect a Pokémon's loyalty. Roll your highest Social Attribute ({highestSocial}) to see how it reacts.</p>
             
             {!rollResult ? (
-                <button onClick={handleRoll} className="px-6 py-3 bg-poke-blue text-white font-bold rounded-lg hover:bg-blue-700 flex items-center justify-center mx-auto">
-                    <DiceIcon className="w-6 h-6 mr-2" />
+                <button onClick={handleRoll} className="px-4 py-2 bg-poke-blue text-white font-bold rounded-md hover:bg-blue-700 flex items-center justify-center mx-auto text-sm">
+                    <DiceIcon className="w-5 h-5 mr-2" />
                     Roll {highestSocial} Dice
                 </button>
             ) : (
                 <div className="animate-fade-in">
-                    <p className="text-4xl font-bold mb-2">{rollResult.successes} Successes!</p>
+                    <p className="text-3xl font-bold mb-1">{rollResult.successes} Successes!</p>
                     {rollResult.lostLoyalty ? (
-                        <p className="text-lg text-red-400">Oh no! Its Loyalty decreased by 1.</p>
+                        <p className="text-base text-red-400">Oh no! Its Loyalty decreased by 1.</p>
                     ) : (
-                        <p className="text-lg text-green-400">It trusts you completely! Loyalty is unchanged.</p>
+                        <p className="text-base text-green-400">It trusts you completely! Loyalty is unchanged.</p>
                     )}
-                    <button onClick={closeEvolutionModal} className="mt-6 px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-500">
+                    <button onClick={closeEvolutionModal} className="mt-4 px-4 py-1.5 bg-green-600 text-white font-bold rounded-md hover:bg-green-500 text-sm">
                         Finish Evolution
                     </button>
                 </div>

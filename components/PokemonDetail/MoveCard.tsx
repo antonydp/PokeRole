@@ -113,7 +113,7 @@ const MoveCard: React.FC<MoveCardProps> = ({
     const hasAddedEffects = move.AddedEffects && Object.keys(move.AddedEffects).length > 0;
 
     return (
-        <div className="relative bg-stone-200 text-stone-900 rounded-md border-4 border-stone-900 font-sans shadow-lg flex flex-col animate-fade-in">
+        <div className="relative bg-stone-200 text-stone-900 rounded-md border-2 border-stone-900 font-sans shadow-md flex flex-col animate-fade-in">
             {/* Conditionally render the clear button */}
             {showClearButton && (
                 <button
@@ -121,41 +121,41 @@ const MoveCard: React.FC<MoveCardProps> = ({
                         e.stopPropagation();
                         onClear(index);
                     }}
-                    className="absolute top-1 right-1 z-10 p-1 rounded-full bg-stone-400/50 hover:bg-poke-red hover:text-white transition-colors"
+                    className="absolute top-0.5 right-0.5 z-10 p-0.5 rounded-full bg-stone-400/50 hover:bg-poke-red hover:text-white transition-colors"
                     aria-label="Clear move"
                 >
-                    <CloseIcon className="w-4 h-4" />
+                    <CloseIcon className="w-3 h-3" />
                 </button>
             )}
             
             <button
                 onClick={onToggleExpand}
-                className="w-full text-left p-2 focus:outline-none focus:ring-2 focus:ring-poke-blue focus:ring-inset rounded-t-sm"
+                className="w-full text-left p-1.5 focus:outline-none focus:ring-2 focus:ring-poke-blue focus:ring-inset rounded-t-sm"
                 aria-expanded={isExpanded}
                 aria-controls={`move-details-${index}`}
             >
                 {/* Header */}
-                <div className="flex justify-between items-start border-b-4 border-stone-900 pb-1 mb-2">
-                    <div className="flex items-center gap-2 pr-2">
-                        <TriangleIcon className="w-3 h-3 text-stone-900 flex-shrink-0 mt-1" />
-                        <h3 className="font-bold text-lg uppercase tracking-tight leading-tight">{move.Name}</h3>
+                <div className="flex justify-between items-start border-b-2 border-stone-900 pb-1 mb-1">
+                    <div className="flex items-center gap-1.5 pr-2">
+                        <TriangleIcon className="w-2.5 h-2.5 text-stone-900 flex-shrink-0 mt-0.5" />
+                        <h3 className="font-bold text-base uppercase tracking-tight leading-tight">{move.Name}</h3>
                     </div>
-                    <div className="flex border-2 border-stone-900 text-center text-sm flex-shrink-0 bg-stone-100">
-                        <div className="px-2 py-0.5 border-r-2 border-stone-900">
-                            <p className="text-[10px] font-bold uppercase">Power</p>
-                            <p className="font-semibold">{move.Power > 0 ? move.Power : '--'}</p>
+                    <div className="flex border border-stone-900 text-center text-xs flex-shrink-0 bg-stone-100">
+                        <div className="px-1.5 py-0.5 border-r border-stone-900">
+                            <p className="text-[9px] font-bold uppercase">Power</p>
+                            <p className="font-semibold text-xs">{move.Power > 0 ? move.Power : '--'}</p>
                         </div>
-                        <div className="px-2 py-0.5">
-                            <p className="text-[10px] font-bold uppercase">Category</p>
-                            <p className="font-semibold text-xs capitalize">{move.Category}</p>
+                        <div className="px-1.5 py-0.5">
+                            <p className="text-[9px] font-bold uppercase">Category</p>
+                            <p className="font-semibold text-[10px] capitalize">{move.Category}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Always visible Body part */}
-                <div className="space-y-1 text-sm flex justify-between items-center">
-                    <div className="flex items-center"><span className="font-bold uppercase w-24 flex-shrink-0">TYPE:</span> <TypeBadge type={move.Type} /></div>
-                    <ChevronDownIcon className={`w-5 h-5 transition-transform text-stone-600 ${isExpanded ? 'rotate-180' : ''}`} />
+                <div className="space-y-1 text-xs flex justify-between items-center">
+                    <div className="flex items-center"><span className="font-bold uppercase w-20 flex-shrink-0">TYPE:</span> <TypeBadge type={move.Type} /></div>
+                    <ChevronDownIcon className={`w-4 h-4 transition-transform text-stone-600 ${isExpanded ? 'rotate-180' : ''}`} />
                 </div>
             </button>
             
@@ -164,22 +164,22 @@ const MoveCard: React.FC<MoveCardProps> = ({
                 id={`move-details-${index}`}
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
             >
-                <div className="px-2 pb-2">
-                    <div className="space-y-1 text-sm flex-grow">
-                        <div className="flex items-start"><span className="font-bold uppercase w-24 flex-shrink-0">ACCURACY:</span> <span>{accuracyString}</span></div>
-                        <div className="flex items-start"><span className="font-bold uppercase w-24 flex-shrink-0">DAMAGE:</span> <span>{damageString}</span></div>
+                <div className="px-1.5 pb-1.5">
+                    <div className="space-y-0.5 text-xs flex-grow">
+                        <div className="flex items-start"><span className="font-bold uppercase w-20 flex-shrink-0">ACCURACY:</span> <span>{accuracyString}</span></div>
+                        <div className="flex items-start"><span className="font-bold uppercase w-20 flex-shrink-0">DAMAGE:</span> <span>{damageString}</span></div>
                     </div>
 
                     {(move.Effect || hasAddedEffects) && (
-                        <div className="mt-2 pt-2 border-t-2 border-stone-800/50">
+                        <div className="mt-1.5 pt-1.5 border-t border-stone-800/50">
                             <AddedEffectsDisplay effects={move.AddedEffects} effectString={move.Effect} />
                         </div>
                     )}
                     
                     {move.Description && (
                         <>
-                            <hr className="border-t-2 border-stone-800/50 my-2" />
-                            <p className="text-xs italic pb-1">{move.Description}</p>
+                            <hr className="border-t border-stone-800/50 my-1.5" />
+                            <p className="text-[10px] italic pb-1">{move.Description}</p>
                         </>
                     )}
                 </div>

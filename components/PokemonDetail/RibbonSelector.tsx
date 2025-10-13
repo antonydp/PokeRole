@@ -43,20 +43,20 @@ export const RibbonSelector: React.FC<RibbonSelectorProps> = ({ ribbons, allRibb
 
     return (
         <div>
-            <div className="grid grid-cols-4 gap-2 mt-1">
+            <div className="grid grid-cols-4 gap-1.5 mt-1">
                 {ribbons.map((ribbonName, index) => {
                     const ribbon = getRibbonByName(ribbonName);
                     return (
                         <div
                             key={index}
-                            className="bg-white rounded-xl w-full aspect-square border-2 border-[#3A3A3A] cursor-pointer"
+                            className="bg-white rounded-lg w-full aspect-square border-2 border-[#3A3A3A] cursor-pointer"
                             aria-label={`Ribbon slot ${index + 1}`}
                             onClick={() => handleSlotClick(index)}
                             onMouseEnter={(e) => handleMouseEnter(e, ribbon)}
                             onMouseLeave={handleMouseLeave}
                         >
                             {ribbon && (
-                                <img src={ribbon.image_url} alt={ribbon.name} className="w-full h-full object-contain" />
+                                <img src={ribbon.image_url} alt={ribbon.name} className="w-full h-full object-contain p-0.5" />
                             )}
                         </div>
                     );
