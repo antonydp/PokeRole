@@ -347,6 +347,15 @@ export interface Badge {
 }
 
 /**
+ * Represents a trainer sprite.
+ */
+export interface Sprite {
+  name: string;
+  spriteUrl: string;
+  author: string | null;
+}
+
+/**
  * Represents sub-categories within the "Healing Items" category.
  */
 export interface HealingItemsSubCategory {

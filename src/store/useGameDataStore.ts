@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Pokedex, Move, Ability, ItemsData, Ribbon, Badge } from '../types/index.js';
+import { Pokedex, Move, Ability, ItemsData, Ribbon, Badge, Sprite } from '../types/index.js';
 import { fetchAllData } from '../../services/pokedexService.js';
 
 interface GameDataState {
@@ -9,6 +9,7 @@ interface GameDataState {
     allItems: ItemsData | null;
     ribbonsData: Ribbon[];
     allBadges: Badge[];
+    allSprites: Sprite[];
     isLoading: boolean;
     error: string | null;
     loadData: () => Promise<void>;
@@ -21,12 +22,13 @@ export const useGameDataStore = create<GameDataState>((set) => ({
     allItems: null,
     ribbonsData: [],
     allBadges: [],
+    allSprites: [],
     isLoading: true,
     error: null,
     loadData: async () => {
         try {
             set({ isLoading: true, error: null });
-            const { pokemonData, movesData, abilitiesData, itemsData, ribbonsData, badgesData } = await fetchAllData();
+            const { pokemonData, movesData, abilitiesData, itemsData, ribbonsData, badgesData, spritesData } = await fetchAllData();
             
             const movesMap = movesData.reduce((acc, move) => {
                 acc[move._id] = move;
@@ -45,6 +47,7 @@ export const useGameDataStore = create<GameDataState>((set) => ({
                 allItems: itemsData,
                 ribbonsData: ribbonsData,
                 allBadges: badgesData,
+                allSprites: spritesData,
                 isLoading: false
             });
         } catch (err) {

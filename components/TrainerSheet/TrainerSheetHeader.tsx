@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TrainerData, Rank } from '../../src/types/index.js';
 import { AGE_GROUPS, RANKS, AgeGroup } from '../../src/constants/gameConstants.js';
 import { ChevronDownIcon } from '../Icons.js';
 import NatureDisplay from '../shared/NatureDisplay.js';
 import { StatDisplay } from '../shared/StatDisplay.js';
+import SpriteModal from './SpriteModal.js';
+import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 
 interface TrainerSheetHeaderProps {
     trainerData: TrainerData;
@@ -64,20 +66,22 @@ const SelectField: React.FC<{ label: string; value: string; onChange: (value: st
 );
 
 const TrainerSheetHeader: React.FC<TrainerSheetHeaderProps> = ({ trainerData, onDataChange, onOpenNatureModal }) => {
-    const handleImageClick = () => {
-        const newUrl = window.prompt("Enter the URL for the trainer's image:", trainerData.imageUrl ?? '');
-        if (newUrl !== null) {
-            onDataChange('imageUrl', newUrl);
-        }
+    const [isSpriteModalOpen, setIsSpriteModalOpen] = useState(false);
+    const allSprites = useGameDataStore(state => state.allSprites);
+
+    const handleSelectSprite = (spriteUrl: string) => {
+        onDataChange('imageUrl', spriteUrl);
+        setIsSpriteModalOpen(false);
     };
 
     return (
-        <div className="bg-red-900/70 p-2 rounded-xl border border-red-800/60 shadow-2xl font-primary relative mb-2 backdrop-blur-sm">
-            <div className="grid grid-cols-[auto,1fr] gap-2">
+        <>
+            <div className="bg-red-900/70 p-2 rounded-xl border border-red-800/60 shadow-2xl font-primary relative mb-2 backdrop-blur-sm">
+                <div className="grid grid-cols-[auto,1fr] gap-2">
                 {/* Image Column */}
                 <div
                     className="w-24 h-24 bg-gray-700/50 rounded-lg border-2 border-white/20 shadow-lg flex items-center justify-center z-10 overflow-hidden cursor-pointer flex-shrink-0 hover:border-poke-yellow transition-colors group"
-                    onClick={handleImageClick}
+                    onClick={() => setIsSpriteModalOpen(true)}
                     title="Click to change image"
                 >
                     {trainerData.imageUrl ? (
@@ -125,6 +129,13 @@ const TrainerSheetHeader: React.FC<TrainerSheetHeaderProps> = ({ trainerData, on
                 </div>
             </div>
         </div>
+        <SpriteModal
+            isOpen={isSpriteModalOpen}
+            onClose={() => setIsSpriteModalOpen(false)}
+            allSprites={allSprites}
+            onSelectSprite={handleSelectSprite}
+        />
+        </>
     );
 };
 
