@@ -162,3 +162,32 @@ export function generateNPCTrainer(
         ...trainerStats,
     } as NPCTrainer;
 }
+
+export function regenerateNPCTrainerStats(
+    existingTrainer: NPCTrainer,
+    allPokemon: Pokedex[],
+    allMoves: Record<string, Move>,
+    unitSettings: UnitSettings,
+): NPCTrainer {
+    const newTrainerStats = generateTrainerStats(existingTrainer.rank);
+
+    const newTeam: NPCPokemon[] = existingTrainer.team.map(pokemon => {
+        const baseSheet = createInitialSheetData(pokemon.pokedexData, unitSettings, existingTrainer.rank);
+        const sheetWithBonuses = applyRandomBonusPoints(pokemon.pokedexData, baseSheet, existingTrainer.rank);
+        const selectedMoves = selectRandomMoves(pokemon.pokedexData, sheetWithBonuses, allMoves);
+
+        return {
+            ...pokemon,
+            sheetData: {
+                ...sheetWithBonuses,
+                moves: selectedMoves,
+            },
+        };
+    });
+
+    return {
+        ...existingTrainer,
+        ...newTrainerStats,
+        team: newTeam,
+    } as NPCTrainer;
+}
