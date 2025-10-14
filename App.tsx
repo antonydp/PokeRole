@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import Headroom from '@webappsconception/react-headroom';
 import PokemonList from './components/PokemonList.js';
 import PokemonDetail from './components/PokemonDetail.js';
 import Dashboard from './components/Dashboard.js';
@@ -154,12 +155,13 @@ const App: React.FC = () => {
                isOpen={isSettingsOpen}
                onClose={() => setIsSettingsOpen(false)}
                settings={unitSettings}
-               onSettingsChange={setUnitSettings}
-            />
-            <header className="w-full p-4 flex items-center justify-between bg-slate-900/80 backdrop-blur-sm sticky top-0 z-30 border-b border-slate-700/50">
-                <div className="flex-1 flex justify-start items-center gap-2">
-                    <button
-                        onClick={exportTeam}
+              onSettingsChange={setUnitSettings}
+           />
+           <Headroom>
+               <header className="w-full p-4 flex items-center justify-between bg-slate-900/80 backdrop-blur-sm border-b border-slate-700/50">
+                   <div className="flex-1 flex justify-start items-center gap-2">
+                       <button
+                           onClick={exportTeam}
                         className="flex items-center justify-center px-4 py-2 bg-slate-700 text-white font-semibold text-sm rounded-lg hover:bg-slate-600 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
                         aria-label="Export Session Data"
                         title="Export Session Data"
@@ -216,7 +218,8 @@ const App: React.FC = () => {
                         <SettingsIcon className="w-6 h-6" />
                     </button>
                 </div>
-            </header>
+                </header>
+            </Headroom>
 
             {mainView === 'dashboard' ? (
                 <div className="flex flex-1 relative overflow-hidden">
