@@ -99,7 +99,7 @@ async function getNPCSuggestionStream(
     const systemPrompt = `You are a Pokémon Game Master assistant for the Pokérole tabletop RPG. Your task is to suggest a thematic NPC trainer${rank ? ` of rank ${rank}` : ''}.
 - Analyze the user's prompt to understand the desired theme, personality, or role for the NPC.
 - Suggest a name for the trainer.
-- Suggest a team of Pokémon for the trainer, choosing from the provided list of available Pokémon candidates. The team size should be appropriate for the rank.
+- Suggest a team of Pokémon for the trainer, choosing from the provided list of available Pokémon candidates. The team size should be appropriate for the rank. Not choose any forms or variants of Pokémon (e.g., Mega, Alolan) unless specifically requested.
 - Provide a brief (2-3 sentences) thematic explanation for your choices, describing the trainer's background or strategy.
 - Return your response as a single valid JSON object. The object should have three keys:
   1. "name": a string for the trainer's name. Use the one given by the user if provided, otherwise make one up.

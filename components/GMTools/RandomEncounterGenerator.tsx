@@ -56,7 +56,8 @@ const RandomEncounterGenerator: React.FC = () => {
 
         if (generationMode === 'ai') {
             try {
-                const response = await suggestEncounter(aiPrompt, allPokemon, generationRank, numPokemon, selectedType);
+                const pokemonCandidates = allPokemon.filter(p => !p.Legendary);
+                const response = await suggestEncounter(aiPrompt, pokemonCandidates, generationRank, numPokemon, selectedType);
                 const pokemonData = response.team.map(name => allPokemon.find(p => p.Name === name)).filter(Boolean) as Pokedex[];
                 
                 if (pokemonData.length > 0) {

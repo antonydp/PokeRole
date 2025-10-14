@@ -82,7 +82,8 @@ const NPCTrainerGenerator: React.FC = () => {
 
         if (generationMode === 'ai') {
             try {
-                const response = await suggestNPC(aiPrompt, allPokemon, generationRank, options);
+                const pokemonCandidates = allowLegendaries ? allPokemon : allPokemon.filter(p => !p.Legendary);
+                const response = await suggestNPC(aiPrompt, pokemonCandidates, generationRank, options);
                 const teamPokemon = response.team
                     .map(name => allPokemon.find(p => p.Name === name))
                     .filter((p): p is Pokedex => p !== undefined);
