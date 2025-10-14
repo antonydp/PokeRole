@@ -3,8 +3,9 @@ import PokemonList from './components/PokemonList.js';
 import PokemonDetail from './components/PokemonDetail.js';
 import Dashboard from './components/Dashboard.js';
 import GMTools from './components/GMTools.js';
-import { PokeballIcon, MenuIcon, SettingsIcon, DiceIcon } from './components/Icons.js';
+import { PokeballIcon, SettingsIcon, DiceIcon } from './components/Icons.js';
 import SuggestTeamModal from './components/SuggestTeamModal.js';
+import PokemonListModal from './components/PokemonListModal.js';
 import { useGameDataStore } from './src/store/useGameDataStore.js';
 import { useUIStore } from './src/store/useUIStore.js';
 import { useSessionStore } from './src/store/useSessionStore.js';
@@ -100,7 +101,7 @@ const SettingsModal: React.FC<{
  */
 const App: React.FC = () => {
     const { allPokemon, isLoading, error, loadData } = useGameDataStore();
-    const { isSidebarOpen, isSettingsOpen, isSuggestModalOpen, unitSettings, selectedPokemonId, mainView, setIsSidebarOpen, setIsSettingsOpen, setUnitSettings, setIsSuggestModalOpen, selectPokemon, setMainView } = useUIStore();
+    const { isPokemonListModalOpen, isSettingsOpen, isSuggestModalOpen, unitSettings, selectedPokemonId, mainView, setIsPokemonListModalOpen, setIsSettingsOpen, setUnitSettings, setIsSuggestModalOpen, selectPokemon, setMainView } = useUIStore();
     const { team, exportTeam, loadTeam, addSuggestionToTeam } = useSessionStore();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -141,30 +142,23 @@ const App: React.FC = () => {
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col font-sans">
             <NotificationContainer />
+            <PokemonListModal />
              <SuggestTeamModal
                 isOpen={isSuggestModalOpen}
                 onClose={() => setIsSuggestModalOpen(false)}
                 allPokemon={allPokemon}
                 team={team}
                 onAddSuggestionToTeam={addSuggestionToTeam}
+           />
+            <SettingsModal
+               isOpen={isSettingsOpen}
+               onClose={() => setIsSettingsOpen(false)}
+               settings={unitSettings}
+               onSettingsChange={setUnitSettings}
             />
-             <SettingsModal
-                isOpen={isSettingsOpen}
-                onClose={() => setIsSettingsOpen(false)}
-                settings={unitSettings}
-                onSettingsChange={setUnitSettings}
-             />
-            <header className="w-full p-4 flex items-center justify-between bg-slate-900/80 backdrop-blur-sm sticky top-0 z-30 border-b border-slate-700/50">
-                <button
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    className={`p-2 rounded-md text-gray-300 hover:bg-slate-700 hover:text-white transition-colors z-50 ${mainView === 'gm' ? 'opacity-0 pointer-events-none' : ''}`}
-                    aria-label="Toggle Pokémon List"
-                    disabled={mainView === 'gm'}
-                >
-                    <MenuIcon className="w-6 h-6" />
-                </button>
-                <div className="flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <PokeballIcon className="w-8 h-8 md:w-10 md:h-10 mr-3 text-poke-red" />
+           <header className="w-full p-4 flex items-center justify-between bg-slate-900/80 backdrop-blur-sm sticky top-0 z-30 border-b border-slate-700/50">
+               <div className="flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                   <PokeballIcon className="w-8 h-8 md:w-10 md:h-10 mr-3 text-poke-red" />
                     <h1 className="text-2xl md:text-3xl font-bold text-poke-yellow tracking-wider font-primary">
                         {mainView === 'gm' ? 'GM Tools' : 'Pokérole Team Builder'}
                     </h1>
@@ -220,23 +214,6 @@ const App: React.FC = () => {
 
             {mainView === 'dashboard' ? (
                 <div className="flex flex-1 relative overflow-hidden">
-                    <div
-                        className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                        onClick={() => setIsSidebarOpen(false)}
-                    ></div>
-                    <aside className={`
-                        flex-shrink-0 bg-slate-800/80 backdrop-blur-sm
-                        transform transition-transform duration-300 ease-in-out
-                        fixed top-16 left-0 h-[calc(100vh-64px)] w-80 z-40
-                        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
-                    }>
-                        <div className="h-full p-2">
-                            <div className="bg-slate-800/50 rounded-lg h-full overflow-y-auto">
-                                <PokemonList isOpen={isSidebarOpen} />
-                            </div>
-                        </div>
-                    </aside>
-
                     <main className="flex-1 p-4 w-full">
                         <div className="bg-slate-800/50 rounded-lg p-4 h-full overflow-y-auto">
                             {selectedPokemonId ? <PokemonDetail /> : <Dashboard />}

@@ -21,7 +21,7 @@ const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon, onSelect }) => {
     return (
         <div
             onClick={() => onSelect(isTeamMember ? pokemon.instanceID : pokedexData.DexID)}
-            className={`group relative flex items-center p-2 bg-slate-700/60 rounded-lg cursor-pointer hover:bg-slate-600/80 transition-colors duration-200 shadow-md ${pokedexData.Legendary ? 'border border-poke-yellow/50' : ''}`}
+            className={`group relative flex items-center w-full p-2 bg-slate-700/60 rounded-lg cursor-pointer hover:bg-slate-600/80 transition-colors duration-200 shadow-md ${pokedexData.Legendary ? 'border border-poke-yellow/50' : ''}`}
         >
             {pokedexData.Legendary && (
                 <div className="absolute top-1 right-1 text-poke-yellow" title="Legendary Pokémon">

@@ -312,8 +312,8 @@ const TeamSlot: React.FC<TeamSlotProps> = ({ teamMember, onSelect, onRemove, onA
 
 const TeamBuilder: React.FC = () => {
     const { team, removeFromTeam, quickImport, quickExport } = useSessionStore();
-    const { selectPokemon, setIsSuggestModalOpen, setIsSidebarOpen } = useUIStore();
-    const openSidebar = () => setIsSidebarOpen(true, 'team');
+    const { selectPokemon, setIsSuggestModalOpen, setIsPokemonListModalOpen } = useUIStore();
+    const openPokemonListModal = () => setIsPokemonListModalOpen(true, 'team');
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const teamCoverage = useMemo(() => calculateTeamTypeCoverage(team), [team]);
 
@@ -367,7 +367,7 @@ const TeamBuilder: React.FC = () => {
                         teamMember={teamMember}
                         onSelect={(dexId, instanceId) => selectPokemon(dexId, instanceId, 'team')}
                         onRemove={handleRemoveFromTeam}
-                        onAddPokemonClick={openSidebar}
+                        onAddPokemonClick={openPokemonListModal}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                         onQuickImport={() => handleQuickImport(index)}

@@ -67,7 +67,7 @@ const PokemonContainer = ({ id, title, items, onAddClick, onSelectPokemon }: { i
 
 const PokemonPC: React.FC = () => {
     const { team, pokemonPC, moveFromPCToTeam, moveFromTeamToPC } = useSessionStore();
-    const { setIsSidebarOpen, selectPokemon } = useUIStore();
+    const { setIsPokemonListModalOpen, selectPokemon } = useUIStore();
     const [activeMember, setActiveMember] = useState<TeamMember | null>(null);
 
     const sensors = useSensors(
@@ -116,7 +116,7 @@ const PokemonPC: React.FC = () => {
         >
             <div className="p-4 grid grid-cols-1 lg:grid-cols-4 gap-4 h-full">
                 <div className="lg:col-span-3">
-                    <PokemonContainer id="pc-container" title="Pokémon PC" items={pokemonPC} onAddClick={() => setIsSidebarOpen(true, 'pc')} onSelectPokemon={(dexId, instanceId) => selectPokemon(dexId, instanceId, 'pc')} />
+                    <PokemonContainer id="pc-container" title="Pokémon PC" items={pokemonPC} onAddClick={() => setIsPokemonListModalOpen(true, 'pc')} onSelectPokemon={(dexId, instanceId) => selectPokemon(dexId, instanceId, 'pc')} />
                 </div>
                 <div className="lg:col-span-1">
                     <PokemonContainer id="team-container" title="Pokémon Team" items={team} onSelectPokemon={(dexId, instanceId) => selectPokemon(dexId, instanceId, 'team')} />

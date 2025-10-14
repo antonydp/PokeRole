@@ -22,7 +22,7 @@ type ActiveDashboardView = 'trainer' | 'team' | 'pc';
 type MainView = 'dashboard' | 'gm';
 
 interface UIState {
-    isSidebarOpen: boolean;
+    isPokemonListModalOpen: boolean;
     addPokemonTarget: 'team' | 'pc';
     isSettingsOpen: boolean;
     isSuggestModalOpen: boolean;
@@ -35,7 +35,7 @@ interface UIState {
     openEvolutionModal: (instanceId: string) => void;
     setEvolutionStep: (step: EvolutionStep, data?: Partial<Omit<EvolutionState, 'isOpen' | 'step'>>) => void;
     closeEvolutionModal: () => void;
-    setIsSidebarOpen: (isOpen: boolean, target?: 'team' | 'pc') => void;
+    setIsPokemonListModalOpen: (isOpen: boolean, target?: 'team' | 'pc') => void;
     setIsSettingsOpen: (isOpen: boolean) => void;
     setIsSuggestModalOpen: (isOpen: boolean) => void;
     selectPokemon: (dexID: string, instanceID?: string, returnView?: 'team' | 'pc') => void;
@@ -46,7 +46,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-    isSidebarOpen: false,
+    isPokemonListModalOpen: false,
     addPokemonTarget: 'team',
     isSettingsOpen: false,
     isSuggestModalOpen: false,
@@ -87,13 +87,13 @@ export const useUIStore = create<UIState>((set) => ({
     }),
 
     closeEvolutionModal: () => set({ evolutionState: { isOpen: false } }),
-    setIsSidebarOpen: (isOpen, target = 'team') => set({ isSidebarOpen: isOpen, addPokemonTarget: target }),
+    setIsPokemonListModalOpen: (isOpen, target = 'team') => set({ isPokemonListModalOpen: isOpen, addPokemonTarget: target }),
     setIsSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
     setIsSuggestModalOpen: (isOpen) => set({ isSuggestModalOpen: isOpen }),
     selectPokemon: (dexID, instanceID, returnView = 'team') => {
         set({
             selectedPokemonId: { dexID, instanceID },
-            isSidebarOpen: false,
+            isPokemonListModalOpen: false,
             pokemonDetailReturnView: returnView,
             mainView: 'dashboard', // Ensure we are on dashboard view
         });

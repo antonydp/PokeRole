@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { List, type RowComponentProps } from "react-window";
+import { Grid, type CellComponentProps } from 'react-window';
 import { Pokedex } from '../src/types/index.js';
 import PokemonCard from './PokemonCard.js';
 import { TYPE_COLORS } from '../src/constants/gameConstants.js';
@@ -43,26 +43,6 @@ import { useUIStore } from '../src/store/useUIStore.js';
 import { useSessionStore } from '../src/store/useSessionStore.js';
 import { createInitialSheetData } from '../src/logic/initializers.js';
 
-type PokemonRowData = {
-    pokemonList: Pokedex[];
-    onSelectPokemon: (pokemon: Pokedex) => void;
-};
-
-const PokemonRow = ({ index, style, pokemonList, onSelectPokemon }: {
-    index: number;
-    style: React.CSSProperties;
-} & PokemonRowData) => {
-    const pokemon = pokemonList[index];
-    
-    return (
-        <div style={style} className="px-2 pb-2">
-            <PokemonCard
-                pokemon={pokemon}
-                onSelect={() => onSelectPokemon(pokemon)}
-            />
-        </div>
-    );
-};
 
 type PokemonListProps = {
     isOpen: boolean;
@@ -168,6 +148,32 @@ const PokemonList: React.FC<PokemonListProps> = ({ isOpen }) => {
         });
     }, [allPokemon, searchTerm, typeFilter, statFilters, abilityFilter, legendaryFilter]);
 
+    const columnCount = 3;
+    const rowCount = Math.ceil(filteredPokemon.length / columnCount);
+    const itemWidth = 300;
+    const itemHeight = 100;
+
+    type PokemonCellData = {
+        pokemonList: Pokedex[];
+        onSelectPokemon: (pokemon: Pokedex) => void;
+    };
+    
+    const Cell = ({ columnIndex, rowIndex, style, pokemonList, onSelectPokemon }: CellComponentProps<PokemonCellData>) => {
+        const index = rowIndex * columnCount + columnIndex;
+        if (index >= pokemonList.length) {
+            return null;
+        }
+        const pokemon = pokemonList[index];
+        return (
+            <div style={style} className="p-1 flex">
+                <PokemonCard
+                    pokemon={pokemon}
+                    onSelect={() => onSelectPokemon(pokemon)}
+                />
+            </div>
+        );
+    };
+
     return (
         <div className="flex flex-col h-full">
             <div className="p-2 sticky top-0 bg-slate-800 z-10">
@@ -268,11 +274,13 @@ const PokemonList: React.FC<PokemonListProps> = ({ isOpen }) => {
             </div>
             <div className="flex-grow overflow-hidden">
                 {filteredPokemon.length > 0 ? (
-                    <List<PokemonRowData>
-                        rowCount={filteredPokemon.length}
-                        rowHeight={100}
-                        rowComponent={PokemonRow}
-                        rowProps={{
+                    <Grid
+                        columnCount={columnCount}
+                        columnWidth={itemWidth}
+                        rowCount={rowCount}
+                        rowHeight={itemHeight}
+                        cellComponent={Cell}
+                        cellProps={{
                             pokemonList: filteredPokemon,
                             onSelectPokemon: handleSelectPokemon
                         }}
