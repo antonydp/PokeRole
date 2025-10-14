@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import RandomEncounterGenerator from './GMTools/RandomEncounterGenerator.js';
 import NPCTrainerGenerator from './GMTools/NPCTrainerGenerator.js';
+import SavedItemsViewer from './GMTools/SavedItemsViewer.js';
 
-type Tool = 'encounter' | 'npc';
+type Tool = 'encounter' | 'npc' | 'saved';
 
 const GMTools: React.FC = () => {
     const [activeTool, setActiveTool] = useState<Tool>('encounter');
@@ -32,11 +33,17 @@ const GMTools: React.FC = () => {
                 >
                     NPC Trainer Generator
                 </button>
+                <button
+                    onClick={() => setActiveTool('saved')}
+                    className={getTabClassName('saved')}
+                >
+                    Saved Items
+                </button>
             </div>
             <div className="flex-grow pt-4">
                 {activeTool === 'encounter' && <RandomEncounterGenerator />}
                 {activeTool === 'npc' && <NPCTrainerGenerator />}
-                {/* Render other tools based on activeTool state here */}
+                {activeTool === 'saved' && <SavedItemsViewer />}
             </div>
         </div>
     );

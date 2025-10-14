@@ -422,3 +422,17 @@ export interface NPCPokemon {
   pokedexData: Pokedex;
   sheetData: PokemonData;
 }
+
+/** Represents a saved encounter with a unique ID and a name. */
+export interface SavedEncounter {
+  id: string;
+  name: string;
+  pokemon: TeamMember[];
+}
+
+/** Represents a saved NPC with a unique ID and a name. */
+export interface SavedNPC {
+  id: string;
+  name: string;
+  trainer: NPCTrainer;
+}

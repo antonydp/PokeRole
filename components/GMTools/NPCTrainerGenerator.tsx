@@ -4,10 +4,11 @@ import React, { useState, useCallback } from 'react';
 import { Rank, NPCTrainer, Pokedex } from '../../src/types/index.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { useUIStore } from '../../src/store/useUIStore.js';
+import { useSavedDataStore } from '../../src/store/useSavedDataStore.js';
 import { generateNPCTrainer, NPCTrainerOptions, regenerateNPCTrainerStats, regenerateNPCTrainerForNewRank } from '../../src/logic/npc-generator.js';
 import { RANKS, SKILLS, TRAINER_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 import EncounterPokemonCard from './EncounterPokemonCard.js';
-import { PokeballIcon, SparklesIcon, DiceIcon } from '../Icons.js';
+import { PokeballIcon, SparklesIcon, DiceIcon, SaveIcon } from '../Icons.js';
 import { suggestNPC } from '../../services/aiService.js';
 import AIExplanation from '../shared/AIExplanation.js';
 
@@ -40,6 +41,7 @@ const NPCTrainerGenerator: React.FC = () => {
 
     const { allPokemon, allMoves, allSprites } = useGameDataStore();
     const { unitSettings } = useUIStore();
+    const { saveNPC } = useSavedDataStore();
 
     const handleReloadStats = useCallback(() => {
         if (!generatedTrainer) return;
@@ -64,6 +66,18 @@ const NPCTrainerGenerator: React.FC = () => {
         );
         setGeneratedTrainer(updatedTrainer);
     }, [generatedTrainer, allMoves, unitSettings]);
+
+    const handleSaveNPC = () => {
+        if (!generatedTrainer) {
+            alert("No NPC has been generated to save.");
+            return;
+        }
+        const name = prompt("Enter a name for this NPC:", generatedTrainer.name);
+        if (name) {
+            saveNPC({ name, trainer: { ...generatedTrainer, name } });
+            alert(`NPC "${name}" saved!`);
+        }
+    };
 
     const handleGenerate = useCallback(async () => {
         if (allSprites.length === 0) {
@@ -211,6 +225,13 @@ const NPCTrainerGenerator: React.FC = () => {
                                 <h3 className="text-3xl font-bold text-white">{generatedTrainer.name}</h3>
                                 <button onClick={handleReloadStats} title="Reload Stats" className="text-gray-400 hover:text-poke-yellow transition-colors duration-200 p-1 rounded-full hover:bg-slate-700">
                                     <DiceIcon className="w-6 h-6" />
+                                </button>
+                                <button
+                                    onClick={handleSaveNPC}
+                                    title="Save NPC"
+                                    className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded-full hover:bg-slate-700"
+                                >
+                                    <SaveIcon className="w-6 h-6" />
                                 </button>
                             </div>
                             {/* Rank Changer */}

@@ -4,12 +4,13 @@ import React, { useState, useCallback } from 'react';
 import { TeamMember, Rank, Pokedex } from '../../src/types/index.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { useUIStore } from '../../src/store/useUIStore.js';
+import { useSavedDataStore } from '../../src/store/useSavedDataStore.js';
 import { createInitialSheetData } from '../../src/logic/initializers.js';
 import { applyRandomBonusPoints, selectRandomMoves } from '../../src/logic/gm-tools.js';
 import { RANKS, TYPE_COLORS } from '../../src/constants/gameConstants.js';
 import EncounterPokemonCard from './EncounterPokemonCard.js';
 import TypeBadge from '../TypeBadge.js';
-import { SparklesIcon, DiceIcon } from '../Icons.js';
+import { SparklesIcon, DiceIcon, SaveIcon } from '../Icons.js';
 import { suggestEncounter } from '../../services/aiService.js';
 import AIExplanation from '../shared/AIExplanation.js';
 
@@ -29,6 +30,7 @@ const RandomEncounterGenerator: React.FC = () => {
 
     const { allPokemon, allMoves } = useGameDataStore();
     const { unitSettings } = useUIStore();
+    const { saveEncounter } = useSavedDataStore();
 
 
     const handleGenerate = useCallback(async () => {
@@ -106,6 +108,18 @@ const RandomEncounterGenerator: React.FC = () => {
             )
         );
     }, []);
+
+    const handleSaveEncounter = () => {
+        if (generatedPokemon.length === 0) {
+            alert("No Pokémon have been generated to save.");
+            return;
+        }
+        const name = prompt("Enter a name for this encounter:", "My Awesome Encounter");
+        if (name) {
+            saveEncounter({ name, pokemon: generatedPokemon });
+            alert(`Encounter "${name}" saved!`);
+        }
+    };
 
     const handleTypeClick = (type: string) => {
         setSelectedType(prevType => {
@@ -246,7 +260,17 @@ const RandomEncounterGenerator: React.FC = () => {
                         </div>
                     ) : generatedPokemon.length > 0 ? (
                         <div className="space-y-4">
-                            <h3 className="text-2xl font-bold text-white">Generated Encounter</h3>
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-2xl font-bold text-white">Generated Encounter</h3>
+                                <button
+                                    onClick={handleSaveEncounter}
+                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
+                                    disabled={generatedPokemon.length === 0}
+                                >
+                                    <SaveIcon className="w-5 h-5" />
+                                    Save
+                                </button>
+                            </div>
                             {aiExplanation && <AIExplanation explanation={aiExplanation} />}
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-4">
                                 {generatedPokemon.map((pokemon) => (
