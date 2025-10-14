@@ -234,3 +234,14 @@ export function regenerateNPCTrainerForNewRank(
         team: newTeam,
     } as NPCTrainer;
 }
+
+export function regenerateNPCSprite(
+    existingTrainer: NPCTrainer,
+    allSprites: Sprite[]
+): NPCTrainer {
+    const randomSprite = allSprites[Math.floor(Math.random() * allSprites.length)];
+    return {
+        ...existingTrainer,
+        spriteUrl: randomSprite.spriteUrl,
+    };
+}

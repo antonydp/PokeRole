@@ -201,3 +201,12 @@ export const SaveIcon: React.FC<{ className?: string }> = ({ className }) => (
         <polyline points="7 3 7 8 15 8"></polyline>
     </svg>
 );
+
+export const RefreshIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={`${className}`} viewBox="0,0,256,256" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none">
+        <g transform="scale(3.55556,3.55556)"><path d="M25,14c-6.065,0 -11,4.935 -11,11v1c0,2.209 1.791,4 4,4c2.209,0 4,-1.791 4,-4v-1c0,-1.654 1.346,-3 3,-3h22c1.654,0 3,1.346 3,3v1h-2.16797c-1.473,0 -2.34281,1.65419 -1.50781,2.86719l6.16797,8.95117c0.727,1.055 2.28667,1.055 3.01367,0l6.16797,-8.95117c0.837,-1.213 -0.03186,-2.86719 -1.50586,-2.86719h-2.16797v-1c0,-6.065 -4.935,-11 -11,-11zM18,33.39063c-0.5715,0 -1.14236,0.26352 -1.50586,0.79102l-6.16797,8.95117c-0.837,1.213 0.03186,2.86719 1.50586,2.86719h2.16797v1c0,6.065 4.935,11 11,11h22c6.065,0 11,-4.935 11,-11v-1c0,-2.209 -1.791,-4 -4,-4c-2.209,0 -4,1.791 -4,4v1c0,1.654 -1.346,3 -3,3h-22c-1.654,0 -3,-1.346 -3,-3v-1h2.16797c1.473,0 2.34281,-1.65419 1.50781,-2.86719l-6.16797,-8.95117c-0.3635,-0.5275 -0.93631,-0.79102 -1.50781,-0.79102z"></path></g></g>
+
+    </svg>
+);
+

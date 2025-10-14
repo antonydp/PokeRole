@@ -5,10 +5,10 @@ import { Rank, NPCTrainer, Pokedex, TeamMember } from '../../src/types/index.js'
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { useUIStore } from '../../src/store/useUIStore.js';
 import { useSavedDataStore } from '../../src/store/useSavedDataStore.js';
-import { generateNPCTrainer, NPCTrainerOptions, regenerateNPCTrainerStats, regenerateNPCTrainerForNewRank } from '../../src/logic/npc-generator.js';
+import { generateNPCTrainer, NPCTrainerOptions, regenerateNPCTrainerStats, regenerateNPCTrainerForNewRank, regenerateNPCSprite } from '../../src/logic/npc-generator.js';
 import { RANKS, SKILLS, TRAINER_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 import EncounterPokemonCard from './EncounterPokemonCard.js';
-import { PokeballIcon, SparklesIcon, DiceIcon, SaveIcon } from '../Icons.js';
+import { PokeballIcon, SparklesIcon, DiceIcon, SaveIcon, RefreshIcon } from '../Icons.js';
 import { suggestNPC } from '../../services/aiService.js';
 import AIExplanation from '../shared/AIExplanation.js';
 
@@ -83,6 +83,12 @@ const NPCTrainerGenerator: React.FC = () => {
         );
         setGeneratedTrainer(updatedTrainer);
     }, [generatedTrainer, allMoves, unitSettings]);
+
+    const handleReloadSprite = useCallback(() => {
+        if (!generatedTrainer) return;
+        const reloadedTrainer = regenerateNPCSprite(generatedTrainer, allSprites);
+        setGeneratedTrainer(reloadedTrainer);
+    }, [generatedTrainer, allSprites]);
 
     const handleSaveNPC = () => {
         if (!generatedTrainer) {
@@ -237,22 +243,17 @@ const NPCTrainerGenerator: React.FC = () => {
                         <div className="lg:col-span-1 bg-slate-900/40 p-4 rounded-lg flex flex-col items-center text-center">
                             <div className="relative">
                                 <img src={generatedTrainer.spriteUrl} alt="Trainer Sprite" className="w-40 h-40 object-contain bg-slate-700/50 rounded-full p-1 mb-4 border-2 border-slate-600" />
-                            </div>
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                                <h3 className="text-3xl font-bold text-white">{generatedTrainer.name}</h3>
-                                <button onClick={handleReloadStats} title="Reload Stats" className="text-gray-400 hover:text-poke-yellow transition-colors duration-200 p-1 rounded-full hover:bg-slate-700">
-                                    <DiceIcon className="w-6 h-6" />
-                                </button>
                                 <button
-                                    onClick={handleSaveNPC}
-                                    title="Save NPC"
-                                    className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded-full hover:bg-slate-700"
+                                    onClick={handleReloadSprite}
+                                    title="Reload Sprite"
+                                    className="absolute top-0 right-0 text-white bg-slate-800/70 rounded-full p-1 hover:bg-slate-700 transition-colors"
                                 >
-                                    <SaveIcon className="w-6 h-6" />
+                                    <RefreshIcon className="w-6 h-6" />
                                 </button>
                             </div>
+                            <h3 className="text-3xl font-bold text-white mb-2">{generatedTrainer.name}</h3>
                             {/* Rank Changer */}
-                            <div className="w-full max-w-xs">
+                            <div className="w-full max-w-xs mb-4">
                                 <label htmlFor="npc-rank-changer" className="sr-only">Change NPC Rank</label>
                                 <select
                                     id="npc-rank-changer"
@@ -262,6 +263,23 @@ const NPCTrainerGenerator: React.FC = () => {
                                 >
                                     {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                                 </select>
+                            </div>
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleReloadStats}
+                                    className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700 transition-colors"
+                                >
+                                    <DiceIcon className="w-5 h-5" />
+                                    Reload Stats
+                                </button>
+                                <button
+                                    onClick={handleSaveNPC}
+                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors"
+                                >
+                                    <SaveIcon className="w-5 h-5" />
+                                    Save NPC
+                                </button>
                             </div>
                             <div className="w-full border-t border-slate-700 my-4"></div>
                             <h4 className="text-xl font-bold text-poke-yellow mb-3">Attributes</h4>

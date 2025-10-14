@@ -268,7 +268,7 @@ const RandomEncounterGenerator: React.FC = () => {
                                     disabled={generatedPokemon.length === 0}
                                 >
                                     <SaveIcon className="w-5 h-5" />
-                                    Save
+                                    Save Encounter
                                 </button>
                             </div>
                             {aiExplanation && <AIExplanation explanation={aiExplanation} />}
