@@ -6,6 +6,7 @@
 
 import OpenAI from 'openai';
 import { Pokedex, Rank } from '../src/types/index.js';
+import { RANKS } from '../src/constants/gameConstants.js';
 
 export const config = {
   runtime: 'edge',
@@ -96,16 +97,22 @@ async function getNPCSuggestionStream(
         candidates = allPokemon.filter(legendaryFilter);
     }
 
-    const systemPrompt = `You are a Pokémon Game Master assistant for the Pokérole tabletop RPG. Your task is to suggest a thematic NPC trainer${rank ? ` of rank ${rank}` : ''}.
+    const rankInstruction = rank
+        ? `Your task is to suggest a thematic NPC trainer of rank "${rank}".`
+        : `Your task is to suggest a thematic NPC trainer. First, analyze the user's prompt to determine the most appropriate rank from the following list: [${RANKS.join(', ')}]. The chosen rank should reflect the trainer's experience and theme.`;
+
+    const systemPrompt = `You are a Pokémon Game Master assistant for the Pokérole tabletop RPG.
+${rankInstruction}
 - Analyze the user's prompt to understand the desired theme, personality, or role for the NPC.
 - Suggest a name for the trainer.
-- Suggest a team of Pokémon for the trainer, choosing from the provided list of available Pokémon candidates. The team size should be appropriate for the rank. Not choose any forms or variants of Pokémon (e.g., Mega, Alolan) unless specifically requested.
+- Suggest a team of Pokémon for the trainer, choosing from the provided list of available Pokémon candidates. The team size should be appropriate for the rank. Do not choose any forms or variants of Pokémon (e.g., Mega, Alolan) unless specifically requested.
 - Provide a brief (2-3 sentences) thematic explanation for your choices, describing the trainer's background or strategy.
-- Return your response as a single valid JSON object. The object should have three keys:
+- Return your response as a single valid JSON object. The object must have four keys:
   1. "name": a string for the trainer's name. Use the one given by the user if provided, otherwise make one up.
   2. "team": an array of strings, where each string is the exact name of a suggested Pokémon.
   3. "explanation": a string containing the thematic explanation.
-Example: {"name": "Bug Catcher Brandon", "team": ["Caterpie", "Weedle"], "explanation": "Brandon is a young bug enthusiast exploring the Viridian Forest to fill his Pokédex."}`;
+  4. "rank": a string with the chosen rank.
+Example: {"name": "Bug Catcher Brandon", "team": ["Caterpie", "Weedle"], "explanation": "Brandon is a young bug enthusiast exploring the Viridian Forest to fill his Pokédex.", "rank": "Starter"}`;
 
     const userMessage = `User request: "${prompt}".
 Available Pokémon${rank ? ` for rank ${rank}` : ''}: ${JSON.stringify(candidates.map(p => p.Name))}`;

@@ -99,18 +99,19 @@ export async function suggestNPC(
     allPokemon: Pokedex[],
     rank: Rank | undefined,
     options: NPCTrainerOptions
-): Promise<{ name: string, team: string[], explanation: string }> {
+): Promise<{ name: string, team: string[], explanation: string, rank: Rank }> {
     try {
         const simplifiedPokemon = allPokemon.map(simplifyPokemon);
         const apiUrl = import.meta.env.VITE_API_URL || '/api/suggest-npc';
         const body = { prompt, allPokemon: simplifiedPokemon, rank, options };
         const parsed = await fetchAIStream(apiUrl, body);
 
-        if (parsed.name && typeof parsed.name === 'string' && parsed.team && Array.isArray(parsed.team) && typeof parsed.explanation === 'string') {
+        if (parsed.name && typeof parsed.name === 'string' && parsed.team && Array.isArray(parsed.team) && typeof parsed.explanation === 'string' && parsed.rank && typeof parsed.rank === 'string') {
             return {
                 name: parsed.name,
                 team: parsed.team.filter((name: any) => typeof name === 'string'),
                 explanation: parsed.explanation,
+                rank: parsed.rank,
             };
         } else {
             throw new Error("AI response is not in the expected format.");

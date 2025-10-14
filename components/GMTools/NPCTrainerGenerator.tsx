@@ -73,8 +73,6 @@ const NPCTrainerGenerator: React.FC = () => {
         setAiExplanation(null);
         setGeneratedTrainer(null);
 
-        const generationRank = rank || RANKS[Math.floor(Math.random() * RANKS.length)];
-
         const options: NPCTrainerOptions = {
             teamSize: teamSizeOverride === '' ? undefined : teamSizeOverride,
             allowLegendaries,
@@ -83,27 +81,31 @@ const NPCTrainerGenerator: React.FC = () => {
         if (generationMode === 'ai') {
             try {
                 const pokemonCandidates = allowLegendaries ? allPokemon : allPokemon.filter(p => !p.Legendary);
-                const response = await suggestNPC(aiPrompt, pokemonCandidates, generationRank, options);
+                // For AI mode, pass the selected rank directly (it can be undefined)
+                const response = await suggestNPC(aiPrompt, pokemonCandidates, rank, options);
                 const teamPokemon = response.team
                     .map(name => allPokemon.find(p => p.Name === name))
                     .filter((p): p is Pokedex => p !== undefined);
 
-                if (teamPokemon.length > 0) {
+                if (teamPokemon.length > 0 && response.rank) {
                     const finalOptions: NPCTrainerOptions = {
                         ...options,
                         teamSize: teamPokemon.length,
                     };
-                    const trainer = generateNPCTrainer(generationRank, allPokemon, allMoves, allSprites, unitSettings, finalOptions, response.name, teamPokemon);
+                    // Use the rank provided by the AI response
+                    const trainer = generateNPCTrainer(response.rank, allPokemon, allMoves, allSprites, unitSettings, finalOptions, response.name, teamPokemon);
                     setGeneratedTrainer(trainer);
                     setAiExplanation(response.explanation);
                 } else {
-                    alert("AI suggestion failed to return valid Pokémon for the team. Please try again.");
+                    alert("AI suggestion failed to return a valid team or rank. Please try again.");
                 }
             } catch (error) {
                 console.error("Error fetching AI suggestion:", error);
                 alert("Failed to get AI suggestion. Please check the console for more details.");
             }
         } else {
+            // For random mode, if rank is undefined, pick a random one
+            const generationRank = rank || RANKS[Math.floor(Math.random() * RANKS.length)];
             const trainer = generateNPCTrainer(generationRank, allPokemon, allMoves, allSprites, unitSettings, options);
             setGeneratedTrainer(trainer);
         }
