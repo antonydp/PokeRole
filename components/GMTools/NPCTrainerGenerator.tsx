@@ -28,7 +28,7 @@ const SkillDisplay: React.FC<{ label: string; value: number }> = ({ label, value
 type GenerationMode = 'random' | 'ai';
 
 const NPCTrainerGenerator: React.FC = () => {
-    const [rank, setRank] = useState<Rank>('Starter');
+    const [rank, setRank] = useState<Rank | undefined>(undefined);
     const [generatedTrainer, setGeneratedTrainer] = useState<NPCTrainer | null>(null);
     const [teamSizeOverride, setTeamSizeOverride] = useState<number | ''>('');
     const [allowLegendaries, setAllowLegendaries] = useState<boolean>(false);
@@ -123,7 +123,8 @@ const NPCTrainerGenerator: React.FC = () => {
                         {/* Trainer Rank */}
                         <div className="flex-grow sm:flex-grow-0">
                             <label htmlFor="rank" className="block text-sm font-bold text-gray-300 mb-1">Rank</label>
-                            <select id="rank" value={rank} onChange={e => setRank(e.target.value as Rank)} className="w-full p-2 bg-slate-700 rounded border border-slate-600 focus:ring-poke-yellow focus:border-poke-yellow h-10">
+                            <select id="rank" value={rank || 'Any'} onChange={e => setRank(e.target.value === 'Any' ? undefined : e.target.value as Rank)} className="w-full p-2 bg-slate-700 rounded border border-slate-600 focus:ring-poke-yellow focus:border-poke-yellow h-10">
+                                <option value="Any">Any Rank</option>
                                 {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                             </select>
                         </div>

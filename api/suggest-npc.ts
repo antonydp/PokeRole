@@ -42,7 +42,7 @@ export default async function handler(req: Request): Promise<Response> {
   try {
     const { prompt, allPokemon, rank, options } = await req.json();
 
-    if (!prompt || !allPokemon || !rank) {
+    if (!prompt || !allPokemon) {
       return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
@@ -82,28 +82,33 @@ async function getNPCSuggestionStream(
     openai: OpenAI,
     prompt: string,
     allPokemon: Pokedex[],
-    rank: Rank,
+    rank: Rank | undefined,
     options: any
 ) {
     const legendaryFilter = (p: Pokedex) => !p.Legendary || !!options.allowLegendaries;
-    let candidates = allPokemon.filter(p => p.RecommendedRank === rank && legendaryFilter(p));
-    if (candidates.length === 0) {
+    let candidates;
+    if (rank) {
+        candidates = allPokemon.filter(p => p.RecommendedRank === rank && legendaryFilter(p));
+        if (candidates.length === 0) {
+            candidates = allPokemon.filter(legendaryFilter);
+        }
+    } else {
         candidates = allPokemon.filter(legendaryFilter);
     }
 
-    const systemPrompt = `You are a Pokémon Game Master assistant for the Pokérole tabletop RPG. Your task is to suggest a thematic NPC trainer of rank ${rank}.
+    const systemPrompt = `You are a Pokémon Game Master assistant for the Pokérole tabletop RPG. Your task is to suggest a thematic NPC trainer${rank ? ` of rank ${rank}` : ''}.
 - Analyze the user's prompt to understand the desired theme, personality, or role for the NPC.
 - Suggest a name for the trainer.
 - Suggest a team of Pokémon for the trainer, choosing from the provided list of available Pokémon candidates. The team size should be appropriate for the rank.
 - Provide a brief (2-3 sentences) thematic explanation for your choices, describing the trainer's background or strategy.
 - Return your response as a single valid JSON object. The object should have three keys:
-  1. "name": a string for the trainer's name.
+  1. "name": a string for the trainer's name. Use the one given by the user if provided, otherwise make one up.
   2. "team": an array of strings, where each string is the exact name of a suggested Pokémon.
   3. "explanation": a string containing the thematic explanation.
 Example: {"name": "Bug Catcher Brandon", "team": ["Caterpie", "Weedle"], "explanation": "Brandon is a young bug enthusiast exploring the Viridian Forest to fill his Pokédex."}`;
 
     const userMessage = `User request: "${prompt}".
-Available Pokémon for rank ${rank}: ${JSON.stringify(candidates.map(p => p.Name))}`;
+Available Pokémon${rank ? ` for rank ${rank}` : ''}: ${JSON.stringify(candidates.map(p => p.Name))}`;
 
     try {
         return await openai.chat.completions.create({

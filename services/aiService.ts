@@ -70,7 +70,7 @@ export async function suggestTeam(
 export async function suggestEncounter(
     prompt: string,
     allPokemon: Pokedex[],
-    rank: Rank,
+    rank: Rank | undefined,
     numPokemon: number,
     selectedType: string | null
 ): Promise<{ team: string[], explanation: string }> {
@@ -97,7 +97,7 @@ export async function suggestEncounter(
 export async function suggestNPC(
     prompt: string,
     allPokemon: Pokedex[],
-    rank: Rank,
+    rank: Rank | undefined,
     options: NPCTrainerOptions
 ): Promise<{ name: string, team: string[], explanation: string }> {
     try {

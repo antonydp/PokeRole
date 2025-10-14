@@ -123,8 +123,13 @@ export function generateNPCTrainer(
     if (!suggestedTeam) {
         const teamSize = options.teamSize ?? getTeamSizeForRank(rank);
         const legendaryFilter = (p: Pokedex) => !p.Legendary || !!options.allowLegendaries;
-        let candidates = allPokemon.filter(p => p.RecommendedRank === rank && legendaryFilter(p));
-        if (candidates.length === 0) {
+        let candidates;
+        if (rank) {
+            candidates = allPokemon.filter(p => p.RecommendedRank === rank && legendaryFilter(p));
+            if (candidates.length === 0) {
+                candidates = allPokemon.filter(legendaryFilter);
+            }
+        } else {
             candidates = allPokemon.filter(legendaryFilter);
         }
 

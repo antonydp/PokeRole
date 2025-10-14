@@ -17,7 +17,7 @@ type GenerationMode = 'random' | 'ai';
 
 const RandomEncounterGenerator: React.FC = () => {
     const [numPokemon, setNumPokemon] = useState(1);
-    const [rank, setRank] = useState<Rank>('Starter');
+    const [rank, setRank] = useState<Rank | undefined>(undefined);
     const [selectedType, setSelectedType] = useState<string | null>(null);
     const [isTypePopoverOpen, setIsTypePopoverOpen] = useState(false);
     const [generatedPokemon, setGeneratedPokemon] = useState<TeamMember[]>([]);
@@ -71,10 +71,12 @@ const RandomEncounterGenerator: React.FC = () => {
             if (selectedType) {
                 candidates = candidates.filter(p => p.Type1 === selectedType || p.Type2 === selectedType);
             }
-            candidates = candidates.filter(p => p.RecommendedRank === rank);
+            if (rank) {
+                candidates = candidates.filter(p => p.RecommendedRank === rank);
+            }
 
             if (candidates.length === 0) {
-                alert(`No Pokémon found for Rank "${rank}" and Type "${selectedType}". Try different parameters.`);
+                alert(`No Pokémon found for the selected parameters. Try different parameters.`);
                 setIsLoading(false);
                 return;
             }
@@ -166,10 +168,11 @@ const RandomEncounterGenerator: React.FC = () => {
                         <label htmlFor="rank" className="block text-sm font-bold text-gray-300 mb-1">Rank</label>
                         <select
                             id="rank"
-                            value={rank}
-                            onChange={e => setRank(e.target.value as Rank)}
+                            value={rank || 'Any'}
+                            onChange={e => setRank(e.target.value === 'Any' ? undefined : e.target.value as Rank)}
                             className="w-full p-2 bg-slate-700 rounded"
                         >
+                            <option value="Any">Any Rank</option>
                             {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
                     </div>
