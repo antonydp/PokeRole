@@ -10,19 +10,16 @@ const GMTools: React.FC = () => {
     const [activeTool, setActiveTool] = useState<Tool>('encounter');
 
     const getTabClassName = (tool: Tool) => {
-        return `px-4 py-2 rounded-lg font-bold transition-colors ${
-            activeTool === tool
-                ? 'bg-poke-blue text-white'
-                : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-        }`;
+        const base = "px-4 sm:px-6 py-3 font-primary text-base sm:text-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-poke-yellow focus:z-10 flex items-center gap-2";
+        if (activeTool === tool) {
+            return `${base} bg-slate-700/80 text-poke-yellow border-b-4 border-poke-yellow`;
+        }
+        return `${base} text-gray-400 hover:text-white hover:bg-slate-700/50`;
     };
 
     return (
-        <div className="p-4 h-full flex flex-col">
-            <h2 className="text-3xl font-bold text-poke-yellow text-center mb-4 font-primary">
-                Game Master Tools
-            </h2>
-            <div className="flex justify-center gap-4 mb-6 border-b border-slate-700 pb-4">
+        <div className="h-full flex flex-col">
+            <div className="flex justify-center border-b-2 border-slate-700/80">
                 <button
                     onClick={() => setActiveTool('encounter')}
                     className={getTabClassName('encounter')}
@@ -35,12 +32,8 @@ const GMTools: React.FC = () => {
                 >
                     NPC Trainer Generator
                 </button>
-                {/* Add buttons for future tools here */}
-                <button className="px-4 py-2 rounded-lg font-bold bg-slate-800 text-gray-500 cursor-not-allowed">
-                    More Tools (Soon)
-                </button>
             </div>
-            <div className="flex-grow">
+            <div className="flex-grow pt-4">
                 {activeTool === 'encounter' && <RandomEncounterGenerator />}
                 {activeTool === 'npc' && <NPCTrainerGenerator />}
                 {/* Render other tools based on activeTool state here */}

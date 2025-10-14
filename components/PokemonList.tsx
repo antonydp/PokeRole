@@ -112,7 +112,7 @@ const PokemonList: React.FC<PokemonListProps> = ({ isOpen }) => {
             const nameMatch = pokemon.Name.toLowerCase().includes(searchTerm.toLowerCase());
             if (!nameMatch) return false;
 
-            if (excludeForms && pokemon.Name.toLowerCase().includes('form')) {
+            if (excludeForms && pokemon.Name.toLowerCase().includes('form)')) {
                 return false;
             }
 

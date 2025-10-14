@@ -156,35 +156,29 @@ const App: React.FC = () => {
                settings={unitSettings}
                onSettingsChange={setUnitSettings}
             />
-           <header className="w-full p-4 flex items-center justify-between bg-slate-900/80 backdrop-blur-sm sticky top-0 z-30 border-b border-slate-700/50">
-               <div className="flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                   <PokeballIcon className="w-8 h-8 md:w-10 md:h-10 mr-3 text-poke-red" />
-                    <h1 className="text-2xl md:text-3xl font-bold text-poke-yellow tracking-wider font-primary">
-                        {mainView === 'gm' ? 'GM Tools' : 'Pokérole Team Builder'}
-                    </h1>
-                </div>
-                 <div className="flex items-center gap-2">
-                      <button
+            <header className="w-full p-4 flex items-center justify-between bg-slate-900/80 backdrop-blur-sm sticky top-0 z-30 border-b border-slate-700/50">
+                <div className="flex-1 flex justify-start items-center gap-2">
+                    <button
                         onClick={exportTeam}
-                        className="flex items-center justify-center px-3 py-1.5 bg-green-600 text-white font-primary text-xs rounded-md border-b-2 border-green-800 hover:bg-green-500 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
+                        className="flex items-center justify-center px-4 py-2 bg-slate-700 text-white font-semibold text-sm rounded-lg hover:bg-slate-600 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
                         aria-label="Export Session Data"
                         title="Export Session Data"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                         </svg>
-                        <span className="hidden sm:inline ml-1.5">Export</span>
+                        <span className="hidden sm:inline ml-2">Export</span>
                     </button>
                     <button
                         onClick={handleLoadClick}
-                        className="flex items-center justify-center px-3 py-1.5 bg-poke-yellow text-slate-900 font-primary text-xs rounded-md border-b-2 border-yellow-600 hover:bg-yellow-400 active:translate-y-px active:border-b-0 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
+                        className="flex items-center justify-center px-4 py-2 bg-slate-700 text-white font-semibold text-sm rounded-lg hover:bg-slate-600 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
                         aria-label="Load Session Data"
                         title="Load Session Data"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
-                        <span className="hidden sm:inline ml-1.5">Load</span>
+                        <span className="hidden sm:inline ml-2">Load</span>
                     </button>
                     <input
                         type="file"
@@ -194,18 +188,30 @@ const App: React.FC = () => {
                         className="hidden"
                         aria-hidden="true"
                     />
+                </div>
+                <div className="flex-1 flex items-center justify-center">
+                    <PokeballIcon className="w-8 h-8 md:w-10 md:h-10 mr-3 text-poke-red" />
+                    <h1 className="text-2xl md:text-3xl font-bold text-poke-yellow tracking-wider font-primary text-center">
+                        {mainView === 'gm' ? 'GM Tools' : 'Pokérole Team Builder'}
+                    </h1>
+                </div>
+                <div className="flex-1 flex justify-end items-center gap-2">
                     <button
                         onClick={() => setMainView(mainView === 'gm' ? 'dashboard' : 'gm')}
-                        className={`p-2 rounded-md transition-colors ${mainView === 'gm' ? 'bg-poke-blue text-white' : 'text-gray-300 hover:bg-slate-700 hover:text-white'}`}
+                        className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${mainView === 'gm' ? 'bg-poke-blue text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'}`}
                         aria-label={mainView === 'gm' ? "Return to Dashboard" : "Open GM Tools"}
                         title={mainView === 'gm' ? "Return to Dashboard" : "Open GM Tools"}
                     >
-                        <DiceIcon className="w-6 h-6" />
+                        <DiceIcon className="w-5 h-5" />
+                        <span className="hidden md:inline">
+                            {mainView === 'gm' ? "Dashboard" : "GM Tools"}
+                        </span>
                     </button>
                     <button
                         onClick={() => setIsSettingsOpen(true)}
-                        className="p-2 rounded-md text-gray-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        className="p-2 rounded-lg bg-slate-700 text-gray-200 hover:bg-slate-600 transition-colors"
                         aria-label="Open settings"
+                        title="Settings"
                     >
                         <SettingsIcon className="w-6 h-6" />
                     </button>
