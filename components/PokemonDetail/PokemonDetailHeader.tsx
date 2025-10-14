@@ -32,26 +32,26 @@ const PokemonDetailHeader: React.FC = () => {
     if (isInTemporaryForm && !teamMember) return null; // If in temp form, must be a team member
 
     return (
-        <div className="flex justify-between items-center mb-3 flex-wrap gap-3 font-primary">
+        <div className="flex justify-between items-start mb-3 flex-wrap gap-3 font-primary">
             <div className="flex items-center">
                 <img src={`${IMAGE_BASE_URL}${pokemon.Image}`} alt={pokemon.Name} className="w-20 h-20 mr-3" />
                 <div className="flex-grow min-w-[200px]">
                     <input
                         id="pokemonName"
-                    type="text"
-                    value={pokemonData.pokemonName}
-                    onChange={e => updateField('pokemonName', e.target.value)}
-                    className="w-full bg-transparent p-0 text-3xl font-primary text-white border-none focus:ring-0 focus:outline-none placeholder:text-white/50"
-                    placeholder="Pokémon Name"
-                    aria-label="Pokémon Name"
-                />
+                        type="text"
+                        value={pokemonData.pokemonName}
+                        onChange={e => updateField('pokemonName', e.target.value)}
+                        className="w-full bg-transparent p-0 text-3xl font-primary text-white border-none focus:ring-0 focus:outline-none placeholder:text-white/50"
+                        placeholder="Pokémon Name"
+                        aria-label="Pokémon Name"
+                    />
                     <p className="mt-0.5 font-primary text-xs text-white/80 tracking-wider">
                         POKÉDEX #: {pokemonData.pokemonNumber}
                     </p>
                 </div>
             </div>
             {/* Right side: Ability and Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch flex-shrink-0 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch flex-shrink-0 w-full sm:w-auto pt-2">
                 <button
                     onClick={onAbilityClick}
                     onMouseEnter={(e) => onShowTooltip(e, selectedAbility ? { name: selectedAbility.Name, description: selectedAbility.Description } : null)}
@@ -107,6 +107,9 @@ const PokemonDetailHeader: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <p className="font-sans text-xs text-white/90 tracking-wider text-justify mb-3">
+                {pokemon.DexDescription}
+            </p>
         </div>
     );
 };
