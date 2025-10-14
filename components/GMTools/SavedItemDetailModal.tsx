@@ -84,6 +84,7 @@ const SavedItemDetailModal: React.FC<SavedItemDetailModalProps> = ({ item, onClo
                                                     currentFormName: null,
                                                 }}
                                                 onUpdatePokemon={() => {}}
+                                                isReadOnly={true}
                                             />
                                         ))}
                                     </div>
@@ -93,7 +94,7 @@ const SavedItemDetailModal: React.FC<SavedItemDetailModalProps> = ({ item, onClo
                     ) : (
                         <div className="grid grid-cols-1 gap-4">
                             {item.pokemon.map(p => (
-                                <EncounterPokemonCard key={p.instanceID} pokemon={p} onUpdatePokemon={() => {}} />
+                                <EncounterPokemonCard key={p.instanceID} pokemon={p} onUpdatePokemon={() => {}} isReadOnly={true} />
                             ))}
                         </div>
                     )}

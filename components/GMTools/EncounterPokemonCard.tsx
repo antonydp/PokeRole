@@ -34,7 +34,7 @@ const BonusStatDisplay: React.FC<{ label: string; baseValue: number | string; cu
 };
 
 
-const EncounterPokemonCard: React.FC<{ pokemon: TeamMember; onUpdatePokemon: (updatedMember: TeamMember) => void; }> = ({ pokemon, onUpdatePokemon }) => {
+const EncounterPokemonCard: React.FC<{ pokemon: TeamMember; onUpdatePokemon: (updatedMember: TeamMember) => void; isReadOnly?: boolean; }> = ({ pokemon, onUpdatePokemon, isReadOnly = false }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [expandedMoves, setExpandedMoves] = useState<Set<number>>(new Set());
     const { pokedexData, sheetData } = pokemon;
@@ -115,7 +115,8 @@ const EncounterPokemonCard: React.FC<{ pokemon: TeamMember; onUpdatePokemon: (up
                                     id={`rank-${pokemon.instanceID}`}
                                     value={sheetData.rank}
                                     onChange={e => handleRankChange(e.target.value as Rank)}
-                                    className="w-full p-1.5 bg-slate-900/70 rounded mt-1 text-xs border border-slate-600 focus:ring-1 focus:ring-poke-yellow focus:border-poke-yellow"
+                                    disabled={isReadOnly}
+                                    className="w-full p-1.5 bg-slate-900/70 rounded mt-1 text-xs border border-slate-600 focus:ring-1 focus:ring-poke-yellow focus:border-poke-yellow disabled:bg-slate-800 disabled:text-gray-400 disabled:cursor-not-allowed"
                                 >
                                     {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                                 </select>

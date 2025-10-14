@@ -1,7 +1,7 @@
 // components/GMTools/NPCTrainerGenerator.tsx
 
 import React, { useState, useCallback } from 'react';
-import { Rank, NPCTrainer, Pokedex } from '../../src/types/index.js';
+import { Rank, NPCTrainer, Pokedex, TeamMember } from '../../src/types/index.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { useUIStore } from '../../src/store/useUIStore.js';
 import { useSavedDataStore } from '../../src/store/useSavedDataStore.js';
@@ -42,6 +42,23 @@ const NPCTrainerGenerator: React.FC = () => {
     const { allPokemon, allMoves, allSprites } = useGameDataStore();
     const { unitSettings } = useUIStore();
     const { saveNPC } = useSavedDataStore();
+
+    const handleUpdatePokemonInTeam = useCallback((updatedMember: TeamMember, index: number) => {
+        if (!generatedTrainer) return;
+
+        const newTeam = [...generatedTrainer.team];
+        // The team stores NPCPokemon, but the card works with TeamMember.
+        // We need to update the pokemon at the given index with the new sheetData.
+        newTeam[index] = {
+            ...newTeam[index],
+            sheetData: updatedMember.sheetData,
+        };
+
+        setGeneratedTrainer({
+            ...generatedTrainer,
+            team: newTeam,
+        });
+    }, [generatedTrainer]);
 
     const handleReloadStats = useCallback(() => {
         if (!generatedTrainer) return;
@@ -284,7 +301,7 @@ const NPCTrainerGenerator: React.FC = () => {
                                                 forms: {},
                                                 currentFormName: null,
                                             }}
-                                            onUpdatePokemon={() => {}}
+                                            onUpdatePokemon={(updatedMember) => handleUpdatePokemonInTeam(updatedMember, index)}
                                         />
                                     ))}
                                 </div>
