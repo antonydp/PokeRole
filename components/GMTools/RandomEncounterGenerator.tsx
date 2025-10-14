@@ -1,7 +1,7 @@
 // components/GMTools/RandomEncounterGenerator.tsx
 
 import React, { useState, useCallback } from 'react';
-import { TeamMember, Rank } from '../../src/types/index.js';
+import { TeamMember, Rank, Pokedex } from '../../src/types/index.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { useUIStore } from '../../src/store/useUIStore.js';
 import { createInitialSheetData } from '../../src/logic/initializers.js';
@@ -9,6 +9,11 @@ import { applyRandomBonusPoints, selectRandomMoves } from '../../src/logic/gm-to
 import { RANKS, TYPE_COLORS } from '../../src/constants/gameConstants.js';
 import EncounterPokemonCard from './EncounterPokemonCard.js';
 import TypeBadge from '../TypeBadge.js';
+import { SparklesIcon, DiceIcon } from '../Icons.js';
+import { suggestEncounter } from '../../services/aiService.js';
+import AIExplanation from '../shared/AIExplanation.js';
+
+type GenerationMode = 'random' | 'ai';
 
 const RandomEncounterGenerator: React.FC = () => {
     const [numPokemon, setNumPokemon] = useState(1);
@@ -16,46 +21,74 @@ const RandomEncounterGenerator: React.FC = () => {
     const [selectedType, setSelectedType] = useState<string | null>(null);
     const [isTypePopoverOpen, setIsTypePopoverOpen] = useState(false);
     const [generatedPokemon, setGeneratedPokemon] = useState<TeamMember[]>([]);
+    const [generationMode, setGenerationMode] = useState<GenerationMode>('random');
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [aiExplanation, setAiExplanation] = useState<string | null>(null);
 
     const { allPokemon, allMoves } = useGameDataStore();
     const { unitSettings } = useUIStore();
 
-    const handleGenerate = useCallback(() => {
-        let candidates = [...allPokemon];
-        if (selectedType) {
-            candidates = candidates.filter(p => p.Type1 === selectedType || p.Type2 === selectedType);
+    const createTeamMemberFromPokedex = (pokemonData: Pokedex): TeamMember => {
+        const baseSheet = createInitialSheetData(pokemonData, unitSettings, rank);
+        const sheetWithBonuses = applyRandomBonusPoints(pokemonData, baseSheet, rank);
+        const selectedMoves = selectRandomMoves(pokemonData, sheetWithBonuses, allMoves);
+        return {
+            instanceID: crypto.randomUUID(),
+            pokedexData: pokemonData,
+            sheetData: {
+                ...sheetWithBonuses,
+                moves: selectedMoves,
+            },
+            forms: {},
+            currentFormName: null,
+        };
+    };
+
+    const handleGenerate = useCallback(async () => {
+        setIsLoading(true);
+        setAiExplanation(null);
+        setGeneratedPokemon([]);
+
+        if (generationMode === 'ai') {
+            try {
+                const response = await suggestEncounter(aiPrompt, allPokemon, rank, numPokemon, selectedType);
+                const pokemonData = response.team.map(name => allPokemon.find(p => p.Name === name)).filter(Boolean) as Pokedex[];
+                
+                if (pokemonData.length > 0) {
+                    const encounters = pokemonData.map(createTeamMemberFromPokedex);
+                    setGeneratedPokemon(encounters);
+                    setAiExplanation(response.explanation);
+                } else {
+                    alert("AI suggestion failed to return valid Pokémon. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error fetching AI suggestion:", error);
+                alert("Failed to get AI suggestion. Please check the console for more details.");
+            }
+        } else {
+            let candidates = [...allPokemon];
+            if (selectedType) {
+                candidates = candidates.filter(p => p.Type1 === selectedType || p.Type2 === selectedType);
+            }
+            candidates = candidates.filter(p => p.RecommendedRank === rank);
+
+            if (candidates.length === 0) {
+                alert(`No Pokémon found for Rank "${rank}" and Type "${selectedType}". Try different parameters.`);
+                setIsLoading(false);
+                return;
+            }
+
+            const encounters: TeamMember[] = [];
+            for (let i = 0; i < numPokemon; i++) {
+                const randomIndex = Math.floor(Math.random() * candidates.length);
+                const pokemonData = candidates[randomIndex];
+                encounters.push(createTeamMemberFromPokedex(pokemonData));
+            }
+            setGeneratedPokemon(encounters);
         }
-        candidates = candidates.filter(p => p.RecommendedRank === rank);
-
-        if (candidates.length === 0) {
-            alert(`No Pokémon found for Rank "${rank}" and Type "${selectedType}". Try different parameters.`);
-            return;
-        }
-
-        const encounters: TeamMember[] = [];
-        for (let i = 0; i < numPokemon; i++) {
-            const randomIndex = Math.floor(Math.random() * candidates.length);
-            const pokemonData = candidates[randomIndex];
-
-            const baseSheet = createInitialSheetData(pokemonData, unitSettings, rank);
-            const sheetWithBonuses = applyRandomBonusPoints(pokemonData, baseSheet, rank);
-            
-            const selectedMoves = selectRandomMoves(pokemonData, sheetWithBonuses, allMoves);
-
-            const encounter: TeamMember = {
-                instanceID: crypto.randomUUID(),
-                pokedexData: pokemonData,
-                sheetData: {
-                    ...sheetWithBonuses,
-                    moves: selectedMoves,
-                },
-                forms: {},
-                currentFormName: null,
-            };
-            encounters.push(encounter);
-        }
-        setGeneratedPokemon(encounters);
-    }, [allPokemon, allMoves, numPokemon, rank, selectedType, unitSettings]);
+        setIsLoading(false);
+    }, [allPokemon, allMoves, numPokemon, rank, selectedType, unitSettings, generationMode, aiPrompt]);
 
     const handleUpdatePokemon = useCallback((updatedMember: TeamMember) => {
         setGeneratedPokemon(prev =>
@@ -75,11 +108,46 @@ const RandomEncounterGenerator: React.FC = () => {
 
     return (
         <div className="p-4 bg-gray-800 rounded-lg text-white">
-            <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Random Encounter Generator</h2>
+            <h2 className="text-2xl font-bold mb-4 text-center md:text-left">Encounter Generator</h2>
             <div className="flex flex-col md:flex-row gap-6">
                 {/* Control Panel */}
                 <div className="bg-slate-800/50 p-4 rounded-lg md:w-80 flex flex-col gap-4 self-start">
                     <h3 className="text-xl font-semibold border-b border-gray-600 pb-2 mb-2">Controls</h3>
+
+                    <div>
+                        <label className="block text-sm font-bold text-gray-300 mb-2">Generation Mode</label>
+                        <div className="flex w-full bg-slate-700 rounded-lg p-1">
+                            <button
+                                onClick={() => setGenerationMode('random')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-bold rounded-md transition-all ${generationMode === 'random' ? 'bg-poke-yellow text-slate-900' : 'bg-transparent text-gray-300'}`}
+                            >
+                                <DiceIcon className="w-5 h-5" />
+                                Random
+                            </button>
+                            <button
+                                onClick={() => setGenerationMode('ai')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-bold rounded-md transition-all ${generationMode === 'ai' ? 'bg-poke-yellow text-slate-900' : 'bg-transparent text-gray-300'}`}
+                            >
+                                <SparklesIcon className="w-5 h-5" />
+                                AI-Powered
+                            </button>
+                        </div>
+                    </div>
+
+                    {generationMode === 'ai' && (
+                        <div className="animate-fade-in">
+                            <label htmlFor="ai-prompt" className="block text-sm font-bold text-gray-300 mb-1">
+                                Encounter Theme/Prompt
+                            </label>
+                            <textarea
+                                id="ai-prompt"
+                                value={aiPrompt}
+                                onChange={e => setAiPrompt(e.target.value)}
+                                placeholder="e.g., 'A spooky encounter in a graveyard' or 'A team of fire-types guarding a volcano'"
+                                className="w-full p-2 bg-slate-700 rounded h-24 resize-none"
+                            />
+                        </div>
+                    )}
                     
                     <div>
                         <label htmlFor="num-pokemon" className="block text-sm font-bold text-gray-300 mb-1">Number of Pokémon</label>
@@ -143,17 +211,26 @@ const RandomEncounterGenerator: React.FC = () => {
 
                     <button
                         onClick={handleGenerate}
-                        className="w-full bg-poke-yellow text-slate-900 font-bold py-3 px-4 rounded-lg hover:bg-yellow-300 transition-colors text-lg mt-4"
+                        disabled={isLoading || (generationMode === 'ai' && !aiPrompt.trim())}
+                        className="w-full bg-poke-yellow text-slate-900 font-bold py-3 px-4 rounded-lg hover:bg-yellow-300 transition-colors text-lg mt-4 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                        Generate Encounter
+                        {isLoading ? 'Generating...' : 'Generate Encounter'}
                     </button>
                 </div>
 
                 {/* Encounter Display */}
                 <div className="flex-1">
-                    {generatedPokemon.length > 0 ? (
-                        <div>
-                            <h3 className="text-2xl font-bold text-white mb-4">Generated Encounter</h3>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-full bg-slate-800/50 rounded-lg min-h-[300px]">
+                            <div className="text-center text-gray-400">
+                                <p className="text-lg">Generating with AI...</p>
+                                <p>Please wait a moment.</p>
+                            </div>
+                        </div>
+                    ) : generatedPokemon.length > 0 ? (
+                        <div className="space-y-4">
+                            <h3 className="text-2xl font-bold text-white">Generated Encounter</h3>
+                            {aiExplanation && <AIExplanation explanation={aiExplanation} />}
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-4">
                                 {generatedPokemon.map((pokemon) => (
                                     <EncounterPokemonCard

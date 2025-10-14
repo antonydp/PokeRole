@@ -111,28 +111,33 @@ export function generateNPCTrainer(
     allMoves: Record<string, Move>,
     allSprites: Sprite[],
     unitSettings: UnitSettings,
-    options: NPCTrainerOptions = {}
+    options: NPCTrainerOptions = {},
+    suggestedName?: string,
+    suggestedTeam?: Pokedex[]
 ): NPCTrainer {
-    const name = TRAINER_NAMES[Math.floor(Math.random() * TRAINER_NAMES.length)];
-    const teamSize = options.teamSize ?? getTeamSizeForRank(rank);
+    const name = suggestedName || TRAINER_NAMES[Math.floor(Math.random() * TRAINER_NAMES.length)];
     const team: NPCPokemon[] = [];
     const trainerStats = generateTrainerStats(rank);
 
-    const legendaryFilter = (p: Pokedex) => !p.Legendary || !!options.allowLegendaries;
+    const teamToGenerate = suggestedTeam || [];
+    if (!suggestedTeam) {
+        const teamSize = options.teamSize ?? getTeamSizeForRank(rank);
+        const legendaryFilter = (p: Pokedex) => !p.Legendary || !!options.allowLegendaries;
+        let candidates = allPokemon.filter(p => p.RecommendedRank === rank && legendaryFilter(p));
+        if (candidates.length === 0) {
+            candidates = allPokemon.filter(legendaryFilter);
+        }
 
-    let candidates = allPokemon.filter(p => p.RecommendedRank === rank && legendaryFilter(p));
-    if (candidates.length === 0) {
-        candidates = allPokemon.filter(legendaryFilter);
+        for (let i = 0; i < teamSize; i++) {
+            if (candidates.length === 0) break;
+            const randomIndex = Math.floor(Math.random() * candidates.length);
+            const pokemonData = candidates[randomIndex];
+            teamToGenerate.push(pokemonData);
+            candidates.splice(randomIndex, 1);
+        }
     }
 
-    for (let i = 0; i < teamSize; i++) {
-        if (candidates.length === 0) break;
-
-        const randomIndex = Math.floor(Math.random() * candidates.length);
-        const pokemonData = candidates[randomIndex];
-        
-        candidates.splice(randomIndex, 1);
-
+    for (const pokemonData of teamToGenerate) {
         const baseSheet = createInitialSheetData(pokemonData, unitSettings, rank);
         const sheetWithBonuses = applyRandomBonusPoints(pokemonData, baseSheet, rank);
         const selectedMoves = selectRandomMoves(pokemonData, sheetWithBonuses, allMoves);

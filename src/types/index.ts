@@ -58,6 +58,7 @@ export interface SimplifiedPokedex {
   Dexterity: number;
   Vitality: number;
   Moves: string[];
+  RecommendedRank: string;
 }
 
 /** Describes the evolution details for a Pokémon. */
