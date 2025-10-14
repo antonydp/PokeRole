@@ -122,7 +122,7 @@ Available Pokémon: ${JSON.stringify(availablePokemon, null, 2)}`;
 
     try {
         return await openai.chat.completions.create({
-            model: 'models/gemini-2.5-flash',
+            model: 'models/gemini-flash-latest',
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userMessage },
