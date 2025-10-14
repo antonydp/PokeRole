@@ -61,6 +61,7 @@ const PokemonList: React.FC<PokemonListProps> = ({ isOpen }) => {
     const [statFilters, setStatFilters] = useState(initialStatFilters);
     const [abilityFilter, setAbilityFilter] = useState('');
     const [legendaryFilter, setLegendaryFilter] = useState<'all' | 'yes' | 'no'>('all');
+    const [excludeForms, setExcludeForms] = useState(true);
 
     useEffect(() => {
         if (isOpen) {
@@ -98,6 +99,7 @@ const PokemonList: React.FC<PokemonListProps> = ({ isOpen }) => {
         setStatFilters(initialStatFilters);
         setAbilityFilter('');
         setLegendaryFilter('all');
+        setExcludeForms(false);
     }, []);
 
     const pokemonTypes = useMemo(() => {
@@ -109,6 +111,10 @@ const PokemonList: React.FC<PokemonListProps> = ({ isOpen }) => {
             // Name Filter
             const nameMatch = pokemon.Name.toLowerCase().includes(searchTerm.toLowerCase());
             if (!nameMatch) return false;
+
+            if (excludeForms && pokemon.Name.toLowerCase().includes('form')) {
+                return false;
+            }
 
             // Type Filter
             const typeMatch = !typeFilter || pokemon.Type1 === typeFilter || pokemon.Type2 === typeFilter;
@@ -146,7 +152,7 @@ const PokemonList: React.FC<PokemonListProps> = ({ isOpen }) => {
 
             return true;
         });
-    }, [allPokemon, searchTerm, typeFilter, statFilters, abilityFilter, legendaryFilter]);
+    }, [allPokemon, searchTerm, typeFilter, statFilters, abilityFilter, legendaryFilter, excludeForms]);
 
     const columnCount = 3;
     const rowCount = Math.ceil(filteredPokemon.length / columnCount);
@@ -210,6 +216,19 @@ const PokemonList: React.FC<PokemonListProps> = ({ isOpen }) => {
                 
                 {showAdvanced && (
                     <div className="p-3 my-2 bg-slate-900/50 rounded-lg animate-fade-in space-y-4">
+                        {/* Exclude Forms Filter */}
+                        <div className="flex items-center">
+                            <input
+                                id="excludeForms"
+                                type="checkbox"
+                                checked={excludeForms}
+                                onChange={e => setExcludeForms(e.target.checked)}
+                                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-600 ring-offset-gray-800 focus:ring-2"
+                            />
+                            <label htmlFor="excludeForms" className="ml-2 text-sm font-medium text-gray-300">
+                                Exclude Pokémon with "Form" in name
+                            </label>
+                        </div>
                         {/* Legendary Filter */}
                         <div>
                            <label className="text-sm font-bold text-gray-300 mb-2 block">Legendary</label>
