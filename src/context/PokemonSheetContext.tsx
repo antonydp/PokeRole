@@ -54,6 +54,7 @@ export interface PokemonSheetContextType {
     onHideTooltip: () => void;
     selectedAbility: Ability | undefined;
     onOpenNatureModal: () => void;
+    onClose: () => void;
 }
 
 const PokemonSheetContext = createContext<PokemonSheetContextType | undefined>(undefined);

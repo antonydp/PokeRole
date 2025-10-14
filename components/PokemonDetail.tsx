@@ -130,6 +130,7 @@ const PokemonDetail: React.FC = () => {
         onHideTooltip: handleHideTooltip,
         selectedAbility,
         onOpenNatureModal: openNatureModal,
+        onClose: clearSelection,
     };
 
     return (
@@ -175,10 +176,6 @@ const PokemonDetail: React.FC = () => {
                         This move is above the Pokémon's current rank and may have consequences.
                     </p>
                 </ConfirmationModal>
-
-                <button onClick={clearSelection} className="absolute top-2 right-2 z-20 p-2 rounded-full bg-[#B2483D] text-white hover:bg-poke-red transition-transform transform hover:scale-110" aria-label="Close sheet">
-                    <CloseIcon className="w-5 h-5" />
-                </button>
 
                 <PokemonDetailHeader />
 
