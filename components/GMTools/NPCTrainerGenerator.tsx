@@ -32,6 +32,7 @@ const NPCTrainerGenerator: React.FC = () => {
     const [generatedTrainer, setGeneratedTrainer] = useState<NPCTrainer | null>(null);
     const [teamSizeOverride, setTeamSizeOverride] = useState<number | ''>('');
     const [allowLegendaries, setAllowLegendaries] = useState<boolean>(false);
+    const [excludeForms, setExcludeForms] = useState<boolean>(false);
     const [generationMode, setGenerationMode] = useState<GenerationMode>('random');
     const [aiPrompt, setAiPrompt] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +77,7 @@ const NPCTrainerGenerator: React.FC = () => {
         const options: NPCTrainerOptions = {
             teamSize: teamSizeOverride === '' ? undefined : teamSizeOverride,
             allowLegendaries,
+            excludeForms,
         };
 
         if (generationMode === 'ai') {
@@ -111,7 +113,7 @@ const NPCTrainerGenerator: React.FC = () => {
         }
 
         setIsLoading(false);
-    }, [rank, allPokemon, allMoves, allSprites, unitSettings, teamSizeOverride, allowLegendaries, generationMode, aiPrompt]);
+    }, [rank, allPokemon, allMoves, allSprites, unitSettings, teamSizeOverride, allowLegendaries, excludeForms, generationMode, aiPrompt]);
 
     return (
         <div className="p-4 bg-gray-900 rounded-lg text-white font-sans">
@@ -160,6 +162,12 @@ const NPCTrainerGenerator: React.FC = () => {
                         <div className="flex items-center h-10">
                             <input id="allow-legendaries" type="checkbox" checked={allowLegendaries} onChange={e => setAllowLegendaries(e.target.checked)} className="h-5 w-5 rounded bg-slate-700 border-gray-600 text-poke-yellow focus:ring-poke-yellow" />
                             <label htmlFor="allow-legendaries" className="ml-2 text-sm font-bold text-gray-300">Allow Legendaries</label>
+                        </div>
+
+                        {/* Exclude Forms */}
+                        <div className="flex items-center h-10">
+                            <input id="exclude-forms" type="checkbox" checked={excludeForms} onChange={e => setExcludeForms(e.target.checked)} className="h-5 w-5 rounded bg-slate-700 border-gray-600 text-poke-yellow focus:ring-poke-yellow" />
+                            <label htmlFor="exclude-forms" className="ml-2 text-sm font-bold text-gray-300">Exclude Forms</label>
                         </div>
 
                         {/* Generate Button */}

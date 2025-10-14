@@ -87,14 +87,17 @@ async function getNPCSuggestionStream(
     options: any
 ) {
     const legendaryFilter = (p: Pokedex) => !p.Legendary || !!options.allowLegendaries;
+    const formFilter = (p: Pokedex) => !p.Name.includes('Form)') || !options.excludeForms;
+    const combinedFilter = (p: Pokedex) => legendaryFilter(p) && formFilter(p);
+
     let candidates;
     if (rank) {
-        candidates = allPokemon.filter(p => p.RecommendedRank === rank && legendaryFilter(p));
+        candidates = allPokemon.filter(p => p.RecommendedRank === rank && combinedFilter(p));
         if (candidates.length === 0) {
-            candidates = allPokemon.filter(legendaryFilter);
+            candidates = allPokemon.filter(combinedFilter);
         }
     } else {
-        candidates = allPokemon.filter(legendaryFilter);
+        candidates = allPokemon.filter(combinedFilter);
     }
 
     const rankInstruction = rank

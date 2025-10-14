@@ -5,6 +5,7 @@ import { Pokedex, Rank, Move, NPCTrainer, NPCPokemon, Sprite } from '../types/in
 export interface NPCTrainerOptions {
     teamSize?: number;
     allowLegendaries?: boolean;
+    excludeForms?: boolean;
 }
 import { createInitialSheetData } from './initializers.js';
 import { applyRandomBonusPoints, selectRandomMoves } from './gm-tools.js';
@@ -123,14 +124,18 @@ export function generateNPCTrainer(
     if (!suggestedTeam) {
         const teamSize = options.teamSize ?? getTeamSizeForRank(rank);
         const legendaryFilter = (p: Pokedex) => !p.Legendary || !!options.allowLegendaries;
+        const formFilter = (p: Pokedex) => !p.Name.includes('Form)') || !options.excludeForms;
+
+        const combinedFilter = (p: Pokedex) => legendaryFilter(p) && formFilter(p);
+
         let candidates;
         if (rank) {
-            candidates = allPokemon.filter(p => p.RecommendedRank === rank && legendaryFilter(p));
+            candidates = allPokemon.filter(p => p.RecommendedRank === rank && combinedFilter(p));
             if (candidates.length === 0) {
-                candidates = allPokemon.filter(legendaryFilter);
+                candidates = allPokemon.filter(combinedFilter);
             }
         } else {
-            candidates = allPokemon.filter(legendaryFilter);
+            candidates = allPokemon.filter(combinedFilter);
         }
 
         for (let i = 0; i < teamSize; i++) {

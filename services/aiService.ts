@@ -72,12 +72,13 @@ export async function suggestEncounter(
     allPokemon: Pokedex[],
     rank: Rank | undefined,
     numPokemon: number,
-    selectedType: string | null
+    selectedType: string | null,
+    excludeForms: boolean
 ): Promise<{ team: string[], explanation: string }> {
     try {
         const simplifiedPokemon = allPokemon.map(simplifyPokemon);
         const apiUrl = import.meta.env.VITE_API_URL || '/api/suggest-encounter';
-        const body = { prompt, allPokemon: simplifiedPokemon, rank, numPokemon, selectedType };
+        const body = { prompt, allPokemon: simplifiedPokemon, rank, numPokemon, selectedType, excludeForms };
         const parsed = await fetchAIStream(apiUrl, body);
 
         if (parsed.team && Array.isArray(parsed.team) && typeof parsed.explanation === 'string') {

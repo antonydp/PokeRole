@@ -25,6 +25,7 @@ const RandomEncounterGenerator: React.FC = () => {
     const [aiPrompt, setAiPrompt] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+    const [excludeForms, setExcludeForms] = useState<boolean>(false);
 
     const { allPokemon, allMoves } = useGameDataStore();
     const { unitSettings } = useUIStore();
@@ -54,10 +55,12 @@ const RandomEncounterGenerator: React.FC = () => {
             };
         };
 
+        const formFilter = (p: Pokedex) => !p.Name.includes('Form)') || !excludeForms;
+
         if (generationMode === 'ai') {
             try {
                 const pokemonCandidates = allPokemon.filter(p => !p.Legendary);
-                const response = await suggestEncounter(aiPrompt, pokemonCandidates, generationRank, numPokemon, selectedType);
+                const response = await suggestEncounter(aiPrompt, pokemonCandidates, generationRank, numPokemon, selectedType, excludeForms);
                 const pokemonData = response.team.map(name => allPokemon.find(p => p.Name === name)).filter(Boolean) as Pokedex[];
                 
                 if (pokemonData.length > 0) {
@@ -72,7 +75,7 @@ const RandomEncounterGenerator: React.FC = () => {
                 alert("Failed to get AI suggestion. Please check the console for more details.");
             }
         } else {
-            let candidates = [...allPokemon];
+            let candidates = allPokemon.filter(formFilter);
             if (selectedType) {
                 candidates = candidates.filter(p => p.Type1 === selectedType || p.Type2 === selectedType);
             }
@@ -94,7 +97,7 @@ const RandomEncounterGenerator: React.FC = () => {
             setGeneratedPokemon(encounters);
         }
         setIsLoading(false);
-    }, [allPokemon, allMoves, numPokemon, rank, selectedType, unitSettings, generationMode, aiPrompt]);
+    }, [allPokemon, allMoves, numPokemon, rank, selectedType, unitSettings, generationMode, aiPrompt, excludeForms]);
 
     const handleUpdatePokemon = useCallback((updatedMember: TeamMember) => {
         setGeneratedPokemon(prev =>
@@ -179,6 +182,13 @@ const RandomEncounterGenerator: React.FC = () => {
                             <option value="Any">Any Rank</option>
                             {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
+                    </div>
+
+                    <div>
+                        <div className="flex items-center">
+                            <input id="exclude-forms-encounter" type="checkbox" checked={excludeForms} onChange={e => setExcludeForms(e.target.checked)} className="h-4 w-4 rounded bg-slate-700 border-gray-600 text-poke-yellow focus:ring-poke-yellow" />
+                            <label htmlFor="exclude-forms-encounter" className="ml-2 text-sm font-bold text-gray-300">Exclude Forms</label>
+                        </div>
                     </div>
 
                     <div className="relative">

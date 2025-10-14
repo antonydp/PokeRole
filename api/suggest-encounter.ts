@@ -40,7 +40,7 @@ export default async function handler(req: Request): Promise<Response> {
   });
 
   try {
-    const { prompt, allPokemon, rank, numPokemon, selectedType } = await req.json();
+    const { prompt, allPokemon, rank, numPokemon, selectedType, excludeForms } = await req.json();
 
     if (!prompt || !allPokemon || !numPokemon) {
       return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
@@ -49,7 +49,7 @@ export default async function handler(req: Request): Promise<Response> {
       });
     }
     
-    const stream = await getEncounterSuggestionStream(openai, prompt, allPokemon, rank, numPokemon, selectedType);
+    const stream = await getEncounterSuggestionStream(openai, prompt, allPokemon, rank, numPokemon, selectedType, excludeForms);
     
     const readableStream = new ReadableStream({
       async start(controller) {
@@ -85,8 +85,13 @@ async function getEncounterSuggestionStream(
     rank: Rank | undefined,
     numPokemon: number,
     selectedType: string | null,
+    excludeForms: boolean,
 ) {
     let candidates = allPokemon;
+
+    if (excludeForms) {
+        candidates = candidates.filter(p => !p.Name.includes('Form)'));
+    }
 
     // AI mode should be able to select from all ranks, but we filter by type if specified.
     if (selectedType) {
