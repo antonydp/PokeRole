@@ -28,9 +28,13 @@ interface SavedItemDetailModalProps {
 const SavedItemDetailModal: React.FC<SavedItemDetailModalProps> = ({ item, onClose }) => {
     const isNpc = 'trainer' in item;
 
+    const modalSizeClasses = isNpc
+        ? "w-11/12 max-w-7xl h-5/6"
+        : "w-full max-w-4xl max-h-[90vh]";
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className={`bg-slate-800 rounded-lg shadow-xl flex flex-col ${modalSizeClasses}`}>
                 <div className="flex justify-between items-center p-4 border-b border-slate-700">
                     <h2 className="text-2xl font-bold text-poke-yellow">{item.name}</h2>
                     <button onClick={onClose} className="text-gray-400 hover:text-white">
@@ -39,8 +43,8 @@ const SavedItemDetailModal: React.FC<SavedItemDetailModalProps> = ({ item, onClo
                 </div>
                 <div className="p-6 overflow-y-auto">
                     {isNpc ? (
-                        <div className="flex flex-col gap-6">
-                            <div className="bg-slate-900/40 p-4 rounded-lg flex flex-col items-center text-center">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-1 bg-slate-900/40 p-4 rounded-lg flex flex-col items-center text-center">
                                 <img src={item.trainer.spriteUrl} alt="Trainer Sprite" className="w-40 h-40 object-contain bg-slate-700/50 rounded-full p-1 mb-4 border-2 border-slate-600" />
                                 <h3 className="text-3xl font-bold text-white">{item.trainer.name}</h3>
                                 <p className="text-poke-yellow font-bold">{item.trainer.rank}</p>
@@ -52,12 +56,12 @@ const SavedItemDetailModal: React.FC<SavedItemDetailModalProps> = ({ item, onClo
                                     ))}
                                 </div>
                             </div>
-                            <div className="space-y-6">
+                            <div className="lg:col-span-2 space-y-6">
                                 <div className="bg-slate-900/40 p-4 rounded-lg">
                                     <h4 className="text-xl font-bold text-poke-yellow mb-3 text-center">Skills</h4>
-                                    <div className="flex flex-wrap justify-center gap-x-6 gap-y-4">
+                                    <div className="flex justify-around gap-x-4">
                                         {Object.entries(SKILLS).map(([category, skills]) => (
-                                            <div key={category} className="space-y-2 flex-shrink-0">
+                                            <div key={category} className="space-y-2">
                                                 <h5 className="text-center font-semibold text-gray-300 capitalize">{category}</h5>
                                                 {skills.map(skill => (
                                                     <SkillDisplay key={skill.field} label={skill.name} value={item.trainer[skill.field as keyof NPCTrainer] as number} />
