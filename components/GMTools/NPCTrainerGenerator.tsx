@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import { Rank, NPCTrainer, Pokedex } from '../../src/types/index.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { useUIStore } from '../../src/store/useUIStore.js';
-import { generateNPCTrainer, NPCTrainerOptions, regenerateNPCTrainerStats } from '../../src/logic/npc-generator.js';
+import { generateNPCTrainer, NPCTrainerOptions, regenerateNPCTrainerStats, regenerateNPCTrainerForNewRank } from '../../src/logic/npc-generator.js';
 import { RANKS, SKILLS, TRAINER_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 import EncounterPokemonCard from './EncounterPokemonCard.js';
 import { PokeballIcon, SparklesIcon, DiceIcon } from '../Icons.js';
@@ -52,6 +52,18 @@ const NPCTrainerGenerator: React.FC = () => {
         setGeneratedTrainer(reloadedTrainer);
     }, [generatedTrainer, allPokemon, allMoves, unitSettings]);
 
+    const handleRankChange = useCallback((newRank: Rank) => {
+        if (!generatedTrainer) return;
+
+        const updatedTrainer = regenerateNPCTrainerForNewRank(
+            generatedTrainer,
+            newRank,
+            allMoves,
+            unitSettings
+        );
+        setGeneratedTrainer(updatedTrainer);
+    }, [generatedTrainer, allMoves, unitSettings]);
+
     const handleGenerate = useCallback(async () => {
         if (allSprites.length === 0) {
             alert("Sprite data is not loaded yet. Please wait a moment and try again.");
@@ -61,6 +73,8 @@ const NPCTrainerGenerator: React.FC = () => {
         setAiExplanation(null);
         setGeneratedTrainer(null);
 
+        const generationRank = rank || RANKS[Math.floor(Math.random() * RANKS.length)];
+
         const options: NPCTrainerOptions = {
             teamSize: teamSizeOverride === '' ? undefined : teamSizeOverride,
             allowLegendaries,
@@ -68,7 +82,7 @@ const NPCTrainerGenerator: React.FC = () => {
 
         if (generationMode === 'ai') {
             try {
-                const response = await suggestNPC(aiPrompt, allPokemon, rank, options);
+                const response = await suggestNPC(aiPrompt, allPokemon, generationRank, options);
                 const teamPokemon = response.team
                     .map(name => allPokemon.find(p => p.Name === name))
                     .filter((p): p is Pokedex => p !== undefined);
@@ -78,7 +92,7 @@ const NPCTrainerGenerator: React.FC = () => {
                         ...options,
                         teamSize: teamPokemon.length,
                     };
-                    const trainer = generateNPCTrainer(rank, allPokemon, allMoves, allSprites, unitSettings, finalOptions, response.name, teamPokemon);
+                    const trainer = generateNPCTrainer(generationRank, allPokemon, allMoves, allSprites, unitSettings, finalOptions, response.name, teamPokemon);
                     setGeneratedTrainer(trainer);
                     setAiExplanation(response.explanation);
                 } else {
@@ -89,7 +103,7 @@ const NPCTrainerGenerator: React.FC = () => {
                 alert("Failed to get AI suggestion. Please check the console for more details.");
             }
         } else {
-            const trainer = generateNPCTrainer(rank, allPokemon, allMoves, allSprites, unitSettings, options);
+            const trainer = generateNPCTrainer(generationRank, allPokemon, allMoves, allSprites, unitSettings, options);
             setGeneratedTrainer(trainer);
         }
 
@@ -181,13 +195,24 @@ const NPCTrainerGenerator: React.FC = () => {
                         <div className="lg:col-span-1 bg-slate-900/40 p-4 rounded-lg flex flex-col items-center text-center">
                             <div className="relative">
                                 <img src={generatedTrainer.spriteUrl} alt="Trainer Sprite" className="w-40 h-40 object-contain bg-slate-700/50 rounded-full p-1 mb-4 border-2 border-slate-600" />
-                                <span className="absolute bottom-4 -right-2 bg-slate-800 text-poke-yellow font-bold px-2 py-0.5 rounded-md text-sm border border-slate-600">{generatedTrainer.rank}</span>
                             </div>
-                            <div className="flex items-center justify-center gap-2">
+                            <div className="flex items-center justify-center gap-2 mb-2">
                                 <h3 className="text-3xl font-bold text-white">{generatedTrainer.name}</h3>
                                 <button onClick={handleReloadStats} title="Reload Stats" className="text-gray-400 hover:text-poke-yellow transition-colors duration-200 p-1 rounded-full hover:bg-slate-700">
                                     <DiceIcon className="w-6 h-6" />
                                 </button>
+                            </div>
+                            {/* Rank Changer */}
+                            <div className="w-full max-w-xs">
+                                <label htmlFor="npc-rank-changer" className="sr-only">Change NPC Rank</label>
+                                <select
+                                    id="npc-rank-changer"
+                                    value={generatedTrainer.rank}
+                                    onChange={(e) => handleRankChange(e.target.value as Rank)}
+                                    className="w-full p-2 bg-slate-700 rounded border border-slate-600 text-poke-yellow font-bold text-center focus:ring-poke-yellow focus:border-poke-yellow"
+                                >
+                                    {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                                </select>
                             </div>
                             <div className="w-full border-t border-slate-700 my-4"></div>
                             <h4 className="text-xl font-bold text-poke-yellow mb-3">Attributes</h4>

@@ -84,19 +84,18 @@ async function getEncounterSuggestionStream(
     allPokemon: SimplifiedPokedex[],
     rank: Rank | undefined,
     numPokemon: number,
-    selectedType: string | null
+    selectedType: string | null,
 ) {
     let candidates = allPokemon;
-    if (rank) {
-        candidates = candidates.filter(p => p.RecommendedRank === rank);
-    }
+
+    // AI mode should be able to select from all ranks, but we filter by type if specified.
     if (selectedType) {
         candidates = candidates.filter(p => p.Type1 === selectedType || p.Type2 === selectedType);
     }
 
-    const systemPrompt = `You are a Pokémon Game Master assistant for the Pokérole tabletop RPG. Your task is to suggest a thematic encounter with ${numPokemon} Pokémon${rank ? ` of rank ${rank}` : ''}.
+    const systemPrompt = `You are a Pokémon Game Master assistant for the Pokérole tabletop RPG. Your task is to suggest a thematic encounter with ${numPokemon} Pokémon, keeping in mind the battle should be balanced for a team of rank '${rank || 'Any'}'.
 - Analyze the user's prompt to understand the desired theme, environment, or story for the encounter.
-- Choose from the provided list of available Pokémon candidates. Do not suggest any Pokémon not on this list.
+- You can choose from the entire list of available Pokémon provided, but your choices should be thematically appropriate and make sense for the requested rank. For example, a 'Beginner' rank encounter shouldn't include legendary Pokémon like Mewtwo.
 - Provide a brief (1-2 sentences) thematic explanation for your choices.
 - Return your response as a single valid JSON object. The object should have two keys:
   1. "team": an array of strings, where each string is the exact name of a suggested Pokémon. The array should contain exactly ${numPokemon} Pokémon.
@@ -104,7 +103,7 @@ async function getEncounterSuggestionStream(
 Example: {"team": ["Pikachu", "Pichu"], "explanation": "A small family of electric mice are nesting in the power plant."}`;
 
     const userMessage = `User request: "${prompt}".
-Available Pokémon${rank ? ` for rank ${rank}` : ''}${selectedType ? ` and type ${selectedType}` : ''}: ${JSON.stringify(candidates.map(p => p.Name))}`;
+Available Pokémon${selectedType ? ` of type ${selectedType}` : ''}: ${JSON.stringify(candidates.map(p => p.Name))}`;
 
     try {
         return await openai.chat.completions.create({

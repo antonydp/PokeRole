@@ -196,3 +196,36 @@ export function regenerateNPCTrainerStats(
         team: newTeam,
     } as NPCTrainer;
 }
+
+export function regenerateNPCTrainerForNewRank(
+    existingTrainer: NPCTrainer,
+    newRank: Rank,
+    allMoves: Record<string, Move>,
+    unitSettings: UnitSettings
+): NPCTrainer {
+    // 1. Regenerate trainer's own stats for the new rank
+    const newTrainerStats = generateTrainerStats(newRank);
+
+    // 2. Regenerate each Pokémon's sheet for the new rank, but keep the same Pokémon
+    const newTeam: NPCPokemon[] = existingTrainer.team.map(pokemon => {
+        const baseSheet = createInitialSheetData(pokemon.pokedexData, unitSettings, newRank);
+        const sheetWithBonuses = applyRandomBonusPoints(pokemon.pokedexData, baseSheet, newRank);
+        const selectedMoves = selectRandomMoves(pokemon.pokedexData, sheetWithBonuses, allMoves);
+
+        return {
+            ...pokemon,
+            sheetData: {
+                ...sheetWithBonuses,
+                moves: selectedMoves,
+            },
+        };
+    });
+
+    // 3. Return the updated trainer object
+    return {
+        ...existingTrainer,
+        ...newTrainerStats,
+        rank: newRank,
+        team: newTeam,
+    } as NPCTrainer;
+}

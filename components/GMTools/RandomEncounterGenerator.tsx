@@ -29,34 +29,38 @@ const RandomEncounterGenerator: React.FC = () => {
     const { allPokemon, allMoves } = useGameDataStore();
     const { unitSettings } = useUIStore();
 
-    const createTeamMemberFromPokedex = (pokemonData: Pokedex): TeamMember => {
-        const baseSheet = createInitialSheetData(pokemonData, unitSettings, rank);
-        const sheetWithBonuses = applyRandomBonusPoints(pokemonData, baseSheet, rank);
-        const selectedMoves = selectRandomMoves(pokemonData, sheetWithBonuses, allMoves);
-        return {
-            instanceID: crypto.randomUUID(),
-            pokedexData: pokemonData,
-            sheetData: {
-                ...sheetWithBonuses,
-                moves: selectedMoves,
-            },
-            forms: {},
-            currentFormName: null,
-        };
-    };
 
     const handleGenerate = useCallback(async () => {
         setIsLoading(true);
         setAiExplanation(null);
         setGeneratedPokemon([]);
 
+        // If no rank is selected, pick a random one.
+        const generationRank = rank || RANKS[Math.floor(Math.random() * RANKS.length)];
+
+        const createTeamMemberWithRank = (pokemonData: Pokedex): TeamMember => {
+            const baseSheet = createInitialSheetData(pokemonData, unitSettings, generationRank);
+            const sheetWithBonuses = applyRandomBonusPoints(pokemonData, baseSheet, generationRank);
+            const selectedMoves = selectRandomMoves(pokemonData, sheetWithBonuses, allMoves);
+            return {
+                instanceID: crypto.randomUUID(),
+                pokedexData: pokemonData,
+                sheetData: {
+                    ...sheetWithBonuses,
+                    moves: selectedMoves,
+                },
+                forms: {},
+                currentFormName: null,
+            };
+        };
+
         if (generationMode === 'ai') {
             try {
-                const response = await suggestEncounter(aiPrompt, allPokemon, rank, numPokemon, selectedType);
+                const response = await suggestEncounter(aiPrompt, allPokemon, generationRank, numPokemon, selectedType);
                 const pokemonData = response.team.map(name => allPokemon.find(p => p.Name === name)).filter(Boolean) as Pokedex[];
                 
                 if (pokemonData.length > 0) {
-                    const encounters = pokemonData.map(createTeamMemberFromPokedex);
+                    const encounters = pokemonData.map(createTeamMemberWithRank);
                     setGeneratedPokemon(encounters);
                     setAiExplanation(response.explanation);
                 } else {
@@ -71,12 +75,11 @@ const RandomEncounterGenerator: React.FC = () => {
             if (selectedType) {
                 candidates = candidates.filter(p => p.Type1 === selectedType || p.Type2 === selectedType);
             }
-            if (rank) {
-                candidates = candidates.filter(p => p.RecommendedRank === rank);
-            }
+            // Always filter by the determined rank for random mode
+            candidates = candidates.filter(p => p.RecommendedRank === generationRank);
 
             if (candidates.length === 0) {
-                alert(`No Pokémon found for the selected parameters. Try different parameters.`);
+                alert(`No Pokémon found for the selected parameters (Rank: ${generationRank}). Try different parameters.`);
                 setIsLoading(false);
                 return;
             }
@@ -85,7 +88,7 @@ const RandomEncounterGenerator: React.FC = () => {
             for (let i = 0; i < numPokemon; i++) {
                 const randomIndex = Math.floor(Math.random() * candidates.length);
                 const pokemonData = candidates[randomIndex];
-                encounters.push(createTeamMemberFromPokedex(pokemonData));
+                encounters.push(createTeamMemberWithRank(pokemonData));
             }
             setGeneratedPokemon(encounters);
         }
