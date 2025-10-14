@@ -205,6 +205,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     exportTeam: () => {
         const { team, trainerData, pokemonPC } = get();
         const { unitSettings } = useUIStore.getState();
+        const { savedEncounters, savedNPCs } = useGameDataStore.getState();
         if (team.length === 0 && !trainerData.name) {
             useNotificationStore.getState().addNotification({
                 message: "Your team and trainer sheet are empty!",
@@ -213,7 +214,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             return;
         }
         try {
-            const dataStr = JSON.stringify({ team, pokemonPC, trainer: trainerData, unitSettings }, null, 2);
+            const dataStr = JSON.stringify({ team, pokemonPC, trainer: trainerData, unitSettings, savedEncounters, savedNPCs }, null, 2);
             const dataBlob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
@@ -238,7 +239,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     loadTeam: (event) => {
         const file = event.target.files?.[0];
         if (!file) return;
-
+    
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
@@ -250,13 +251,15 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                 const loadedPC: TeamMember[] = loadedData.pokemonPC || [];
                 const loadedSettings: { height: 'imperial' | 'metric'; weight: 'imperial' | 'metric' } | undefined = loadedData.unitSettings;
                 const loadedTrainer: TrainerData | undefined = loadedData.trainer;
-
+                const loadedEncounters = loadedData.savedEncounters || [];
+                const loadedNPCs = loadedData.savedNPCs || [];
+    
                 if (!Array.isArray(loadedTeam) || loadedTeam.some(m => !m.pokedexData || !m.sheetData)) {
                     throw new Error("Invalid team data format.");
                 }
-
+    
                 if (loadedSettings) useUIStore.getState().setUnitSettings(loadedSettings);
-
+    
                 if (loadedTrainer) {
                     const parsePocketString = (pocketString: string): ItemInstance[] => {
                         if (!pocketString || typeof pocketString !== 'string') return [];
@@ -278,7 +281,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                             quantity,
                         }));
                     };
-
+    
                     if (typeof (loadedTrainer.smallPocket as any) === 'string') {
                         loadedTrainer.smallPocket = parsePocketString(loadedTrainer.smallPocket as any);
                     }
@@ -289,7 +292,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                 } else {
                     set({ trainerData: createInitialTrainerData() });
                 }
-
+    
                 const processLoadedMembers = (members: TeamMember[]): TeamMember[] => members.map(member => ({
                     ...member,
                     instanceID: member.instanceID || crypto.randomUUID(),
@@ -298,11 +301,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                         weakness: calculateWeaknesses(member.pokedexData.Type1, member.pokedexData.Type2),
                     }
                 }));
-
+    
                 const teamWithUpdatedWeaknesses = processLoadedMembers(loadedTeam);
                 const pcWithUpdatedWeaknesses = processLoadedMembers(loadedPC);
-
-
+    
+                useGameDataStore.setState({ savedEncounters: loadedEncounters, savedNPCs: loadedNPCs });
                 set({ team: teamWithUpdatedWeaknesses.slice(0, 6), pokemonPC: pcWithUpdatedWeaknesses });
                 useUIStore.getState().clearSelection();
                 useNotificationStore.getState().addNotification({

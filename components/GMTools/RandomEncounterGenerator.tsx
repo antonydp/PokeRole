@@ -4,7 +4,6 @@ import React, { useState, useCallback } from 'react';
 import { TeamMember, Rank, Pokedex } from '../../src/types/index.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { useUIStore } from '../../src/store/useUIStore.js';
-import { useSavedDataStore } from '../../src/store/useSavedDataStore.js';
 import { createInitialSheetData } from '../../src/logic/initializers.js';
 import { applyRandomBonusPoints, selectRandomMoves } from '../../src/logic/gm-tools.js';
 import { RANKS, TYPE_COLORS } from '../../src/constants/gameConstants.js';
@@ -30,7 +29,6 @@ const RandomEncounterGenerator: React.FC = () => {
 
     const { allPokemon, allMoves } = useGameDataStore();
     const { unitSettings } = useUIStore();
-    const { saveEncounter } = useSavedDataStore();
 
 
     const handleGenerate = useCallback(async () => {
@@ -116,7 +114,10 @@ const RandomEncounterGenerator: React.FC = () => {
         }
         const name = prompt("Enter a name for this encounter:", "My Awesome Encounter");
         if (name) {
-            saveEncounter({ name, pokemon: generatedPokemon });
+            const newEncounter = { name, pokemon: generatedPokemon, id: crypto.randomUUID() };
+            useGameDataStore.setState(state => ({
+                savedEncounters: [...state.savedEncounters, newEncounter]
+            }));
             alert(`Encounter "${name}" saved!`);
         }
     };

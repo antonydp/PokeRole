@@ -4,7 +4,6 @@ import React, { useState, useCallback } from 'react';
 import { Rank, NPCTrainer, Pokedex, TeamMember } from '../../src/types/index.js';
 import { useGameDataStore } from '../../src/store/useGameDataStore.js';
 import { useUIStore } from '../../src/store/useUIStore.js';
-import { useSavedDataStore } from '../../src/store/useSavedDataStore.js';
 import { generateNPCTrainer, NPCTrainerOptions, regenerateNPCTrainerStats, regenerateNPCTrainerForNewRank, regenerateNPCSprite } from '../../src/logic/npc-generator.js';
 import { RANKS, SKILLS, TRAINER_ATTRIBUTES } from '../../src/constants/gameConstants.js';
 import EncounterPokemonCard from './EncounterPokemonCard.js';
@@ -41,7 +40,6 @@ const NPCTrainerGenerator: React.FC = () => {
 
     const { allPokemon, allMoves, allSprites } = useGameDataStore();
     const { unitSettings } = useUIStore();
-    const { saveNPC } = useSavedDataStore();
 
     const handleUpdatePokemonInTeam = useCallback((updatedMember: TeamMember, index: number) => {
         if (!generatedTrainer) return;
@@ -97,7 +95,10 @@ const NPCTrainerGenerator: React.FC = () => {
         }
         const name = prompt("Enter a name for this NPC:", generatedTrainer.name);
         if (name) {
-            saveNPC({ name, trainer: { ...generatedTrainer, name } });
+            const newNPC = { name, trainer: { ...generatedTrainer, name }, id: crypto.randomUUID() };
+            useGameDataStore.setState(state => ({
+                savedNPCs: [...state.savedNPCs, newNPC]
+            }));
             alert(`NPC "${name}" saved!`);
         }
     };

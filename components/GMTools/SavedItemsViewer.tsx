@@ -1,34 +1,43 @@
 // components/GMTools/SavedItemsViewer.tsx
 
 import React, { useState } from 'react';
-import { useSavedDataStore } from '../../src/store/useSavedDataStore';
+import { useGameDataStore } from '../../src/store/useGameDataStore';
 import { SavedEncounter, SavedNPC } from '../../src/types';
 import { TrashIcon } from '../Icons';
 import SavedItemDetailModal from './SavedItemDetailModal';
 
 const SavedItemsViewer: React.FC = () => {
     const [selectedItem, setSelectedItem] = useState<SavedEncounter | SavedNPC | null>(null);
-    const {
-        savedEncounters,
-        deleteEncounter,
-        updateEncounterName,
-        savedNPCs,
-        deleteNPC,
-        updateNPCName,
-    } = useSavedDataStore();
+    const { savedEncounters, savedNPCs } = useGameDataStore();
 
     const handleRenameEncounter = (encounter: SavedEncounter) => {
         const newName = prompt("Enter a new name for the encounter:", encounter.name);
         if (newName && newName.trim() !== '') {
-            updateEncounterName(encounter.id, newName.trim());
+            useGameDataStore.setState(state => ({
+                savedEncounters: state.savedEncounters.map(e => e.id === encounter.id ? { ...e, name: newName.trim() } : e)
+            }));
         }
     };
 
     const handleRenameNPC = (npc: SavedNPC) => {
         const newName = prompt("Enter a new name for the NPC:", npc.name);
         if (newName && newName.trim() !== '') {
-            updateNPCName(npc.id, newName.trim());
+            useGameDataStore.setState(state => ({
+                savedNPCs: state.savedNPCs.map(n => n.id === npc.id ? { ...n, name: newName.trim() } : n)
+            }));
         }
+    };
+
+    const deleteEncounter = (id: string) => {
+        useGameDataStore.setState(state => ({
+            savedEncounters: state.savedEncounters.filter(e => e.id !== id)
+        }));
+    };
+
+    const deleteNPC = (id: string) => {
+        useGameDataStore.setState(state => ({
+            savedNPCs: state.savedNPCs.filter(n => n.id !== id)
+        }));
     };
 
     return (
