@@ -91,9 +91,10 @@ useGameDataStore.subscribe(
 // --- REVISED AUTHENTICATION & REALTIME LISTENER ---
 
 let realtimeChannel: RealtimeChannel | null = null;
-
-supabase.auth.onAuthStateChange((event, session) => {
-    const { setUser, fetchSessionData, clearUserData } = useSessionStore.getState();
+let isInitialAuthEvent = true;
+ 
+ supabase.auth.onAuthStateChange((event, session) => {
+     const { setUser, fetchSessionData, clearUserData } = useSessionStore.getState();
 
     if (realtimeChannel) {
         supabase.removeChannel(realtimeChannel);
@@ -119,6 +120,10 @@ supabase.auth.onAuthStateChange((event, session) => {
                     filter: `id=eq.${session.user.id}`,
                 },
                 (payload) => {
+                    if (isInitialAuthEvent) {
+                        isInitialAuthEvent = false;
+                        return;
+                    }
                     console.log('Realtime update received:', payload);
                     const newSessionData = payload.new.session_data;
 
