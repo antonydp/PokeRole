@@ -119,14 +119,19 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
             if (data && data.session_data) {
                 // Se troviamo dati, li carichiamo nello store
-                const { team, pokemonPC, trainerData } = data.session_data;
-                set({ 
-                    team: team || [], 
+                const { team, pokemonPC, trainerData, savedEncounters, savedNPCs } = data.session_data;
+                set({
+                    team: team || [],
                     pokemonPC: pokemonPC || [],
                     trainerData: trainerData || createInitialTrainerData(),
-                    isDataLoaded: true 
+                    isDataLoaded: true
                 });
-                 useNotificationStore.getState().addNotification({
+                // Carica i dati del GM nello store separato
+                useGameDataStore.setState({
+                    savedEncounters: savedEncounters || [],
+                    savedNPCs: savedNPCs || [],
+                });
+                useNotificationStore.getState().addNotification({
                     message: 'Session data loaded from cloud!',
                     type: 'success',
                 });
@@ -148,7 +153,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         const { user, team, pokemonPC, trainerData } = get();
         if (!user) return;
 
-        const session_data = { team, pokemonPC, trainerData };
+        // Prendi i dati anche da useGameDataStore
+        const { savedEncounters, savedNPCs } = useGameDataStore.getState();
+
+        const session_data = { team, pokemonPC, trainerData, savedEncounters, savedNPCs };
 
         try {
             const { error } = await supabase.from('profiles').upsert({
@@ -699,27 +707,42 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 }));
 
 // --- LOGICA DI SINCRONIZZAZIONE AUTOMATICA ---
-// Questa parte ascolta i cambiamenti dello store e salva su Supabase.
 let debounceTimer: NodeJS.Timeout;
+
+const handleDataChange = () => {
+    const { user, isDataLoaded } = useSessionStore.getState();
+    if (user && isDataLoaded) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            useSessionStore.getState().saveSessionData();
+            console.log("Session data saved to Supabase.");
+        }, 1500);
+    }
+};
+
+// Sottoscrizione per i dati della sessione (team, pc, trainer)
 useSessionStore.subscribe(
     (state, prevState) => {
-        // Salva solo se l'utente è loggato e i dati sono stati caricati dal DB,
-        // per evitare di sovrascrivere i dati del cloud con lo stato iniziale vuoto.
-        if (state.user && state.isDataLoaded) {
-            // Controlla se i dati rilevanti sono cambiati
-            const hasDataChanged =
-                state.team !== prevState.team ||
-                state.pokemonPC !== prevState.pokemonPC ||
-                state.trainerData !== prevState.trainerData;
-            
-            if (hasDataChanged) {
-                 // Debounce: aspetta 1.5 secondi dopo l'ultima modifica prima di salvare
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    useSessionStore.getState().saveSessionData();
-                    console.log("Session data saved to Supabase.");
-                }, 1500);
-            }
+        const hasSessionDataChanged =
+            state.team !== prevState.team ||
+            state.pokemonPC !== prevState.pokemonPC ||
+            state.trainerData !== prevState.trainerData;
+
+        if (hasSessionDataChanged) {
+            handleDataChange();
+        }
+    }
+);
+
+// Sottoscrizione separata per i dati del GM (encounters, npcs)
+useGameDataStore.subscribe(
+    (state, prevState) => {
+        const hasGameDataChanged =
+            state.savedEncounters !== prevState.savedEncounters ||
+            state.savedNPCs !== prevState.savedNPCs;
+
+        if (hasGameDataChanged) {
+            handleDataChange();
         }
     }
 );
