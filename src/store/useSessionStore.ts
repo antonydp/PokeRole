@@ -2,7 +2,7 @@
 import React from 'react';
 // ... importa i tipi come prima
 import { create } from 'zustand';
-import { supabase } from '../services/supabaseClient.js';
+import { supabase } from '../services/supabaseClient';
 import { User, Session } from '@supabase/supabase-js';
 import { Pokedex, TeamMember, PokemonData, TrainerData, ItemInstance, Rank } from '../types/index.ts';
 import { createInitialTrainerData, createInitialSheetData } from '../logic/initializers.ts';
@@ -11,9 +11,9 @@ import pako from 'pako';
 import { useUIStore } from './useUIStore.ts';
 import { useGameDataStore } from './useGameDataStore.ts';
 import { RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../logic/core.ts';
-import { POKEMON_SKILL_FIELDS } from '../constants/gameConstants.js'; // You'll need to export this
-import useNotificationStore from './useNotificationStore.js';
-import { Item } from '../types/index.js';
+import { POKEMON_SKILL_FIELDS } from '../constants/gameConstants'; // You'll need to export this
+import useNotificationStore from './useNotificationStore';
+import { Item } from '../types/index';
 
 
 // Helper function to remove one instance of an item from a pocket

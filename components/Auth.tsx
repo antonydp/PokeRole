@@ -1,6 +1,6 @@
 // components/Auth.tsx
 import React, { useState } from 'react';
-import { supabase } from '../src/services/supabaseClient.js';
+import { supabase } from '../src/services/supabaseClient';
 import { PokeballIcon } from './Icons.js';
 
 const Auth: React.FC = () => {
