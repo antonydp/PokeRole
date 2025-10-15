@@ -707,7 +707,7 @@ useSessionStore.subscribe(
         // per evitare di sovrascrivere i dati del cloud con lo stato iniziale vuoto.
         if (state.user && state.isDataLoaded) {
             // Controlla se i dati rilevanti sono cambiati
-            const hasDataChanged = 
+            const hasDataChanged =
                 state.team !== prevState.team ||
                 state.pokemonPC !== prevState.pokemonPC ||
                 state.trainerData !== prevState.trainerData;
@@ -723,3 +723,22 @@ useSessionStore.subscribe(
         }
     }
 );
+
+// --- GESTIONE DEGLI EVENTI DI AUTENTICAZIONE ---
+// Sincronizza lo store con lo stato di autenticazione di Supabase
+supabase.auth.onAuthStateChange((event, session) => {
+    const { setUser, fetchSessionData, clearUserData } = useSessionStore.getState();
+    
+    if (session) {
+        // Utente loggato o sessione ripristinata
+        setUser(session.user, session);
+        // Carica i dati associati alla sessione solo se non sono già stati caricati
+        if (!useSessionStore.getState().isDataLoaded) {
+            fetchSessionData();
+        }
+    } else {
+        // Utente sloggato
+        setUser(null, null);
+        clearUserData();
+    }
+});
