@@ -36,26 +36,17 @@ const removeItemFromPockets = (pockets: { smallPocket: ItemInstance[], mainPocke
     return newPockets;
 };
 
-
-// Aggiungiamo User e Session allo stato
 interface SessionState {
-    // Stato utente
     user: User | null;
     session: Session | null;
-    isDataLoaded: boolean; // Flag per sapere se i dati dal DB sono stati caricati
-
-    // ... il tuo stato esistente
+    isDataLoaded: boolean;
     team: TeamMember[];
     pokemonPC: TeamMember[];
     trainerData: TrainerData;
-    
-    // Azioni
     setUser: (user: User | null, session: Session | null) => void;
     fetchSessionData: () => Promise<void>;
     saveSessionData: () => Promise<void>;
     clearUserData: () => void;
-
-    // ... le tue azioni esistenti
     addToTeam: (pokemon: Pokedex, sheetData: PokemonData) => TeamMember | null;
     addToPC: (pokemon: Pokedex, sheetData: PokemonData) => TeamMember;
     removeFromTeam: (instanceID: string) => void;
@@ -77,12 +68,9 @@ interface SessionState {
     removeItemFromPockets: (itemId: string, pocket: 'smallPocket' | 'mainPocket') => void;
 }
 
-// NEW: Generate a unique ID for this specific client/tab session.
-// This is the key to preventing infinite loops.
 const clientSessionId = crypto.randomUUID();
 
 export const useSessionStore = create<SessionState>((set, get) => ({
-    // Stato iniziale
     user: null,
     session: null,
     isDataLoaded: false,
@@ -90,7 +78,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     pokemonPC: [],
     trainerData: createInitialTrainerData(),
 
-    // --- NUOVE AZIONI PER AUTH E SYNC ---
     setUser: (user, session) => {
         set({ user, session });
     },
@@ -138,8 +125,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                     type: 'success',
                 });
             } else {
-                // Se non ci sono dati, l'utente è nuovo.
-                // Lo stato è già inizializzato, basta settare il flag.
                 set({ isDataLoaded: true });
             }
         } catch (error) {
@@ -155,17 +140,15 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         const { user, team, pokemonPC, trainerData } = get();
         if (!user) return;
 
-        // Prendi i dati anche da useGameDataStore
         const { savedEncounters, savedNPCs } = useGameDataStore.getState();
 
-        // MODIFIED: Include the clientSessionId in the data we save.
         const session_data = {
             team,
             pokemonPC,
             trainerData,
             savedEncounters,
             savedNPCs,
-            lastUpdatedBy: clientSessionId // This tells us which client made the last change
+            lastUpdatedBy: clientSessionId 
         };
 
         try {
@@ -183,11 +166,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             });
         }
     },
-    
-    // --- AZIONI ESISTENTI (RESTANO QUASI IDENTICHE) ---
-    // ... tutte le tue azioni come addToTeam, removeFromTeam, etc. non hanno bisogno di modifiche!
-    // Verranno salvate automaticamente dal meccanismo di subscribe che aggiungeremo.
-    
     addToTeam: (pokemon, sheetData) => {
         const { team } = get();
         if (team.length >= 6) {
@@ -716,28 +694,47 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     },
 }));
 
-// --- LOGICA DI SINCRONIZZAZIONE AUTOMATICA ---
-let debounceTimer: NodeJS.Timeout;
-// ADDED THIS LINE TO FIX THE ERROR
-let isApplyingRemoteUpdate = false; // Flag to prevent sync loops
+// --- NEW, ROBUST SYNC LOGIC ---
 
-const handleDataChange = () => {
-    const { user, isDataLoaded } = useSessionStore.getState();
-    if (user && isDataLoaded) {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            useSessionStore.getState().saveSessionData();
-            console.log("Session data saved to Supabase.");
-        }, 1500);
-    }
+// Module-level state to manage the sync process. This is crucial.
+const syncState = {
+    isSaving: false,
+    isApplyingRemoteUpdate: false,
 };
 
-// Sottoscrizione per i dati della sessione (team, pc, trainer)
+// This function attempts to save the data, but only if another save isn't already in progress.
+const throttledSave = () => {
+    const { user, isDataLoaded } = useSessionStore.getState();
+
+    // Don't save if not logged in, data isn't loaded, or a save is already happening.
+    if (!user || !isDataLoaded || syncState.isSaving) {
+        return;
+    }
+
+    // Set the lock
+    syncState.isSaving = true;
+    console.log("Lock acquired. Saving data...");
+
+    // Perform the save operation.
+    useSessionStore.getState().saveSessionData()
+        .then(() => {
+            console.log("Save successful.");
+        })
+        .catch((err) => {
+            console.error("Save operation failed:", err);
+        })
+        .finally(() => {
+            // ALWAYS release the lock
+            syncState.isSaving = false;
+            console.log("Lock released.");
+        });
+};
+
+// Subscribe to session store changes
 useSessionStore.subscribe(
     (state, prevState) => {
-        // MODIFICATO: Aggiungiamo un controllo sul nostro flag
-        if (isApplyingRemoteUpdate) {
-            // Se la modifica proviene da un'altra tab, NON innescare un nuovo salvataggio.
+        // If the change is coming from a remote update, do not trigger a new save.
+        if (syncState.isApplyingRemoteUpdate) {
             return;
         }
 
@@ -747,16 +744,15 @@ useSessionStore.subscribe(
             state.trainerData !== prevState.trainerData;
 
         if (hasSessionDataChanged) {
-            handleDataChange();
+            throttledSave();
         }
     }
 );
 
-// Sottoscrizione separata per i dati del GM (encounters, npcs)
+// Subscribe to game data store changes
 useGameDataStore.subscribe(
     (state, prevState) => {
-        // MODIFICATO: Aggiungiamo lo stesso controllo qui
-        if (isApplyingRemoteUpdate) {
+        if (syncState.isApplyingRemoteUpdate) {
             return;
         }
 
@@ -765,20 +761,19 @@ useGameDataStore.subscribe(
             state.savedNPCs !== prevState.savedNPCs;
 
         if (hasGameDataChanged) {
-            handleDataChange();
+            throttledSave();
         }
     }
 );
 
-// --- MODIFIED AUTHENTICATION & REALTIME LISTENER LOGIC ---
 
-// Keep a reference to the realtime channel so we can unsubscribe from it.
+// --- REVISED AUTHENTICATION & REALTIME LISTENER ---
+
 let realtimeChannel: RealtimeChannel | null = null;
 
 supabase.auth.onAuthStateChange((event, session) => {
     const { setUser, fetchSessionData, clearUserData } = useSessionStore.getState();
 
-    // If there's an existing channel, unsubscribe to clean up
     if (realtimeChannel) {
         supabase.removeChannel(realtimeChannel);
         realtimeChannel = null;
@@ -786,36 +781,43 @@ supabase.auth.onAuthStateChange((event, session) => {
     }
     
     if (session) {
-        // User is logged in
         setUser(session.user, session);
         if (!useSessionStore.getState().isDataLoaded) {
             fetchSessionData();
         }
 
-        // NEW: Set up the realtime subscription
         console.log(`Setting up realtime subscription for user: ${session.user.id}`);
         realtimeChannel = supabase
-            .channel(`profile-changes:${session.user.id}`) // A unique channel name for this user
+            .channel(`profile-changes:${session.user.id}`)
             .on(
                 'postgres_changes',
                 {
                     event: 'UPDATE',
                     schema: 'public',
                     table: 'profiles',
-                    filter: `id=eq.${session.user.id}`, // Only listen to changes for THIS user
+                    filter: `id=eq.${session.user.id}`,
                 },
                 (payload) => {
                     console.log('Realtime update received:', payload);
                     const newSessionData = payload.new.session_data;
 
+                    // 1. Ignore updates sent by this client. This is the primary "no-loop" mechanism.
                     if (newSessionData.lastUpdatedBy === clientSessionId) {
                         console.log("Ignoring own update.");
                         return;
                     }
+                    
+                    // 2. CONFLICT RESOLUTION: If a remote update arrives while this client is in
+                    // the middle of saving its own changes, ignore the remote update. The local
+                    // save will win this race, and the other client will eventually get the update.
+                    // This prevents local user input from being overwritten by a concurrent remote change.
+                    if (syncState.isSaving) {
+                        console.warn("Conflict detected: A remote update was received while a local save was in progress. The remote update will be ignored to preserve local changes.");
+                        return;
+                    }
 
-                    // *** LA MODIFICA CHIAVE È QUI ***
-                    // 1. Attiviamo il flag prima di aggiornare lo stato
-                    isApplyingRemoteUpdate = true;
+                    // 3. Apply the remote update
+                    syncState.isApplyingRemoteUpdate = true;
                     console.log("Applying remote update. Pausing local save trigger.");
 
                     useNotificationStore.getState().addNotification({
@@ -836,11 +838,9 @@ supabase.auth.onAuthStateChange((event, session) => {
                         savedNPCs: savedNPCs || [],
                     });
                     
-                    // 2. Disattiviamo il flag subito dopo, ma in un modo che permetta
-                    // a Zustand di finire di notificare tutti i suoi subscriber.
-                    // Un setTimeout con 0ms è perfetto per questo.
+                    // Release the flag after the current execution context finishes.
                     setTimeout(() => {
-                        isApplyingRemoteUpdate = false;
+                        syncState.isApplyingRemoteUpdate = false;
                         console.log("Remote update applied. Resuming local save trigger.");
                     }, 0);
                 }
@@ -855,7 +855,6 @@ supabase.auth.onAuthStateChange((event, session) => {
             });
 
     } else {
-        // User logged out
         setUser(null, null);
         clearUserData();
     }
