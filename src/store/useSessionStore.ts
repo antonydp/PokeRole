@@ -1,5 +1,9 @@
-import { create } from 'zustand';
+// src/store/useSessionStore.ts
 import React from 'react';
+// ... importa i tipi come prima
+import { create } from 'zustand';
+import { supabase } from '../services/supabaseClient.js';
+import { User, Session } from '@supabase/supabase-js';
 import { Pokedex, TeamMember, PokemonData, TrainerData, ItemInstance, Rank } from '../types/index.ts';
 import { createInitialTrainerData, createInitialSheetData } from '../logic/initializers.ts';
 import { calculateWeaknesses } from '../logic/formulas.ts';
@@ -9,6 +13,7 @@ import { useGameDataStore } from './useGameDataStore.ts';
 import { RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../logic/core.ts';
 import { POKEMON_SKILL_FIELDS } from '../constants/gameConstants.js'; // You'll need to export this
 import useNotificationStore from './useNotificationStore.js';
+import { Item } from '../types/index.js';
 
 
 // Helper function to remove one instance of an item from a pocket
@@ -34,12 +39,25 @@ const removeItemFromPockets = (pockets: { smallPocket: ItemInstance[], mainPocke
 };
 
 
-import { Item } from '../types/index.js';
-
+// Aggiungiamo User e Session allo stato
 interface SessionState {
+    // Stato utente
+    user: User | null;
+    session: Session | null;
+    isDataLoaded: boolean; // Flag per sapere se i dati dal DB sono stati caricati
+
+    // ... il tuo stato esistente
     team: TeamMember[];
     pokemonPC: TeamMember[];
     trainerData: TrainerData;
+    
+    // Azioni
+    setUser: (user: User | null, session: Session | null) => void;
+    fetchSessionData: () => Promise<void>;
+    saveSessionData: () => Promise<void>;
+    clearUserData: () => void;
+
+    // ... le tue azioni esistenti
     addToTeam: (pokemon: Pokedex, sheetData: PokemonData) => TeamMember | null;
     addToPC: (pokemon: Pokedex, sheetData: PokemonData) => TeamMember;
     removeFromTeam: (instanceID: string) => void;
@@ -62,9 +80,96 @@ interface SessionState {
 }
 
 export const useSessionStore = create<SessionState>((set, get) => ({
+    // Stato iniziale
+    user: null,
+    session: null,
+    isDataLoaded: false,
     team: [],
     pokemonPC: [],
     trainerData: createInitialTrainerData(),
+
+    // --- NUOVE AZIONI PER AUTH E SYNC ---
+    setUser: (user, session) => {
+        set({ user, session });
+    },
+
+    clearUserData: () => {
+        set({
+            isDataLoaded: false,
+            team: [],
+            pokemonPC: [],
+            trainerData: createInitialTrainerData(),
+        });
+    },
+
+    fetchSessionData: async () => {
+        const user = get().user;
+        if (!user) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('session_data')
+                .eq('id', user.id)
+                .single();
+
+            if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+                throw error;
+            }
+
+            if (data && data.session_data) {
+                // Se troviamo dati, li carichiamo nello store
+                const { team, pokemonPC, trainerData } = data.session_data;
+                set({ 
+                    team: team || [], 
+                    pokemonPC: pokemonPC || [],
+                    trainerData: trainerData || createInitialTrainerData(),
+                    isDataLoaded: true 
+                });
+                 useNotificationStore.getState().addNotification({
+                    message: 'Session data loaded from cloud!',
+                    type: 'success',
+                });
+            } else {
+                // Se non ci sono dati, l'utente è nuovo.
+                // Lo stato è già inizializzato, basta settare il flag.
+                set({ isDataLoaded: true });
+            }
+        } catch (error) {
+            console.error('Error fetching session data:', error);
+            useNotificationStore.getState().addNotification({
+                message: `Error loading data: ${(error as Error).message}`,
+                type: 'error',
+            });
+        }
+    },
+
+    saveSessionData: async () => {
+        const { user, team, pokemonPC, trainerData } = get();
+        if (!user) return;
+
+        const session_data = { team, pokemonPC, trainerData };
+
+        try {
+            const { error } = await supabase.from('profiles').upsert({
+                id: user.id,
+                session_data,
+                updated_at: new Date().toISOString(),
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error saving session data:', error);
+             useNotificationStore.getState().addNotification({
+                message: `Error saving data: ${(error as Error).message}`,
+                type: 'error',
+            });
+        }
+    },
+    
+    // --- AZIONI ESISTENTI (RESTANO QUASI IDENTICHE) ---
+    // ... tutte le tue azioni come addToTeam, removeFromTeam, etc. non hanno bisogno di modifiche!
+    // Verranno salvate automaticamente dal meccanismo di subscribe che aggiungeremo.
+    
     addToTeam: (pokemon, sheetData) => {
         const { team } = get();
         if (team.length >= 6) {
@@ -231,7 +336,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         } catch (err) {
             console.error('Export error:', err);
             useNotificationStore.getState().addNotification({
-                message: `Export failed: ${err.message}`,
+                message: `Export failed: ${(err as Error).message}`,
                 type: 'error',
             });
         }
@@ -315,7 +420,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             } catch (err) {
                 console.error("Failed to load data:", err);
                 useNotificationStore.getState().addNotification({
-                    message: `Failed to load data: ${err.message}`,
+                    message: `Failed to load data: ${(err as Error).message}`,
                     type: 'error',
                 });
             }
@@ -390,7 +495,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         } catch (err) {
             console.error('Export error:', err);
             useNotificationStore.getState().addNotification({
-                message: `Quick export failed: ${err.message}`,
+                message: `Quick export failed: ${(err as Error).message}`,
                 type: 'error',
             });
         }
@@ -592,3 +697,29 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         });
     },
 }));
+
+// --- LOGICA DI SINCRONIZZAZIONE AUTOMATICA ---
+// Questa parte ascolta i cambiamenti dello store e salva su Supabase.
+let debounceTimer: NodeJS.Timeout;
+useSessionStore.subscribe(
+    (state, prevState) => {
+        // Salva solo se l'utente è loggato e i dati sono stati caricati dal DB,
+        // per evitare di sovrascrivere i dati del cloud con lo stato iniziale vuoto.
+        if (state.user && state.isDataLoaded) {
+            // Controlla se i dati rilevanti sono cambiati
+            const hasDataChanged = 
+                state.team !== prevState.team ||
+                state.pokemonPC !== prevState.pokemonPC ||
+                state.trainerData !== prevState.trainerData;
+            
+            if (hasDataChanged) {
+                 // Debounce: aspetta 1.5 secondi dopo l'ultima modifica prima di salvare
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    useSessionStore.getState().saveSessionData();
+                    console.log("Session data saved to Supabase.");
+                }, 1500);
+            }
+        }
+    }
+);

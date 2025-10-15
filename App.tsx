@@ -1,3 +1,4 @@
+// App.tsx
 import React, { useEffect, useRef } from 'react';
 import Headroom from '@webappsconception/react-headroom';
 import PokemonList from './components/PokemonList.js';
@@ -11,6 +12,9 @@ import { useGameDataStore } from './src/store/useGameDataStore.js';
 import { useUIStore } from './src/store/useUIStore.js';
 import { useSessionStore } from './src/store/useSessionStore.js';
 import NotificationContainer from './components/shared/NotificationContainer.js';
+import { supabase } from './src/services/supabaseClient.js';
+import Auth from './components/Auth.js'; // Importa il nuovo componente Auth
+import { createInitialTrainerData } from './src/logic/initializers.js';
 
 /**
  * @typedef {object} UnitSettings
@@ -103,16 +107,39 @@ const SettingsModal: React.FC<{
 const App: React.FC = () => {
     const { allPokemon, isLoading, error, loadData } = useGameDataStore();
     const { isPokemonListModalOpen, isSettingsOpen, isSuggestModalOpen, unitSettings, selectedPokemonId, mainView, setIsPokemonListModalOpen, setIsSettingsOpen, setUnitSettings, setIsSuggestModalOpen, selectPokemon, setMainView } = useUIStore();
-    const { team, exportTeam, loadTeam, addSuggestionToTeam } = useSessionStore();
+    
+    // --- NUOVI HOOK PER AUTH ---
+    const { session, user, setUser, fetchSessionData, isDataLoaded, team, addSuggestionToTeam, clearUserData } = useSessionStore();
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
+    // --- NUOVO useEffect PER L'AUTH ---
     useEffect(() => {
+        // Carica i dati del gioco (pokedex, mosse, etc.) una sola volta
         loadData();
-    }, [loadData]);
 
-    const handleLoadClick = () => {
-        fileInputRef.current?.click();
+        // Controlla la sessione utente al caricamento dell'app
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setUser(session?.user ?? null, session);
+            if(session?.user) {
+                fetchSessionData();
+            }
+        });
+
+        // Ascolta i cambiamenti dello stato di autenticazione (login, logout)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null, session);
+            if(session?.user && !isDataLoaded) { // Se l'utente si logga, carica i suoi dati
+                fetchSessionData();
+            } else if (!session?.user) {
+                // Resetta lo stato se l'utente fa logout
+                clearUserData();
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [loadData, setUser, fetchSessionData, isDataLoaded, clearUserData]);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
     };
 
     if (isLoading) {
@@ -140,6 +167,23 @@ const App: React.FC = () => {
         );
     }
     
+    // --- NUOVA LOGICA DI RENDER ---
+    // Se non c'è una sessione utente, mostra la schermata di login
+    if (!session) {
+        return <Auth />;
+    }
+    
+    // Se la sessione c'è ma i dati non sono ancora stati caricati, mostra un loader
+    if (!isDataLoaded) {
+         return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white">
+                <PokeballIcon className="w-24 h-24 text-poke-yellow animate-spin" />
+                <p className="mt-4 text-xl font-primary">Loading your session...</p>
+            </div>
+        );
+    }
+
+    // Se la sessione c'è e i dati sono caricati, mostra l'app
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col font-sans">
             <NotificationContainer />
@@ -159,66 +203,45 @@ const App: React.FC = () => {
            />
            <Headroom>
                <header className="w-full p-4 flex items-center justify-between bg-slate-900/80 backdrop-blur-sm border-b border-slate-700/50">
-                   <div className="flex-1 flex justify-start items-center gap-2">
-                       <button
-                           onClick={exportTeam}
-                        className="flex items-center justify-center px-4 py-2 bg-slate-700 text-white font-semibold text-sm rounded-lg hover:bg-slate-600 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
-                        aria-label="Export Session Data"
-                        title="Export Session Data"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                        </svg>
-                        <span className="hidden sm:inline ml-2">Export</span>
-                    </button>
-                    <button
-                        onClick={handleLoadClick}
-                        className="flex items-center justify-center px-4 py-2 bg-slate-700 text-white font-semibold text-sm rounded-lg hover:bg-slate-600 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-poke-yellow"
-                        aria-label="Load Session Data"
-                        title="Load Session Data"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                        </svg>
-                        <span className="hidden sm:inline ml-2">Load</span>
-                    </button>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={loadTeam}
-                        accept="application/json,.json"
-                        className="hidden"
-                        aria-hidden="true"
-                    />
-                </div>
-                <div className="flex-1 flex items-center justify-center">
-                    <PokeballIcon className="w-8 h-8 md:w-10 md:h-10 mr-3 text-poke-red" />
-                    <h1 className="text-2xl md:text-3xl font-bold text-poke-yellow tracking-wider font-primary text-center">
-                        {mainView === 'gm' ? 'GM Tools' : 'Pokérole Team Builder'}
-                    </h1>
-                </div>
-                <div className="flex-1 flex justify-end items-center gap-2">
-                    <button
-                        onClick={() => setMainView(mainView === 'gm' ? 'dashboard' : 'gm')}
-                        className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${mainView === 'gm' ? 'bg-poke-blue text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'}`}
-                        aria-label={mainView === 'gm' ? "Return to Dashboard" : "Open GM Tools"}
-                        title={mainView === 'gm' ? "Return to Dashboard" : "Open GM Tools"}
-                    >
-                        <DiceIcon className="w-5 h-5" />
-                        <span className="hidden md:inline">
-                            {mainView === 'gm' ? "Dashboard" : "GM Tools"}
-                        </span>
-                    </button>
-                    <button
-                        onClick={() => setIsSettingsOpen(true)}
-                        className="p-2 rounded-lg bg-slate-700 text-gray-200 hover:bg-slate-600 transition-colors"
-                        aria-label="Open settings"
-                        title="Settings"
-                    >
-                        <SettingsIcon className="w-6 h-6" />
-                    </button>
-                </div>
-                </header>
+                   {/* --- HEADER SINISTRO - NUOVO PULSANTE LOGOUT --- */}
+                   <div className="flex-1 flex justify-start">
+                        <button
+                           onClick={handleLogout}
+                           className="flex items-center justify-center px-4 py-2 bg-poke-red text-white font-semibold text-sm rounded-lg hover:bg-red-700 transition-all"
+                           title="Sign Out"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                            <span className="hidden sm:inline ml-2">Logout</span>
+                        </button>
+                   </div>
+                   <div className="flex-1 flex items-center justify-center">
+                        <PokeballIcon className="w-8 h-8 md:w-10 md:h-10 mr-3 text-poke-red" />
+                        <h1 className="text-2xl md:text-3xl font-bold text-poke-yellow tracking-wider font-primary text-center">
+                            {mainView === 'gm' ? 'GM Tools' : 'Pokérole Team Builder'}
+                        </h1>
+                    </div>
+                    <div className="flex-1 flex justify-end items-center gap-2">
+                        <button
+                            onClick={() => setMainView(mainView === 'gm' ? 'dashboard' : 'gm')}
+                            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${mainView === 'gm' ? 'bg-poke-blue text-white' : 'bg-slate-700 text-gray-200 hover:bg-slate-600'}`}
+                            aria-label={mainView === 'gm' ? "Return to Dashboard" : "Open GM Tools"}
+                            title={mainView === 'gm' ? "Return to Dashboard" : "Open GM Tools"}
+                        >
+                            <DiceIcon className="w-5 h-5" />
+                            <span className="hidden md:inline">
+                                {mainView === 'gm' ? "Dashboard" : "GM Tools"}
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => setIsSettingsOpen(true)}
+                            className="p-2 rounded-lg bg-slate-700 text-gray-200 hover:bg-slate-600 transition-colors"
+                            aria-label="Open settings"
+                            title="Settings"
+                        >
+                            <SettingsIcon className="w-6 h-6" />
+                        </button>
+                    </div>
+               </header>
             </Headroom>
 
             {mainView === 'dashboard' ? (
