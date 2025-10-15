@@ -1,9 +1,8 @@
 // src/store/useSessionStore.ts
 import React from 'react';
-// ... importa i tipi come prima
 import { create } from 'zustand';
 import { supabase } from '../services/supabaseClient';
-import { User, Session, RealtimeChannel } from '@supabase/supabase-js'; // MODIFIED: Import RealtimeChannel
+import { User, Session, RealtimeChannel } from '@supabase/supabase-js'; 
 import { Pokedex, TeamMember, PokemonData, TrainerData, ItemInstance, Rank } from '../types/index.ts';
 import { createInitialTrainerData, createInitialSheetData } from '../logic/initializers.ts';
 import { calculateWeaknesses } from '../logic/formulas.ts';
@@ -11,12 +10,11 @@ import pako from 'pako';
 import { useUIStore } from './useUIStore.ts';
 import { useGameDataStore } from './useGameDataStore.ts';
 import { RANK_ATTRIBUTE_POINTS, RANK_SOCIAL_ATTRIBUTE_POINTS, RANK_SKILL_POINTS } from '../logic/core.ts';
-import { POKEMON_SKILL_FIELDS } from '../constants/gameConstants'; // You'll need to export this
+import { POKEMON_SKILL_FIELDS } from '../constants/gameConstants'; 
 import useNotificationStore from './useNotificationStore';
 import { Item } from '../types/index';
 
 
-// Helper function to remove one instance of an item from a pocket
 const removeItemFromPockets = (pockets: { smallPocket: ItemInstance[], mainPocket: ItemInstance[] }, itemName: string) => {
     const newPockets = { ...pockets };
     let itemFoundAndRemoved = false;
@@ -720,6 +718,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
 // --- LOGICA DI SINCRONIZZAZIONE AUTOMATICA ---
 let debounceTimer: NodeJS.Timeout;
+// ADDED THIS LINE TO FIX THE ERROR
+let isApplyingRemoteUpdate = false; // Flag to prevent sync loops
 
 const handleDataChange = () => {
     const { user, isDataLoaded } = useSessionStore.getState();
@@ -735,6 +735,12 @@ const handleDataChange = () => {
 // Sottoscrizione per i dati della sessione (team, pc, trainer)
 useSessionStore.subscribe(
     (state, prevState) => {
+        // MODIFICATO: Aggiungiamo un controllo sul nostro flag
+        if (isApplyingRemoteUpdate) {
+            // Se la modifica proviene da un'altra tab, NON innescare un nuovo salvataggio.
+            return;
+        }
+
         const hasSessionDataChanged =
             state.team !== prevState.team ||
             state.pokemonPC !== prevState.pokemonPC ||
@@ -749,6 +755,11 @@ useSessionStore.subscribe(
 // Sottoscrizione separata per i dati del GM (encounters, npcs)
 useGameDataStore.subscribe(
     (state, prevState) => {
+        // MODIFICATO: Aggiungiamo lo stesso controllo qui
+        if (isApplyingRemoteUpdate) {
+            return;
+        }
+
         const hasGameDataChanged =
             state.savedEncounters !== prevState.savedEncounters ||
             state.savedNPCs !== prevState.savedNPCs;
@@ -797,14 +808,16 @@ supabase.auth.onAuthStateChange((event, session) => {
                     console.log('Realtime update received:', payload);
                     const newSessionData = payload.new.session_data;
 
-                    // *** CRITICAL: Prevent update loop ***
-                    // If the update was made by this client, ignore it.
                     if (newSessionData.lastUpdatedBy === clientSessionId) {
                         console.log("Ignoring own update.");
                         return;
                     }
 
-                    // The update came from another client, so we update our local store.
+                    // *** LA MODIFICA CHIAVE È QUI ***
+                    // 1. Attiviamo il flag prima di aggiornare lo stato
+                    isApplyingRemoteUpdate = true;
+                    console.log("Applying remote update. Pausing local save trigger.");
+
                     useNotificationStore.getState().addNotification({
                         message: 'Session data synced from another tab or device!',
                         type: 'success',
@@ -812,18 +825,24 @@ supabase.auth.onAuthStateChange((event, session) => {
 
                     const { team, pokemonPC, trainerData, savedEncounters, savedNPCs } = newSessionData;
                     
-                    // Update the session store
                     useSessionStore.setState({
                         team: team || [],
                         pokemonPC: pokemonPC || [],
                         trainerData: trainerData || createInitialTrainerData(),
                     });
 
-                    // Update the separate game data store
                     useGameDataStore.setState({
                         savedEncounters: savedEncounters || [],
                         savedNPCs: savedNPCs || [],
                     });
+                    
+                    // 2. Disattiviamo il flag subito dopo, ma in un modo che permetta
+                    // a Zustand di finire di notificare tutti i suoi subscriber.
+                    // Un setTimeout con 0ms è perfetto per questo.
+                    setTimeout(() => {
+                        isApplyingRemoteUpdate = false;
+                        console.log("Remote update applied. Resuming local save trigger.");
+                    }, 0);
                 }
             )
             .subscribe((status, err) => {
