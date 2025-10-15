@@ -59,6 +59,8 @@ export const createImportExportSlice: StateCreator<
     loadTeam: (event) => {
         const file = event.target.files?.[0];
         if (!file) return;
+
+        useUIStore.getState().setIsLoading(true);
     
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -138,9 +140,14 @@ export const createImportExportSlice: StateCreator<
                     message: `Failed to load data: ${(err as Error).message}`,
                     type: 'error',
                 });
+            } finally {
+                useUIStore.getState().setIsLoading(false);
             }
         };
-        reader.onerror = () => console.error("Failed to read the selected file.");
+        reader.onerror = () => {
+            console.error("Failed to read the selected file.");
+            useUIStore.getState().setIsLoading(false);
+        }
         reader.readAsText(file);
         event.target.value = '';
     },

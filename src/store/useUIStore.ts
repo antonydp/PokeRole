@@ -22,6 +22,7 @@ type ActiveDashboardView = 'trainer' | 'team' | 'pc';
 type MainView = 'dashboard' | 'gm';
 
 interface UIState {
+    isLoading: boolean;
     isPokemonListModalOpen: boolean;
     addPokemonTarget: 'team' | 'pc';
     isSettingsOpen: boolean;
@@ -32,6 +33,7 @@ interface UIState {
     pokemonDetailReturnView: 'team' | 'pc';
     unitSettings: UnitSettings;
     evolutionState: EvolutionState;
+    setIsLoading: (isLoading: boolean) => void;
     openEvolutionModal: (instanceId: string) => void;
     setEvolutionStep: (step: EvolutionStep, data?: Partial<Omit<EvolutionState, 'isOpen' | 'step'>>) => void;
     closeEvolutionModal: () => void;
@@ -46,6 +48,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
+    isLoading: false,
     isPokemonListModalOpen: false,
     addPokemonTarget: 'team',
     isSettingsOpen: false,
@@ -119,4 +122,5 @@ export const useUIStore = create<UIState>((set) => ({
         // When switching to GM view, close any open Pokémon detail sheet
         selectedPokemonId: view === 'gm' ? null : state.selectedPokemonId,
     })),
+    setIsLoading: (isLoading) => set({ isLoading }),
 }));
