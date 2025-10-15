@@ -3,7 +3,7 @@ import React from 'react';
 // ... importa i tipi come prima
 import { create } from 'zustand';
 import { supabase } from '../services/supabaseClient';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, RealtimeChannel } from '@supabase/supabase-js'; // MODIFIED: Import RealtimeChannel
 import { Pokedex, TeamMember, PokemonData, TrainerData, ItemInstance, Rank } from '../types/index.ts';
 import { createInitialTrainerData, createInitialSheetData } from '../logic/initializers.ts';
 import { calculateWeaknesses } from '../logic/formulas.ts';
@@ -78,6 +78,10 @@ interface SessionState {
     addItemToPockets: (item: Item) => void;
     removeItemFromPockets: (itemId: string, pocket: 'smallPocket' | 'mainPocket') => void;
 }
+
+// NEW: Generate a unique ID for this specific client/tab session.
+// This is the key to preventing infinite loops.
+const clientSessionId = crypto.randomUUID();
 
 export const useSessionStore = create<SessionState>((set, get) => ({
     // Stato iniziale
@@ -156,7 +160,15 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         // Prendi i dati anche da useGameDataStore
         const { savedEncounters, savedNPCs } = useGameDataStore.getState();
 
-        const session_data = { team, pokemonPC, trainerData, savedEncounters, savedNPCs };
+        // MODIFIED: Include the clientSessionId in the data we save.
+        const session_data = {
+            team,
+            pokemonPC,
+            trainerData,
+            savedEncounters,
+            savedNPCs,
+            lastUpdatedBy: clientSessionId // This tells us which client made the last change
+        };
 
         try {
             const { error } = await supabase.from('profiles').upsert({
@@ -747,20 +759,84 @@ useGameDataStore.subscribe(
     }
 );
 
-// --- GESTIONE DEGLI EVENTI DI AUTENTICAZIONE ---
-// Sincronizza lo store con lo stato di autenticazione di Supabase
+// --- MODIFIED AUTHENTICATION & REALTIME LISTENER LOGIC ---
+
+// Keep a reference to the realtime channel so we can unsubscribe from it.
+let realtimeChannel: RealtimeChannel | null = null;
+
 supabase.auth.onAuthStateChange((event, session) => {
     const { setUser, fetchSessionData, clearUserData } = useSessionStore.getState();
+
+    // If there's an existing channel, unsubscribe to clean up
+    if (realtimeChannel) {
+        supabase.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+        console.log("Unsubscribed from old realtime channel.");
+    }
     
     if (session) {
-        // Utente loggato o sessione ripristinata
+        // User is logged in
         setUser(session.user, session);
-        // Carica i dati associati alla sessione solo se non sono già stati caricati
         if (!useSessionStore.getState().isDataLoaded) {
             fetchSessionData();
         }
+
+        // NEW: Set up the realtime subscription
+        console.log(`Setting up realtime subscription for user: ${session.user.id}`);
+        realtimeChannel = supabase
+            .channel(`profile-changes:${session.user.id}`) // A unique channel name for this user
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'profiles',
+                    filter: `id=eq.${session.user.id}`, // Only listen to changes for THIS user
+                },
+                (payload) => {
+                    console.log('Realtime update received:', payload);
+                    const newSessionData = payload.new.session_data;
+
+                    // *** CRITICAL: Prevent update loop ***
+                    // If the update was made by this client, ignore it.
+                    if (newSessionData.lastUpdatedBy === clientSessionId) {
+                        console.log("Ignoring own update.");
+                        return;
+                    }
+
+                    // The update came from another client, so we update our local store.
+                    useNotificationStore.getState().addNotification({
+                        message: 'Session data synced from another tab or device!',
+                        type: 'success',
+                    });
+
+                    const { team, pokemonPC, trainerData, savedEncounters, savedNPCs } = newSessionData;
+                    
+                    // Update the session store
+                    useSessionStore.setState({
+                        team: team || [],
+                        pokemonPC: pokemonPC || [],
+                        trainerData: trainerData || createInitialTrainerData(),
+                    });
+
+                    // Update the separate game data store
+                    useGameDataStore.setState({
+                        savedEncounters: savedEncounters || [],
+                        savedNPCs: savedNPCs || [],
+                    });
+                }
+            )
+            .subscribe((status, err) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('Successfully subscribed to realtime channel!');
+                }
+                if (status === 'CHANNEL_ERROR') {
+                     console.error('Realtime subscription error:', err);
+                }
+            });
+
     } else {
-        // Utente sloggato
+        // User logged out
         setUser(null, null);
         clearUserData();
     }
