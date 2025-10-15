@@ -15,8 +15,14 @@ const Auth: React.FC = () => {
         setLoading(true);
         setMessage('');
 
-        const authMethod = isSignUp ? supabase.auth.signUp : supabase.auth.signInWithPassword;
-        const { error } = await authMethod({ email, password });
+        let error = null;
+        if (isSignUp) {
+            const { error: signUpError } = await supabase.auth.signUp({ email, password });
+            error = signUpError;
+        } else {
+            const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+            error = signInError;
+        }
 
         if (error) {
             setMessage(error.message);
