@@ -13,7 +13,7 @@ import { ImportExportSlice, createImportExportSlice } from './slices/importExpor
 
 export interface SessionState extends PokemonSlice, SessionSlice, TrainerSlice, EvolutionSlice, ImportExportSlice {}
 
-const clientSessionId = crypto.randomUUID();
+export const clientSessionId = crypto.randomUUID();
 
 export const useSessionStore = create<SessionState>()((...a) => ({
     ...createPokemonSlice(...a),

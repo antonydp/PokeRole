@@ -4,9 +4,7 @@ import { supabase } from '../../services/supabaseClient';
 import { useGameDataStore } from '../useGameDataStore';
 import useNotificationStore from '../useNotificationStore';
 import { createInitialTrainerData } from '../../logic/initializers';
-import { SessionState } from '../useSessionStore';
-
-const clientSessionId = crypto.randomUUID();
+import { SessionState, clientSessionId } from '../useSessionStore';
 
 export interface SessionSlice {
     user: User | null;
