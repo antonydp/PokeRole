@@ -109,34 +109,12 @@ const App: React.FC = () => {
     const { isPokemonListModalOpen, isSettingsOpen, isSuggestModalOpen, unitSettings, selectedPokemonId, mainView, setIsPokemonListModalOpen, setIsSettingsOpen, setUnitSettings, setIsSuggestModalOpen, selectPokemon, setMainView } = useUIStore();
     
     // --- NUOVI HOOK PER AUTH ---
-    const { session, user, setUser, fetchSessionData, isDataLoaded, team, addSuggestionToTeam, clearUserData } = useSessionStore();
+    const { session, isDataLoaded, team, addSuggestionToTeam } = useSessionStore();
 
-    // --- NUOVO useEffect PER L'AUTH ---
     useEffect(() => {
         // Carica i dati del gioco (pokedex, mosse, etc.) una sola volta
         loadData();
-
-        // Controlla la sessione utente al caricamento dell'app
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null, session);
-            if(session?.user) {
-                fetchSessionData();
-            }
-        });
-
-        // Ascolta i cambiamenti dello stato di autenticazione (login, logout)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null, session);
-            if(session?.user && !isDataLoaded) { // Se l'utente si logga, carica i suoi dati
-                fetchSessionData();
-            } else if (!session?.user) {
-                // Resetta lo stato se l'utente fa logout
-                clearUserData();
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, [loadData, setUser, fetchSessionData, isDataLoaded, clearUserData]);
+    }, [loadData]);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
